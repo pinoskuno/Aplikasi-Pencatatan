@@ -6,6 +6,7 @@ import TotalSummary from './components/TotalSummary';
 import './App.css';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "react-datepicker/dist/react-datepicker.css";
+import "../styles/CatatanList.css";
 
 function App() {
   return (

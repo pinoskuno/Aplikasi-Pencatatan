@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../styles/CatatanList.css";
+
 
 // Component untuk modal edit
 const EditModal = ({ isOpen, onClose, catatan, onSave }) => {

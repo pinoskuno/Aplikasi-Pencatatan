@@ -15,7 +15,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root", // Ganti dengan username MySQL Anda
   password: "", // Ganti dengan password MySQL Anda
-  database: "ptpn_pencatatan", // Ganti dengan nama database Anda
+  database: "pencatatan_ptpn_db", // Ganti dengan nama database Anda
 });
 
 db.connect((err) => {
