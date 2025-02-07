@@ -1,0 +1,12 @@
+.table thead tr {
+    background-color: #aaa2a2 !important; /* Warna abu-abu */
+  }
+
+.table {
+    font-family: 'Arial', sans-serif;
+}
+
+.table .th {
+color: #012970;
+text-transform: uppercase;
+}
