@@ -23,6 +23,99 @@ db.connect((err) => {
   console.log("Terhubung ke database MySQL");
 });
 
+// GET: Ambil semua data stok produk persediaan
+app.get("/api/stok_produk", (req, res) => {
+  db.query("SELECT * FROM stok_produk_Persedian", (err, results) => {
+    if (err) {
+      console.error("Error mengambil data stok produk:", err);
+      return res.status(500).json({ error: "Gagal mengambil data stok produk." });
+    }
+    res.json(results);
+  });
+});
+
+// POST: Tambah data stok produk persediaan
+app.post("/api/stok_produk", (req, res) => {
+  const { tanggal, lokasi, kategori, storage_tank, stok, alb, kadar_air, kadar_kotoran } = req.body;
+
+  db.query(
+    `INSERT INTO stok_produk_Persedian (tanggal, lokasi, kategori, storage_tank, stok, alb, kadar_air, kadar_kotoran) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [tanggal, lokasi, kategori, storage_tank, stok, alb, kadar_air, kadar_kotoran],
+    (err, result) => {
+      if (err) {
+        console.error("Error menambahkan stok produk:", err);
+        return res.status(500).json({ error: "Gagal menambahkan stok produk." });
+      }
+      res.status(201).json({ message: "Stok produk berhasil ditambahkan", id: result.insertId });
+    }
+  );
+});
+
+// DELETE: Hapus data stok produk persediaan berdasarkan ID
+app.delete("/api/stok_produk/:id", (req, res) => {
+  const { id } = req.params;
+
+  db.query("DELETE FROM stok_produk_Persedian WHERE id = ?", [id], (err, result) => {
+    if (err) {
+      console.error("Error menghapus stok produk:", err);
+      return res.status(500).json({ error: "Gagal menghapus stok produk." });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Stok produk tidak ditemukan." });
+    }
+    res.json({ message: "Stok produk berhasil dihapus" });
+  });
+});
+
+// ========================= STOK INDIVIDU PERSEDIAAN =========================
+
+// GET: Ambil semua data stok individu persediaan
+app.get("/api/stok_individu", (req, res) => {
+  db.query("SELECT * FROM stok_individu_Persediaan", (err, results) => {
+    if (err) {
+      console.error("Error mengambil data stok individu:", err);
+      return res.status(500).json({ error: "Gagal mengambil data stok individu." });
+    }
+    res.json(results);
+  });
+});
+
+// POST: Tambah data stok individu persediaan
+app.post("/api/stok_individu", (req, res) => {
+  const { tanggal, lokasi, jenis, stok, alb, kadar_air, kadar_kotoran } = req.body;
+
+  db.query(
+    `INSERT INTO stok_individu_Persediaan (tanggal, lokasi, jenis, stok, alb, kadar_air, kadar_kotoran) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [tanggal, lokasi, jenis, stok, alb, kadar_air, kadar_kotoran],
+    (err, result) => {
+      if (err) {
+        console.error("Error menambahkan stok individu:", err);
+        return res.status(500).json({ error: "Gagal menambahkan stok individu." });
+      }
+      res.status(201).json({ message: "Stok individu berhasil ditambahkan", id: result.insertId });
+    }
+  );
+});
+
+// DELETE: Hapus data stok individu persediaan berdasarkan ID
+app.delete("/api/stok_individu/:id", (req, res) => {
+  const { id } = req.params;
+
+  db.query("DELETE FROM stok_individu_Persediaan WHERE id = ?", [id], (err, result) => {
+    if (err) {
+      console.error("Error menghapus stok individu:", err);
+      return res.status(500).json({ error: "Gagal menghapus stok individu." });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Stok individu tidak ditemukan." });
+    }
+    res.json({ message: "Stok individu berhasil dihapus" });
+  });
+});
+
+
 
 // API untuk mendapatkan semua catatan
 app.get("/api/catatan", (req, res) => {
