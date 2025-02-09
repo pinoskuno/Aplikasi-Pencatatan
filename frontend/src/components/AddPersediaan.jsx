@@ -1,326 +1,284 @@
-import React, { useState } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { useState } from "react";
 
 const AddPersediaan = () => {
   const [formData, setFormData] = useState({
-    status_pembayaran: "",
-    judul: "",
-    deskripsi: "",
-    nomor_kontrak: "",
-    tanggal_kontrak: null,
-    pembeli: "",
-    jatuh_tempo_pembayaran: null,
-    tanggal_bayar: null,
-    mutu_alb: "",
-    vol_belum_serah: "",
-    harga_excl: "",
-    fraco_fob: "",
-    rencana_pelayanan: null,
-    realisasi_pelayanan: null,
+    tanggal: "",
+    lokasi: "Bekri",
+    pkm: "",
+    kernel: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "" },
+    kategori: [],
   });
-    // Daftar kategori pembayaran untuk dropdown
-    const kategoriPembayaran = [
-      "Sudah Bayar",
-      "Belum Bayar",
-    ];
-  // Daftar kategori untuk dropdown
-  const kategoriOptions = [
-    "Minyak sawit (CPO)",
-    "Inti Sawit (PK)",
-    "Minyak Intisawit (PKO)",
-    "Bungkil Inti Sawit (PKM)",
-    "Cangkang",
+  const [notification, setNotification] = useState(null);
+
+  const lokasiOptions = ["Bekri", "Betung", "Talang sawit", "Sungai Lengi"];
+  const kategoriOptions = ["CPO", "PKO"];
+  const jenisTankOptions = [
+    "Storage Tank I",
+    "Storage Tank II",
+    "Storage Tank III",
+    "Storage Tank IV",
+    "Storage Tank V",
+    "Storage Tank VI",
+    "Storage Tank VII",
+    "Storage Tank VIII",
+    "Storage Tank IX",
+    "Storage Tank X",
+    "Tanki I",
+    "Tanki II",
+    "Tanki III",
+    "Tanki IV",
+    "Tanki V",
+    "Tanki VI",
+    "Tanki VII",
+    "Tanki VIII",
+    "Tanki IX",
+    "Tanki X",
+    "Gudang Repa",
+    "Gudang Pabrik",
   ];
 
-  // Fungsi untuk handle submit form
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    fetch("http://localhost:5000/api/catatan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...formData,
-        tanggal_kontrak: formData.tanggal_kontrak?.toISOString().split("T")[0],
-        jatuh_tempo_pembayaran: formData.jatuh_tempo_pembayaran?.toISOString().split("T")[0],
-        tanggal_bayar: formData.tanggal_bayar?.toISOString().split("T")[0],
-        rencana_pelayanan: formData.rencana_pelayanan?.toISOString().split("T")[0],
-        realisasi_pelayanan: formData.realisasi_pelayanan?.toISOString().split("T")[0],
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        alert("Catatan berhasil ditambahkan!");
-        // Reset form setelah submit
-        setFormData({
-          status_pembayaran: "",
-          judul: "",
-          deskripsi: "",
-          nomor_kontrak: "",
-          tanggal_kontrak: null,
-          pembeli: "",
-          jatuh_tempo_pembayaran: null,
-          tanggal_bayar: null,
-          mutu_alb: "",
-          vol_belum_serah: "",
-          harga_excl: "",
-          fraco_fob: "",
-          rencana_pelayanan: null,
-          realisasi_pelayanan: null,
-        });
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  };
-
-  // Fungsi untuk reset formulir
-  const handleReset = () => {
-    setFormData({
-      status_pembayaran: "",
-      judul: "",
-      deskripsi: "",
-      nomor_kontrak: "",
-      tanggal_kontrak: null,
-      pembeli: "",
-      jatuh_tempo_pembayaran: null,
-      tanggal_bayar: null,
-      mutu_alb: "",
-      vol_belum_serah: "",
-      harga_excl: "",
-      fraco_fob: "",
-      rencana_pelayanan: null,
-      realisasi_pelayanan: null,
-    }); // Reset state
-  };
-
-  // Fungsi untuk handle perubahan input
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Fungsi untuk handle perubahan tanggal
-  const handleDateChange = (date, field) => {
-    setFormData({ ...formData, [field]: date });
+  const handleKernelChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      kernel: { ...formData.kernel, [name]: value },
+    });
+  };
+
+  const addKategori = () => {
+    setFormData({
+      ...formData,
+      kategori: [
+        ...formData.kategori,
+        {
+          nama: "CPO",
+          penyimpanan: [],
+          jumlah: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "" },
+        },
+      ],
+    });
+  };
+
+  const handleKategoriChange = (index, e) => {
+    const { value } = e.target;
+    let kategori = [...formData.kategori];
+    kategori[index].nama = value;
+    setFormData({ ...formData, kategori });
+  };
+
+  const handleJumlahChange = (index, e) => {
+    const { name, value } = e.target;
+    let kategori = [...formData.kategori];
+    kategori[index].jumlah[name] = value;
+    setFormData({ ...formData, kategori });
+  };
+
+  const addPenyimpanan = (kategoriIndex) => {
+    let kategori = [...formData.kategori];
+    kategori[kategoriIndex].penyimpanan.push({
+      jenis_tank: "Storage Tank I",
+      stok: "",
+      alb: "",
+      kadar_air: "",
+      kadar_kotoran: "",
+    });
+    setFormData({ ...formData, kategori });
+  };
+
+  const handlePenyimpananChange = (kategoriIndex, penyimpananIndex, e) => {
+    const { name, value } = e.target;
+    let kategori = [...formData.kategori];
+    kategori[kategoriIndex].penyimpanan[penyimpananIndex][name] = value;
+    setFormData({ ...formData, kategori });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:5000/penyimpanan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setNotification({ type: "success", message: "Data berhasil diunggah!" });
+      } else {
+        setNotification({ type: "error", message: `Gagal: ${data.message}` });
+      }
+    } catch (error) {
+      setNotification({ type: "error", message: "Terjadi kesalahan!" });
+    }
+    setTimeout(() => setNotification(null), 5000);
   };
 
   return (
     <div className="container mt-4">
-      <h2 className="text-center mb-4">Tambah Catatan</h2>
+      <h2>Input Data Penyimpanan</h2>
+      {notification && (
+        <div className={`alert alert-${notification.type === "success" ? "success" : "danger"}`}>
+          {notification.message}
+        </div>
+      )}
       <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label className="form-label">Tanggal</label>
+          <input
+            type="date"
+            name="tanggal"
+            className="form-control"
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Lokasi</label>
+          <select
+            name="lokasi"
+            className="form-control"
+            onChange={handleChange}
+          >
+            {lokasiOptions.map((loc) => (
+              <option key={loc} value={loc}>
+                {loc}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-3">
+          <label className="form-label">PKM</label>
+          <input
+            type="number"
+            name="pkm"
+            className="form-control"
+            value={formData.pkm}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <div className="form-row">
-          <div className="col-md-6">
-              <label className="form-label">Kategori Pembayaran</label>
-              <select
-                name="status_pembayaran"
-                value={formData. status_pembayaran}
-                onChange={handleChange}
-                className="form-control bg-light"
-                required
-              >
-                <option value="">Pilih Kategori</option>
-                {kategoriPembayaran.map((kategori) => (
-                  <option key={kategori} value={kategori}>
-                    {kategori}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <h5>Kernel</h5>
+        <div className="mb-3">
+          <label className="form-label">Stok</label>
+          <input
+            type="number"
+            name="stok"
+            className="form-control"
+            value={formData.kernel.stok}
+            onChange={handleKernelChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">ALB</label>
+          <input
+            type="number"
+            name="alb"
+            step="0.01"
+            className="form-control"
+            value={formData.kernel.alb}
+            onChange={handleKernelChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Kadar Air</label>
+          <input
+            type="number"
+            name="kadar_air"
+            step="0.01"
+            className="form-control"
+            value={formData.kernel.kadar_air}
+            onChange={handleKernelChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Kadar Kotoran</label>
+          <input
+            type="number"
+            name="kadar_kotoran"
+            step="0.01"
+            className="form-control"
+            value={formData.kernel.kadar_kotoran}
+            onChange={handleKernelChange}
+            required
+          />
+        </div>
 
-            {/* Dropdown untuk kategori */}
-            <div className="col-md-6">
-              <label className="form-label">Kategori Barang</label>
-              <select
-                name="judul"
-                value={formData.judul}
-                onChange={handleChange}
-                className="form-control bg-light"
-                required
-              >
-                <option value="">Pilih Kategori</option>
-                {kategoriOptions.map((kategori) => (
-                  <option key={kategori} value={kategori}>
-                    {kategori}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="form-row">
-              {/* Input untuk deskripsi */}
-              <div className="col-md-6">
-                <label className="form-label">Deskripsi</label>
-                <textarea
-                  name="deskripsi"
-                  value={formData.deskripsi}
-                  onChange={handleChange}
-                  className="form-control bg-light"
-                />
+        <button type="button" className="btn btn-primary" onClick={addKategori}>
+          Tambah Kategori
+        </button>
+        {formData.kategori.map((kat, katIndex) => (
+          <div key={katIndex} className="mt-3 border p-3">
+            <h5>Kategori</h5>
+            <select
+              className="form-control"
+              onChange={(e) => handleKategoriChange(katIndex, e)}
+            >
+              {kategoriOptions.map((katOpt) => (
+                <option key={katOpt} value={katOpt}>
+                  {katOpt}
+                </option>
+              ))}
+            </select>
+            <h6>Jumlah</h6>
+            {Object.keys(kat.jumlah).map((key) => (
+              <input
+                key={key}
+                type="number"
+                name={key}
+                placeholder={key}
+                className="form-control mt-2"
+                onChange={(e) => handleJumlahChange(katIndex, e)}
+              />
+            ))}
+            <button
+              type="button"
+              className="btn btn-secondary mt-2"
+              onClick={() => addPenyimpanan(katIndex)}
+            >
+              Tambah Penyimpanan
+            </button>
+            {kat.penyimpanan.map((p, pIndex) => (
+              <div key={pIndex} className="mt-2 border p-2">
+                <select
+                  name="jenis_tank"
+                  className="form-control"
+                  onChange={(e) => handlePenyimpananChange(katIndex, pIndex, e)}
+                >
+                  {jenisTankOptions.map((tank) => (
+                    <option key={tank} value={tank}>
+                      {tank}
+                    </option>
+                  ))}
+                </select>
+                {Object.keys(p)
+                  .filter((key) => key !== "jenis_tank")
+                  .map((key) => (
+                    <input
+                      key={key}
+                      type="number"
+                      name={key}
+                      placeholder={key}
+                      className="form-control mt-2"
+                      onChange={(e) =>
+                        handlePenyimpananChange(katIndex, pIndex, e)
+                      }
+                    />
+                  ))}
               </div>
-
-            {/* Input untuk nomor kontrak */}
-            <div className="col-md-6">
-              <label className="form-label">Nomor Kontrak</label>
-              <input
-                type="text"
-                name="nomor_kontrak"
-                value={formData.nomor_kontrak}
-                onChange={handleChange}
-                className="form-control bg-light"
-              />
-            </div>
+            ))}
           </div>
-
-          <div className="form-row">
-            {/* Input untuk tanggal kontrak */}
-            <div className="col-md-6">
-              <label className="form-label">Tanggal Kontrak</label>
-              <DatePicker
-                selected={formData.tanggal_kontrak}
-                onChange={(date) => handleDateChange(date, "tanggal_kontrak")}
-                dateFormat="dd/MM/yyyy"
-                className="form-control bg-light"
-                placeholderText="Pilih Tanggal"
-                wrapperClassName="w-100"
-              />
-            </div>
-
-            {/* Input untuk pembeli */}
-            <div className="col-md-6">
-              <label className="form-label">Pembeli</label>
-              <input
-                type="text"
-                name="pembeli"
-                value={formData.pembeli}
-                onChange={handleChange}
-                className="form-control bg-light"
-              />
-            </div>
-          </div>
-
-          <div className="form-row">
-            {/* Input untuk jatuh tempo pembayaran */}
-            <div className="col-md-6">
-              <label className="form-label">Jatuh Tempo Pembayaran</label>
-              <DatePicker
-                selected={formData.jatuh_tempo_pembayaran}
-                onChange={(date) => handleDateChange(date, "jatuh_tempo_pembayaran")}
-                dateFormat="dd/MM/yyyy"
-                className="form-control bg-light date-picker"
-                placeholderText="Pilih Tanggal"
-                wrapperClassName="w-100"
-              />
-            </div>
-
-            {/* Input untuk tanggal bayar */}
-            <div className="col-md-6">
-              <label className="form-label">Tanggal Bayar</label>
-              <DatePicker
-                selected={formData.tanggal_bayar}
-                onChange={(date) => handleDateChange(date, "tanggal_bayar")}
-                dateFormat="dd/MM/yyyy"
-                className="form-control bg-light"
-                placeholderText="Pilih Tanggal"
-                wrapperClassName="w-100"
-              />
-            </div>
-          </div>
-
-          <div className="form-row">
-            {/* Input untuk mutu ALB */}
-            <div className="col-md-6">
-              <label className="form-label">Mutu ALB (%)</label>
-              <input
-                type="number"
-                name="mutu_alb"
-                value={formData.mutu_alb}
-                onChange={handleChange}
-                className="form-control bg-light"
-                min="0"
-                max="100"
-              />
-            </div>
-
-            {/* Input untuk volume belum serah */}
-            <div className="col-md-6">
-              <label className="form-label">Vol Belum Serah (kg)</label>
-              <input
-                type="number"
-                name="vol_belum_serah"
-                value={formData.vol_belum_serah}
-                onChange={handleChange}
-                className="form-control bg-light"
-              />
-            </div>
-          </div>
-
-        <div className="form-row">
-          {/* Input untuk harga excl */}
-          <div className="col-md-6">
-            <label className="form-label">Harga Excl (Rp/Kg)</label>
-            <input
-              type="number"
-              name="harga_excl"
-              value={formData.harga_excl}
-              onChange={handleChange}
-              className="form-control bg-light"
-            />
-          </div>
-
-          {/* Input untuk fraco/fob */}
-          <div className="col-md-6">
-            <label className="form-label">Fraco/FOB</label>
-            <input
-              type="text"
-              name="fraco_fob"
-              value={formData.fraco_fob}
-              onChange={handleChange}
-              className="form-control bg-light"
-            />
-          </div>
-        </div>
-
-        <div className="form-row">
-          {/* Input untuk rencana pelayanan */}
-          <div className="col-md-6">
-            <label className="form-label">Rencana Pelayanan</label>
-            <DatePicker
-              selected={formData.rencana_pelayanan}
-              onChange={(date) => handleDateChange(date, "rencana_pelayanan")}
-              dateFormat="dd/MM/yyyy"
-              className="form-control bg-light"
-              placeholderText="Pilih Tanggal"
-              wrapperClassName="w-100"
-            />
-          </div>
-
-          {/* Input untuk realisasi pelayanan */}
-          <div className="col-md-6">
-            <label className="form-label">Realisasi Pelayanan</label>
-            <DatePicker
-              selected={formData.realisasi_pelayanan}
-              onChange={(date) => handleDateChange(date, "realisasi_pelayanan")}
-              dateFormat="dd/MM/yyyy"
-              className="form-control bg-light"
-              placeholderText="Pilih Tanggal"
-              wrapperClassName="w-100"
-            />
-          </div>
-        </div>
-
-        {/* Tombol submit */}
-        <div class="d-grid gap-2 mt-2">
-          <button type="submit" className="btn btn-primary">
-            Tambah
-          </button>
-        </div>
-
-        <div class="d-grid gap-2 mt-2">
-              <button type="reset" class="btn btn-secondary" onClick={handleReset} >Reset</button>
-        </div>
+        ))}
+        <button type="submit" className="btn btn-success mt-3">
+          Submit
+        </button>
       </form>
     </div>
   );
