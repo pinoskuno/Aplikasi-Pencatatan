@@ -1,4 +1,6 @@
 import React from "react";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Table, Container } from "react-bootstrap";
 import { Routes, Route, Link } from "react-router-dom";
 import CatatanList from "./components/CatatanList";
 import AddCatatan from "./components/AddCatatan";
