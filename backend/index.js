@@ -23,99 +23,6 @@ db.connect((err) => {
   console.log("Terhubung ke database MySQL");
 });
 
-// GET: Ambil semua data stok produk persediaan
-app.get("/api/stok_produk", (req, res) => {
-  db.query("SELECT * FROM stok_produk_Persedian", (err, results) => {
-    if (err) {
-      console.error("Error mengambil data stok produk:", err);
-      return res.status(500).json({ error: "Gagal mengambil data stok produk." });
-    }
-    res.json(results);
-  });
-});
-
-// POST: Tambah data stok produk persediaan
-app.post("/api/stok_produk", (req, res) => {
-  const { tanggal, lokasi, kategori, storage_tank, stok, alb, kadar_air, kadar_kotoran } = req.body;
-
-  db.query(
-    `INSERT INTO stok_produk_Persedian (tanggal, lokasi, kategori, storage_tank, stok, alb, kadar_air, kadar_kotoran) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [tanggal, lokasi, kategori, storage_tank, stok, alb, kadar_air, kadar_kotoran],
-    (err, result) => {
-      if (err) {
-        console.error("Error menambahkan stok produk:", err);
-        return res.status(500).json({ error: "Gagal menambahkan stok produk." });
-      }
-      res.status(201).json({ message: "Stok produk berhasil ditambahkan", id: result.insertId });
-    }
-  );
-});
-
-// DELETE: Hapus data stok produk persediaan berdasarkan ID
-app.delete("/api/stok_produk/:id", (req, res) => {
-  const { id } = req.params;
-
-  db.query("DELETE FROM stok_produk_Persedian WHERE id = ?", [id], (err, result) => {
-    if (err) {
-      console.error("Error menghapus stok produk:", err);
-      return res.status(500).json({ error: "Gagal menghapus stok produk." });
-    }
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Stok produk tidak ditemukan." });
-    }
-    res.json({ message: "Stok produk berhasil dihapus" });
-  });
-});
-
-// ========================= STOK INDIVIDU PERSEDIAAN =========================
-
-// GET: Ambil semua data stok individu persediaan
-app.get("/api/stok_individu", (req, res) => {
-  db.query("SELECT * FROM stok_individu_Persediaan", (err, results) => {
-    if (err) {
-      console.error("Error mengambil data stok individu:", err);
-      return res.status(500).json({ error: "Gagal mengambil data stok individu." });
-    }
-    res.json(results);
-  });
-});
-
-// POST: Tambah data stok individu persediaan
-app.post("/api/stok_individu", (req, res) => {
-  const { tanggal, lokasi, jenis, stok, alb, kadar_air, kadar_kotoran } = req.body;
-
-  db.query(
-    `INSERT INTO stok_individu_Persediaan (tanggal, lokasi, jenis, stok, alb, kadar_air, kadar_kotoran) 
-    VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [tanggal, lokasi, jenis, stok, alb, kadar_air, kadar_kotoran],
-    (err, result) => {
-      if (err) {
-        console.error("Error menambahkan stok individu:", err);
-        return res.status(500).json({ error: "Gagal menambahkan stok individu." });
-      }
-      res.status(201).json({ message: "Stok individu berhasil ditambahkan", id: result.insertId });
-    }
-  );
-});
-
-// DELETE: Hapus data stok individu persediaan berdasarkan ID
-app.delete("/api/stok_individu/:id", (req, res) => {
-  const { id } = req.params;
-
-  db.query("DELETE FROM stok_individu_Persediaan WHERE id = ?", [id], (err, result) => {
-    if (err) {
-      console.error("Error menghapus stok individu:", err);
-      return res.status(500).json({ error: "Gagal menghapus stok individu." });
-    }
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Stok individu tidak ditemukan." });
-    }
-    res.json({ message: "Stok individu berhasil dihapus" });
-  });
-});
-
-
 
 // API untuk mendapatkan semua catatan
 app.get("/api/catatan", (req, res) => {
@@ -260,6 +167,157 @@ app.delete("/api/catatan/:id", (req, res) => {
     res.json({ message: "Catatan berhasil dihapus" });
   });
 });
+
+
+// CREATE data penyimpanan
+app.post("/penyimpanan", (req, res) => {
+  const { tanggal, lokasi, pkm, kernel, kategori } = req.body;
+  
+  db.query("INSERT INTO data_penyimpanan (tanggal, lokasi, pkm) VALUES (?, ?, ?)", [tanggal, lokasi, pkm], (err, result) => {
+    if (err) return res.status(500).json(err);
+    const penyimpananId = result.insertId;
+
+    // Insert kernel
+    db.query("INSERT INTO kernel (id_penyimpanan, stok, alb, kadar_air, kadar_kotoran) VALUES (?, ?, ?, ?, ?)", 
+      [penyimpananId, kernel.stok, kernel.alb, kernel.kadar_air, kernel.kadar_kotoran]);
+
+    // Insert kategori dan penyimpanan
+    kategori.forEach((kat) => {
+      db.query("INSERT INTO kategori (id_penyimpanan, nama_kategori) VALUES (?, ?)", [penyimpananId, kat.nama], (err, result) => {
+        if (err) return res.status(500).json(err);
+        const kategoriId = result.insertId;
+
+        // Insert penyimpanan
+        kat.penyimpanan.forEach((p) => {
+          db.query("INSERT INTO penyimpanan (id_kategori, jenis_tank, stok, alb, kadar_air, kadar_kotoran) VALUES (?, ?, ?, ?, ?, ?)",
+            [kategoriId, p.jenis_tank, p.stok, p.alb, p.kadar_air, p.kadar_kotoran]);
+        });
+        
+        // Insert jumlah_total
+        db.query("INSERT INTO jumlah_total (id_kategori, stok, alb, kadar_air, kadar_kotoran) VALUES (?, ?, ?, ?, ?)",
+          [kategoriId, kat.jumlah.stok, kat.jumlah.alb, kat.jumlah.kadar_air, kat.jumlah.kadar_kotoran]);
+      });
+    });
+    res.json({ message: "Data berhasil ditambahkan" });
+  });
+});
+
+// GET all data
+app.get('/data_penyimpanan', (req, res) => {
+  const sql = `
+  SELECT dp.id, dp.tanggal, dp.lokasi, dp.pkm,
+         k.stok AS kernel_stok, k.alb AS kernel_alb, k.kadar_air AS kernel_kadar_air, k.kadar_kotoran AS kernel_kadar_kotoran,
+         ka.id AS kategori_id, ka.nama_kategori,
+         p.id AS penyimpanan_id, p.jenis_tank, p.stok AS penyimpanan_stok, p.alb AS penyimpanan_alb, p.kadar_air AS penyimpanan_kadar_air, p.kadar_kotoran AS penyimpanan_kadar_kotoran,
+         jt.stok AS jumlah_stok, jt.alb AS jumlah_alb, jt.kadar_air AS jumlah_kadar_air, jt.kadar_kotoran AS jumlah_kadar_kotoran
+  FROM data_penyimpanan dp
+  LEFT JOIN kernel k ON k.id_penyimpanan = dp.id
+  LEFT JOIN kategori ka ON ka.id_penyimpanan = dp.id
+  LEFT JOIN penyimpanan p ON p.id_kategori = ka.id
+  LEFT JOIN jumlah_total jt ON jt.id_kategori = ka.id`;
+
+  db.query(sql, (err, results) => {
+      if (err) return res.status(500).json(err);
+
+      const dataMap = {};
+      results.forEach(row => {
+          if (!dataMap[row.id]) {
+              dataMap[row.id] = {
+                  id: row.id,
+                  tanggal: row.tanggal,
+                  lokasi: row.lokasi,
+                  pkm: row.pkm,
+                  kernel: {
+                      stok: row.kernel_stok,
+                      alb: row.kernel_alb,
+                      kadar_air: row.kernel_kadar_air,
+                      kadar_kotoran: row.kernel_kadar_kotoran
+                  },
+                  kategori: {}
+              };
+          }
+
+          if (!dataMap[row.id].kategori[row.kategori_id]) {
+              dataMap[row.id].kategori[row.kategori_id] = {
+                  nama: row.nama_kategori,
+                  penyimpanan: [],
+                  jumlah: {
+                      stok: row.jumlah_stok,
+                      alb: row.jumlah_alb,
+                      kadar_air: row.jumlah_kadar_air,
+                      kadar_kotoran: row.jumlah_kadar_kotoran
+                  }
+              };
+          }
+
+          if (row.penyimpanan_id) {
+              dataMap[row.id].kategori[row.kategori_id].penyimpanan.push({
+                  jenis_tank: row.jenis_tank,
+                  stok: row.penyimpanan_stok,
+                  alb: row.penyimpanan_alb,
+                  kadar_air: row.penyimpanan_kadar_air,
+                  kadar_kotoran: row.penyimpanan_kadar_kotoran
+              });
+          }
+      });
+
+      res.json(Object.values(dataMap));
+  });
+});
+
+// PUT update data
+app.put('/data_penyimpanan/:id', (req, res) => {
+  const id = req.params.id;
+  const { tanggal, lokasi, pkm, kernel, kategori } = req.body;
+
+  db.beginTransaction(err => {
+      if (err) return res.status(500).json(err);
+
+      db.query('UPDATE data_penyimpanan SET tanggal = ?, lokasi = ?, pkm = ? WHERE id = ?',
+          [tanggal, lokasi, pkm, id], (err) => {
+              if (err) return db.rollback(() => res.status(500).json(err));
+
+              db.query('UPDATE kernel SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ? WHERE id_penyimpanan = ?',
+                  [kernel.stok, kernel.alb, kernel.kadar_air, kernel.kadar_kotoran, id], (err) => {
+                      if (err) return db.rollback(() => res.status(500).json(err));
+
+                      kategori.forEach(ktg => {
+                          db.query('UPDATE kategori SET nama_kategori = ? WHERE id = ?',
+                              [ktg.nama, ktg.id], (err) => {
+                                  if (err) return db.rollback(() => res.status(500).json(err));
+
+                                  ktg.penyimpanan.forEach(p => {
+                                      db.query('UPDATE penyimpanan SET jenis_tank = ?, stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ? WHERE id = ?',
+                                          [p.jenis_tank, p.stok, p.alb, p.kadar_air, p.kadar_kotoran, p.id], (err) => {
+                                              if (err) return db.rollback(() => res.status(500).json(err));
+                                          });
+                                  });
+
+                                  db.query('UPDATE jumlah_total SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ? WHERE id = ?',
+                                      [ktg.jumlah.stok, ktg.jumlah.alb, ktg.jumlah.kadar_air, ktg.jumlah.kadar_kotoran, ktg.id], (err) => {
+                                          if (err) return db.rollback(() => res.status(500).json(err));
+                                      });
+                              });
+                      });
+
+                      db.commit(err => {
+                          if (err) return db.rollback(() => res.status(500).json(err));
+                          res.json({ message: 'Data updated successfully' });
+                      });
+                  });
+          });
+  });
+});
+
+// DELETE penyimpanan berdasarkan ID (cascade delete kernel, kategori, penyimpanan, jumlah_total)
+app.delete("/penyimpanan/:id", (req, res) => {
+  const { id } = req.params;
+  db.query("DELETE FROM data_penyimpanan WHERE id = ?", [id], (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json({ message: "Data berhasil dihapus" });
+  });
+});
+
 
 
 // Jalankan server
