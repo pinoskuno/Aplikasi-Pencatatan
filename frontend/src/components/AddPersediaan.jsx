@@ -4,8 +4,8 @@ const AddPersediaan = () => {
   const [formData, setFormData] = useState({
     tanggal: "",
     lokasi: "Bekri",
-    pkm: "",
-    kernel: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "" },
+    pkm: { nilai_pkm: "", nilai_do: "", nilai_hi: "" },
+    kernel: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "",do: "", hi: "" },
     kategori: [],
   });
   const [notification, setNotification] = useState(null);
@@ -49,6 +49,13 @@ const AddPersediaan = () => {
       kernel: { ...formData.kernel, [name]: value },
     });
   };
+  const handlePKMChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      pkm: { ...formData.pkm, [name]: value },
+    });
+  };
 
   const addKategori = () => {
     setFormData({
@@ -58,7 +65,7 @@ const AddPersediaan = () => {
         {
           nama: "CPO",
           penyimpanan: [],
-          jumlah: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "" },
+          jumlah: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "",do:"",hi:"" },
         },
       ],
     });
@@ -86,6 +93,8 @@ const AddPersediaan = () => {
       alb: "",
       kadar_air: "",
       kadar_kotoran: "",
+      do:"",
+      hi:"",
     });
     setFormData({ ...formData, kategori });
   };
@@ -150,17 +159,44 @@ const AddPersediaan = () => {
             ))}
           </select>
         </div>
+        <h5>Kernel</h5>
         <div className="mb-3">
-          <label className="form-label">PKM</label>
+          <label className="form-label">Nilai PKM</label>
           <input
             type="number"
-            name="pkm"
+            name="nilai_pkm"
             className="form-control"
-            value={formData.pkm}
-            onChange={handleChange}
+            value={formData.pkm.nilai_pkm}
+            onChange={handlePKMChange }
             required
           />
         </div>
+        <div className="mb-3">
+          <label className="form-label">PKM DO</label>
+          <input
+            type="number"
+            name="nilai_do"
+            step="0.01"
+            className="form-control"
+            value={formData.pkm.nilai_do}
+            onChange={handlePKMChange}
+            required
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">PKM HI</label>
+          <input
+            type="number"
+            name="nilai_hi"
+            step="0.01"
+            className="form-control"
+            value={formData.pkm.nilai_hi}
+            onChange={handlePKMChange}
+            required
+          />
+        </div>
+
 
         <h5>Kernel</h5>
         <div className="mb-3">
@@ -210,6 +246,32 @@ const AddPersediaan = () => {
             required
           />
         </div>
+        <div className="mb-3">
+          <label className="form-label">Kernel DO</label>
+          <input
+            type="number"
+            name="do"
+            step="0.01"
+            className="form-control"
+            value={formData.kernel.do}
+            onChange={handleKernelChange}
+            required
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Kernel HI</label>
+          <input
+            type="number"
+            name="hi"
+            step="0.01"
+            className="form-control"
+            value={formData.kernel.hi}
+            onChange={handleKernelChange}
+            required
+          />
+        </div>
+
 
         <button type="button" className="btn btn-primary" onClick={addKategori}>
           Tambah Kategori

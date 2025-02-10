@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Table, Container } from "react-bootstrap";
 
-
 const CatatanPersediaan = () => {
   const [dataPenyimpanan, setDataPenyimpanan] = useState([]);
 
@@ -12,7 +11,6 @@ const CatatanPersediaan = () => {
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
-
   return (
     <Container>
       <h2 className="my-3">Data Penyimpanan</h2>
@@ -22,20 +20,24 @@ const CatatanPersediaan = () => {
             <th rowSpan={2}>Tanggal</th>
             <th rowSpan={2}>Lokasi</th>
             <th rowSpan={2}>PKM</th>
-            <th colSpan={4} className="text-center">Kernel</th>
+            <th colSpan={6} className="text-center">Kernel</th>
             <th rowSpan={2}>Kategori</th>
             <th rowSpan={2}>Penyimpanan</th>
-            <th colSpan={4} className="text-center">Jumlah</th>
+            <th colSpan={6} className="text-center">Jumlah</th>
           </tr>
           <tr>
             <th>Stok</th>
             <th>ALB</th>
             <th>Kadar Air</th>
             <th>Kadar Kotoran</th>
+            <th>DO</th>
+            <th>HI</th>
             <th>Stok</th>
             <th>ALB</th>
             <th>Kadar Air</th>
             <th>Kadar Kotoran</th>
+            <th>DO</th>
+            <th>HI</th>
           </tr>
         </thead>
         <tbody>
@@ -50,20 +52,16 @@ const CatatanPersediaan = () => {
                   {item.lokasi}
                 </td>
                 <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.pkm}
+                  DO: {item.pkm.nilai_do}, HI: {item.pkm.nilai_hi}
                 </td>
                 <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
                   {item.kernel.stok}
                 </td>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.kernel.alb}
-                </td>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.kernel.kadar_air}
-                </td>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.kernel.kadar_kotoran}
-                </td>
+                <td>{item.kernel.alb}</td>
+                <td>{item.kernel.kadar_air}</td>
+                <td>{item.kernel.kadar_kotoran}</td>
+                <td>{item.kernel.do}</td>
+                <td>{item.kernel.hi}</td>
               </tr>
 
               {/* Loop kategori dan penyimpanan */}
@@ -84,6 +82,8 @@ const CatatanPersediaan = () => {
                       <td>{penyimpanan.alb}</td>
                       <td>{penyimpanan.kadar_air}</td>
                       <td>{penyimpanan.kadar_kotoran}</td>
+                      <td>{penyimpanan.do}</td>
+                      <td>{penyimpanan.hi}</td>
                     </tr>
                   ))}
 
@@ -94,6 +94,8 @@ const CatatanPersediaan = () => {
                     <td><strong>{kat.jumlah.alb}</strong></td>
                     <td><strong>{kat.jumlah.kadar_air}</strong></td>
                     <td><strong>{kat.jumlah.kadar_kotoran}</strong></td>
+                    <td><strong>{kat.jumlah.do}</strong></td>
+                    <td><strong>{kat.jumlah.hi}</strong></td>
                   </tr>
                 </>
               ))}
@@ -106,5 +108,3 @@ const CatatanPersediaan = () => {
 };
 
 export default CatatanPersediaan;
-
-
