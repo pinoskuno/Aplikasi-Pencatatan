@@ -257,8 +257,6 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
   );
 };
 
-
-
 const CatatanList = () => {
   const [catatan, setCatatan] = useState([]);
   const [selectedCatatan, setSelectedCatatan] = useState(null);
@@ -316,7 +314,9 @@ const CatatanList = () => {
 
   return (
     <div className="container mt-4">
-      <h1 style={{ color: "#808080" }} className="text-center mb-4">Daftar Catatan</h1>
+      {/* <h2 style={{ color: "#808080" }} className="text-center mb-4">OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO</h2> */}
+      <h2 className="text-center mb-4">OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO</h2>
+      <h2 className="text-center mb-4">PTPN IV REGIONAL 7 KSO</h2>
       {Object.entries(categorizedData).map(([kategori, subData]) => (
         <div key={kategori} className="mb-5">
           <h2 className="h3 text-primary">{kategori}</h2>

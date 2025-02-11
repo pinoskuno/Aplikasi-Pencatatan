@@ -136,7 +136,8 @@ const AddPersediaan = () => {
 
   return (
     <div className="container mt-4">
-      <h2>Input Data Penyimpanan</h2>
+      {/* <h2>Input Data Penyimpanan</h2> */}
+      <h2 className="text-center mb-4">PERSEDIAAN PRODUKSI CPO & PKO</h2>
       {notification && (
         <div className={`alert alert-${notification.type === "success" ? "success" : "danger"}`}>
           {notification.message}

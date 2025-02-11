@@ -172,7 +172,7 @@ const AddPersediaan = () => {
           />
         </div>
         <div className="mb-3">
-          <label className="form-label">PKM DO</label>
+          <label className="form-label">PKM DO Hi</label>
           <input
             type="number"
             name="nilai_do"
@@ -185,7 +185,7 @@ const AddPersediaan = () => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">PKM HI</label>
+          <label className="form-label">PKM DO Sd HI</label>
           <input
             type="number"
             name="nilai_hi"
@@ -247,7 +247,7 @@ const AddPersediaan = () => {
           />
         </div>
         <div className="mb-3">
-          <label className="form-label">Kernel DO</label>
+          <label className="form-label">Kernel DO Hi</label>
           <input
             type="number"
             name="do"
@@ -260,7 +260,7 @@ const AddPersediaan = () => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Kernel HI</label>
+          <label className="form-label">Kernel Sd HI</label>
           <input
             type="number"
             name="hi"
