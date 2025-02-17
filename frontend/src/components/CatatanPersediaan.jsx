@@ -13,15 +13,12 @@ const CatatanPersediaan = () => {
 
   return (
     <Container>
-      {/* <h2 className="my-3">Data Penyimpanan</h2> */}
       <h2 className="text-center mb-4">PERSEDIAAN PRODUKSI CPO & PKO</h2>
       <Table striped bordered hover>
         <thead>
           <tr>
             <th rowSpan={2}>Tanggal</th>
             <th rowSpan={2}>Lokasi</th>
-            {/* <th rowSpan={2}>PKM</th>
-            <th colSpan={6} className="text-center">Kernel</th> */}
             <th rowSpan={2}>Kategori</th>
             <th rowSpan={2}>Penyimpanan</th>
             <th rowSpan={2}>Stok</th>
@@ -29,7 +26,6 @@ const CatatanPersediaan = () => {
             <th colSpan={2} className="text-center">DO</th>
           </tr>
           <tr>
-            {/* <th>Stok</th> */}
             <th>ALB</th>
             <th>Kadar Air</th>
             <th>Kadar Kotoran</th>
@@ -42,23 +38,12 @@ const CatatanPersediaan = () => {
             <>
               {/* Baris utama untuk PKM dan Kernel */}
               <tr key={`main-${index}`}>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
+                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 4, 1)}>
                   {new Date(item.tanggal).toLocaleDateString()}
                 </td>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
+                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 4, 1)}>
                   {item.lokasi}
                 </td>
-                {/* <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  DO: {item.pkm.nilai_do}, HI: {item.pkm.nilai_hi}
-                </td> */}
-                {/* <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.kernel.stok}
-                </td> */}
-                <td>{item.kernel.alb}</td>
-                <td>{item.kernel.kadar_air}</td>
-                <td>{item.kernel.kadar_kotoran}</td>
-                <td>{item.kernel.do}</td>
-                <td>{item.kernel.hi}</td>
               </tr>
 
               {/* Loop kategori dan penyimpanan */}
@@ -71,7 +56,7 @@ const CatatanPersediaan = () => {
                     </td>
                   </tr>
 
-                  {/* Loop setiap penyimpanan dalam kategori */}
+                  {/* Loop setiap penyimpanan nilai dalam kategori */}
                   {kat.penyimpanan.map((penyimpanan, penyIndex) => (
                     <tr key={`peny-${index}-${katIndex}-${penyIndex}`}>
                       <td>{penyimpanan.jenis_tank}</td>
@@ -88,6 +73,10 @@ const CatatanPersediaan = () => {
                    <tr key={`pkm-${index}-${katIndex}`}>
                         <td><strong>PKM</strong></td>
                         <td>{}</td>
+                        <td>{item.pkm.stok}</td>
+                        <td>{}</td>
+                        <td>{}</td>
+                        <td>{}</td>
                         <td>{item.pkm.nilai_do}</td>
                         <td>{item.pkm.nilai_hi}</td>
                     </tr>
@@ -100,11 +89,14 @@ const CatatanPersediaan = () => {
                         <td>{item.kernel.alb}</td>
                         <td>{item.kernel.kadar_air}</td>
                         <td>{item.kernel.kadar_kotoran}</td>
+                        <td>{item.kernel.do}</td>
+                        <td>{item.kernel.hi}</td>
                     </tr>
 
                   {/* Baris jumlah untuk kategori */}
                   <tr key={`jumlah-${index}-${katIndex}`} className="table-secondary">
                     <td><strong>Total {kat.nama}</strong></td>
+                    <td>{}</td>
                     <td><strong>{kat.jumlah.stok}</strong></td>
                     <td><strong>{kat.jumlah.alb}</strong></td>
                     <td><strong>{kat.jumlah.kadar_air}</strong></td>
