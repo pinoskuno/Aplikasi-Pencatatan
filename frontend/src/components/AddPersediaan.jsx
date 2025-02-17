@@ -135,33 +135,35 @@ const AddPersediaan = () => {
         </div>
       )}
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Tanggal</label>
-          <input
-            type="date"
-            name="tanggal"
-            className="form-control"
-            onChange={handleChange}
-            required
-          />
+        <div className="form-row">
+          <div className="col-md-6">
+            <label className="form-label">Tanggal</label>
+            <input
+              type="date"
+              name="tanggal"
+              className="form-control"
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="col-md-6">
+            <label className="form-label">Lokasi</label>
+            <select
+              name="lokasi"
+              className="form-control"
+              onChange={handleChange}
+            >
+              {lokasiOptions.map((loc) => (
+                <option key={loc} value={loc}>
+                  {loc}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+        {/* <h5>Kernel</h5> */}
         <div className="mb-3">
-          <label className="form-label">Lokasi</label>
-          <select
-            name="lokasi"
-            className="form-control"
-            onChange={handleChange}
-          >
-            {lokasiOptions.map((loc) => (
-              <option key={loc} value={loc}>
-                {loc}
-              </option>
-            ))}
-          </select>
-        </div>
-        <h5>Kernel</h5>
-        <div className="mb-3">
-          <label className="form-label">Nilai PKM</label>
+          <label className="form-label">PKM STOK</label>
           <input
             type="number"
             name="nilai_pkm"
@@ -171,107 +173,116 @@ const AddPersediaan = () => {
             required
           />
         </div>
-        <div className="mb-3">
-          <label className="form-label">PKM DO Hi</label>
-          <input
-            type="number"
-            name="nilai_do"
-            step="0.01"
-            className="form-control"
-            value={formData.pkm.nilai_do}
-            onChange={handlePKMChange}
-            required
-          />
+
+        <div className="form-row">
+          <div className="col-md-6">
+            <label className="form-label">PKM DO Hi</label>
+            <input
+              type="number"
+              name="nilai_do"
+              step="0.01"
+              className="form-control"
+              value={formData.pkm.nilai_do}
+              onChange={handlePKMChange}
+              required
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="form-label">PKM DO Sd HI</label>
+            <input
+              type="number"
+              name="nilai_hi"
+              step="0.01"
+              className="form-control"
+              value={formData.pkm.nilai_hi}
+              onChange={handlePKMChange}
+              required
+            />
+          </div>
         </div>
 
-        <div className="mb-3">
-          <label className="form-label">PKM DO Sd HI</label>
-          <input
-            type="number"
-            name="nilai_hi"
-            step="0.01"
-            className="form-control"
-            value={formData.pkm.nilai_hi}
-            onChange={handlePKMChange}
-            required
-          />
+        {/* <h5>Kernel</h5> */}
+        <div className="form-row">
+          <div className="col-md-6">
+            <label className="form-label">Kernel Stok</label>
+            <input
+              type="number"
+              name="stok"
+              className="form-control"
+              value={formData.kernel.stok}
+              onChange={handleKernelChange}
+              required
+            />
+          </div>
+          <div className="col-md-6">
+            <label className="form-label">Kernel ALB</label>
+            <input
+              type="number"
+              name="alb"
+              step="0.01"
+              className="form-control"
+              value={formData.kernel.alb}
+              onChange={handleKernelChange}
+              required
+            />
+          </div>
         </div>
 
-
-        <h5>Kernel</h5>
-        <div className="mb-3">
-          <label className="form-label">Stok</label>
-          <input
-            type="number"
-            name="stok"
-            className="form-control"
-            value={formData.kernel.stok}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">ALB</label>
-          <input
-            type="number"
-            name="alb"
-            step="0.01"
-            className="form-control"
-            value={formData.kernel.alb}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Kadar Air</label>
-          <input
-            type="number"
-            name="kadar_air"
-            step="0.01"
-            className="form-control"
-            value={formData.kernel.kadar_air}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Kadar Kotoran</label>
-          <input
-            type="number"
-            name="kadar_kotoran"
-            step="0.01"
-            className="form-control"
-            value={formData.kernel.kadar_kotoran}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Kernel DO Hi</label>
-          <input
-            type="number"
-            name="do"
-            step="0.01"
-            className="form-control"
-            value={formData.kernel.do}
-            onChange={handleKernelChange}
-            required
-          />
+        <div className="form-row">
+          <div className="col-md-6">
+            <label className="form-label">Kernel Kadar Air</label>
+            <input
+              type="number"
+              name="kadar_air"
+              step="0.01"
+              className="form-control"
+              value={formData.kernel.kadar_air}
+              onChange={handleKernelChange}
+              required
+            />
+          </div>
+          <div className="col-md-6">
+            <label className="form-label">Kernel Kadar Kotoran</label>
+            <input
+              type="number"
+              name="kadar_kotoran"
+              step="0.01"
+              className="form-control"
+              value={formData.kernel.kadar_kotoran}
+              onChange={handleKernelChange}
+              required
+            />
+          </div>
         </div>
 
-        <div className="mb-3">
-          <label className="form-label">Kernel Sd HI</label>
-          <input
-            type="number"
-            name="hi"
-            step="0.01"
-            className="form-control"
-            value={formData.kernel.hi}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
+        <div className="form-row">
+          <div className="col-md-6">
+            <label className="form-label">Kernel DO Hi</label>
+            <input
+              type="number"
+              name="do"
+              step="0.01"
+              className="form-control"
+              value={formData.kernel.do}
+              onChange={handleKernelChange}
+              required
+            />
+          </div>
 
+          <div className="col-md-6">
+            <label className="form-label">Kernel Sd HI</label>
+            <input
+              type="number"
+              name="hi"
+              step="0.01"
+              className="form-control"
+              value={formData.kernel.hi}
+              onChange={handleKernelChange}
+              required
+            />
+          </div>
+        </div>              
 
         <button type="button" className="btn btn-primary" onClick={addKategori}>
           Tambah Kategori
