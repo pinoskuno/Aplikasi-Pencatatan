@@ -34,6 +34,11 @@ const CatatanPersediaan = () => {
   const filteredData = dataPenyimpanan.filter((item) =>
     item.tanggal.startsWith(selectedDate)
   );
+  
+  const filteredDataPrevious = dataPenyimpanan.filter((item) =>
+    item.tanggal.startsWith(previousDate)
+  );
+  
   return (
     <Container>
       <h2 className="text-center mb-4">PERSEDIAAN PRODUKSI CPO & PKO</h2>
@@ -226,7 +231,7 @@ const CatatanPersediaan = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((item, index) => (
+              {filteredDataPrevious.map((item, index) => (
                 <>
                   {/* Baris utama untuk PKM dan Kernel */}
                   <tr key={`main-${index}`}>
