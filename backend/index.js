@@ -170,8 +170,6 @@ app.delete("/api/catatan/:id", (req, res) => {
   });
 });
 
-
-
 // GET all data
 app.get("/data_penyimpanan", (req, res) => {
   const sql = `
@@ -441,7 +439,9 @@ app.post("/penyimpanan", (req, res) => {
                   totalKernel.stok += Number(kernelResults[0].stok);
                   totalKernel.alb += Number(kernelResults[0].alb);
                   totalKernel.kadar_air += Number(kernelResults[0].kadar_air);
-                  totalKernel.kadar_kotoran += Number(kernelResults[0].kadar_kotoran);
+                  totalKernel.kadar_kotoran += Number(
+                    kernelResults[0].kadar_kotoran
+                  );
                   totalKernel.do += Number(kernelResults[0].do);
                   totalKernel.hi += Number(kernelResults[0].hi);
                 }
@@ -451,31 +451,73 @@ app.post("/penyimpanan", (req, res) => {
                   [previousId],
                   (err, kategoriResults) => {
                     if (err) return res.status(500).json(err);
-
-                    let kategoriMap = new Map();
-
+                    let kategoriMap = new Map(); // Untuk menyimpan kategori lama
+                    let penyimpananMap = new Map(); // Untuk menyimpan penyimpanan lama
+                
                     kategoriResults.forEach((katPrev) => {
-                      kategoriMap.set(katPrev.id, {
-                        id: katPrev.id,
-                        nama: katPrev.nama_kategori,
-                      });
-                    });
+                      const existingCategory = totalKategori.find(
+                        (k) => k.nama === katPrev.nama_kategori
+                      );
 
+                      if (existingCategory) {
+                        db.query(
+                          "SELECT * FROM jumlah_total WHERE id_kategori = ?",
+                          [katPrev.id],
+                          (err, jumlahResults) => {
+                            if (err) return res.status(500).json(err);
+                            if (jumlahResults.length > 0) {
+                              existingCategory.jumlah.stok += Number(
+                                jumlahResults[0].stok
+                              );
+                              existingCategory.jumlah.alb += Number(
+                                jumlahResults[0].alb
+                              );
+                              existingCategory.jumlah.kadar_air += Number(
+                                jumlahResults[0].kadar_air
+                              );
+                              existingCategory.jumlah.kadar_kotoran += Number(
+                                jumlahResults[0].kadar_kotoran
+                              );
+                              existingCategory.jumlah.do += Number(
+                                jumlahResults[0].do
+                              );
+                              existingCategory.jumlah.hi += Number(
+                                jumlahResults[0].hi
+                              );
+                            }
+                          }
+                        );
+                      } else {
+                        totalKategori.push({
+                          nama: katPrev.nama_kategori,
+                          jumlah: {
+                            stok: 0,
+                            alb: 0,
+                            kadar_air: 0,
+                            kadar_kotoran: 0,
+                            do: 0,
+                            hi: 0,
+                          },
+                          penyimpanan: [],
+                        });
+                      }
+                      kategoriMap.set(katPrev.id, { id: katPrev.id, nama: katPrev.nama_kategori });
+
+                      
+                    });
                     db.query(
                       "SELECT * FROM penyimpanan WHERE id_kategori IN (?)",
                       [Array.from(kategoriMap.keys())],
                       (err, penyimpananResults) => {
                         if (err) return res.status(500).json(err);
-
-                        let penyimpananMap = new Map();
-
+                
                         penyimpananResults.forEach((pPrev) => {
                           let kategoriNama = kategoriMap.get(pPrev.id_kategori).nama;
-
+                
                           if (!penyimpananMap.has(kategoriNama)) {
                             penyimpananMap.set(kategoriNama, []);
                           }
-
+                
                           penyimpananMap.get(kategoriNama).push({
                             jenis_tank: pPrev.jenis_tank,
                             stok: Number(pPrev.stok),
@@ -486,15 +528,16 @@ app.post("/penyimpanan", (req, res) => {
                             hi: Number(pPrev.hi),
                           });
                         });
-
+                
+                        // Menggabungkan penyimpanan lama ke dalam kategori baru
                         totalKategori.forEach((kat) => {
                           let previousPenyimpanan = penyimpananMap.get(kat.nama) || [];
-                          
+                
                           previousPenyimpanan.forEach((pPrev) => {
                             let existingPenyimpanan = kat.penyimpanan.find(
                               (p) => p.jenis_tank === pPrev.jenis_tank
                             );
-
+                
                             if (existingPenyimpanan) {
                               existingPenyimpanan.stok += pPrev.stok;
                               existingPenyimpanan.alb += pPrev.alb;
@@ -507,14 +550,15 @@ app.post("/penyimpanan", (req, res) => {
                             }
                           });
                         });
-
+                
+                        // Setelah kategori dan penyimpanan lama digabungkan, masukkan ke database baru
                         db.query(
                           "INSERT INTO data_penyimpanan (tanggal, lokasi) VALUES (?, ?)",
                           [tanggal, lokasi],
                           (err, result) => {
                             if (err) return res.status(500).json(err);
                             const penyimpananId = result.insertId;
-
+                
                             db.query(
                               "INSERT INTO data_pkm (id_penyimpanan, nilai_pkm, nilai_do, nilai_hi) VALUES (?, ?, ?, ?)",
                               [
@@ -524,7 +568,7 @@ app.post("/penyimpanan", (req, res) => {
                                 totalPkm.nilai_hi,
                               ]
                             );
-
+                
                             db.query(
                               "INSERT INTO kernel (id_penyimpanan, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
                               [
@@ -537,7 +581,8 @@ app.post("/penyimpanan", (req, res) => {
                                 totalKernel.hi,
                               ]
                             );
-
+                
+                            // Simpan kategori ke database
                             totalKategori.forEach((kat) => {
                               db.query(
                                 "INSERT INTO kategori (id_penyimpanan, nama_kategori) VALUES (?, ?)",
@@ -545,7 +590,8 @@ app.post("/penyimpanan", (req, res) => {
                                 (err, result) => {
                                   if (err) return res.status(500).json(err);
                                   const kategoriId = result.insertId;
-
+                
+                                  // Simpan penyimpanan ke database
                                   kat.penyimpanan.forEach((p) => {
                                     db.query(
                                       "INSERT INTO penyimpanan (id_kategori, jenis_tank, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -561,15 +607,32 @@ app.post("/penyimpanan", (req, res) => {
                                       ]
                                     );
                                   });
+                
+                                  // Simpan jumlah_total ke database
+                                  db.query(
+                                    "INSERT INTO jumlah_total (id_kategori, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                    [
+                                      kategoriId,
+                                      kat.jumlah.stok,
+                                      kat.jumlah.alb,
+                                      kat.jumlah.kadar_air,
+                                      kat.jumlah.kadar_kotoran,
+                                      kat.jumlah.do,
+                                      kat.jumlah.hi,
+                                    ]
+                                  );
                                 }
                               );
                             });
-
-                            res.json({ message: "Data berhasil diperbarui dan ditambahkan." });
+                
+                            res.json({
+                              message: "Data berhasil diperbarui dan ditambahkan.",
+                            });
                           }
                         );
                       }
                     );
+                   
                   }
                 );
               }
@@ -580,7 +643,6 @@ app.post("/penyimpanan", (req, res) => {
     }
   );
 });
-
 
 // Jalankan server
 app.listen(port, () => {
