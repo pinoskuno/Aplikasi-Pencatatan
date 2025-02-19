@@ -326,9 +326,9 @@ const CatatanList = () => {
             return (
               <div key={subKategori} className="mb-4">
                 <h3 className="h5 mb-3">{subKategori}</h3>
-                <table className="table table-bordered">
-                  <thead>
-                    <tr className="gray-header">
+                <table className="table  table-bordered">
+                  <thead className="background-tabel-pinos">
+                    <tr>
                       <th>Deskripsi</th>
                       <th>Nomor Kontrak</th>
                       <th>Tanggal Kontrak</th>
