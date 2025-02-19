@@ -639,6 +639,85 @@ app.post("/penyimpanan", (req, res) => {
             );
           }
         );
+      } else{
+        {
+          // Langsung insert data baru
+          db.query(
+            "INSERT INTO data_penyimpanan (tanggal, lokasi) VALUES (?, ?)",
+            [tanggal, lokasi],
+            (err, result) => {
+              if (err) return res.status(500).json(err);
+              const penyimpananId = result.insertId;
+        
+              db.query(
+                "INSERT INTO data_pkm (id_penyimpanan, nilai_pkm, nilai_do, nilai_hi) VALUES (?, ?, ?, ?)",
+                [
+                  penyimpananId,
+                  totalPkm.nilai_pkm,
+                  totalPkm.nilai_do,
+                  totalPkm.nilai_hi,
+                ]
+              );
+        
+              db.query(
+                "INSERT INTO kernel (id_penyimpanan, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                [
+                  penyimpananId,
+                  totalKernel.stok,
+                  totalKernel.alb,
+                  totalKernel.kadar_air,
+                  totalKernel.kadar_kotoran,
+                  totalKernel.do,
+                  totalKernel.hi,
+                ]
+              );
+        
+              totalKategori.forEach((kat) => {
+                db.query(
+                  "INSERT INTO kategori (id_penyimpanan, nama_kategori) VALUES (?, ?)",
+                  [penyimpananId, kat.nama],
+                  (err, result) => {
+                    if (err) return res.status(500).json(err);
+                    const kategoriId = result.insertId;
+        
+                    kat.penyimpanan.forEach((p) => {
+                      db.query(
+                        "INSERT INTO penyimpanan (id_kategori, jenis_tank, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                        [
+                          kategoriId,
+                          p.jenis_tank,
+                          p.stok,
+                          p.alb,
+                          p.kadar_air,
+                          p.kadar_kotoran,
+                          p.do,
+                          p.hi,
+                        ]
+                      );
+                    });
+        
+                    db.query(
+                      "INSERT INTO jumlah_total (id_kategori, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                      [
+                        kategoriId,
+                        kat.jumlah.stok,
+                        kat.jumlah.alb,
+                        kat.jumlah.kadar_air,
+                        kat.jumlah.kadar_kotoran,
+                        kat.jumlah.do,
+                        kat.jumlah.hi,
+                      ]
+                    );
+                  }
+                );
+              });
+        
+              res.json({
+                message: "Data berhasil ditambahkan.",
+              });
+            }
+          );
+        }
       }
     }
   );
