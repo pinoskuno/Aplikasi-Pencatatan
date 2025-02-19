@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-
+// import "../styles/Coba.css";
+import "../App.css";
+import $ from "jquery";
+import "datatables.net";
 
 // Component untuk modal edit
 const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
@@ -268,6 +271,31 @@ const CatatanList = () => {
       .then((data) => setCatatan(data));
   }, []);
 
+  useEffect(() => {
+    $(document).ready(function () {
+      $('#poliTable').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "responsive": true,
+        "language": {
+          "lengthMenu": "Show _MENU_ entries",
+          "zeroRecords": "No data found",
+          "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+          "infoEmpty": "No records available",
+          "infoFiltered": "(filtered from _MAX_ total records)",
+          "search": "Search:",
+          "paginate": {
+            "first": "First",
+            "last": "Last",
+            "next": "Next",
+            "previous": "Previous"
+          }
+        }
+      });
+    });
+  }, []);
+
   const handleEdit = (cat) => {
     setSelectedCatatan(cat);
     setIsEditModalOpen(true);
@@ -328,7 +356,7 @@ const CatatanList = () => {
                 <h3 className="h5 mb-3">{subKategori}</h3>
                 <table className="table  table-bordered">
                   <thead>
-                    <tr>
+                    <tr className="gray-header">
                       <th>Deskripsi</th>
                       <th>Nomor Kontrak</th>
                       <th>Tanggal Kontrak</th>
@@ -381,6 +409,7 @@ const CatatanList = () => {
           })}
         </div>
       ))}
+
       {/* Modal Edit */}
       <EditModal
         isOpen={isEditModalOpen}
@@ -388,6 +417,7 @@ const CatatanList = () => {
         catatan={selectedCatatan}
         onSave={handleSaveEdit}
       />
+
     </div>
   );
 };
