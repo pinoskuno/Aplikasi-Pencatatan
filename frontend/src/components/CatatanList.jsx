@@ -274,6 +274,19 @@ const CatatanList = () => {
   const [currentPage, setCurrentPage] = useState({});
   const itemsPerPage = 2; // Jumlah item per halaman
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [searchQuery, setSearchQuery] = useState({
+    fraco_fob: "",
+    pembeli: "",
+    tanggal: "",
+  });
+  
+  const handleSearchChange = (e) => {
+    setSearchQuery({
+      ...searchQuery,
+      [e.target.name]: e.target.value,
+    });
+  };
+  
 
   useEffect(() => {
     fetch("http://localhost:5000/api/catatan")
@@ -367,8 +380,38 @@ const CatatanList = () => {
       );
     };
 
+    const filteredCatatan = catatan.filter((cat) => {
+      const { fraco_fob, pembeli, tanggal } = searchQuery;
+    
+      // Jika tidak ada input pencarian, tampilkan semua data
+      if (!fraco_fob && !pembeli && !tanggal) {
+        return true;
+      }
+    
+      // Filter berdasarkan fraco_fob
+      const matchesFracoFOB = fraco_fob
+        ? cat.fraco_fob?.toString().toLowerCase().includes(fraco_fob.toLowerCase())
+        : true;
+    
+      // Filter berdasarkan pembeli
+      const matchesPembeli = pembeli
+        ? cat.pembeli?.toString().toLowerCase().includes(pembeli.toLowerCase())
+        : true;
+    
+      // Filter berdasarkan tanggal (DD/MM/YYYY, MM/YYYY, atau "Month")
+      const matchesTanggal = tanggal
+        ? cat.tanggal_kontrak?.toLowerCase().includes(tanggal.toLowerCase()) ||
+          cat.tanggal_bayar?.toLowerCase().includes(tanggal.toLowerCase()) ||
+          cat.jatuh_tempo_pembayaran?.toLowerCase().includes(tanggal.toLowerCase())
+        : true;
+    
+      return matchesFracoFOB && matchesPembeli && matchesTanggal;
+    });
+    
+    
+
   // Pisahkan catatan menjadi dua kategori utama: Sudah Bayar dan Belum Bayar
-  const categorizedData = catatan.reduce((acc, cat) => {
+  const categorizedData = filteredCatatan.reduce((acc, cat) => {
     const kategori = cat.status_pembayaran;
     if (!acc[kategori]) acc[kategori] = {};
     const subKategori = cat.judul;
@@ -387,6 +430,41 @@ const CatatanList = () => {
         OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO
       </h2>
       <h2 className="text-center mb-4">PTPN IV REGIONAL 7 KSO</h2>
+
+      <div className="row mb-3">
+  <div className="col-md-4">
+    <input
+      type="text"
+      name="fraco_fob"
+      className="form-control"
+      placeholder="Cari Fraco FOB"
+      value={searchQuery.fraco_fob}
+      onChange={handleSearchChange}
+    />
+  </div>
+  <div className="col-md-4">
+    <input
+      type="text"
+      name="pembeli"
+      className="form-control"
+      placeholder="Cari Pembeli"
+      value={searchQuery.pembeli}
+      onChange={handleSearchChange}
+    />
+  </div>
+  <div className="col-md-4">
+    <input
+      type="text"
+      name="tanggal"
+      className="form-control"
+      placeholder="Cari Tanggal (DD/MM/YYYY atau MM/YYYY)"
+      value={searchQuery.tanggal}
+      onChange={handleSearchChange}
+    />
+  </div>
+</div>
+
+
       {Object.entries(categorizedData).map(([kategori, subData]) => (
         <div key={kategori} className="mb-5">
           <h2 className="h3 text-primary">{kategori}</h2>
