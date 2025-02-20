@@ -6,6 +6,32 @@ const CatatanPersediaan = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [availableDates, setAvailableDates] = useState([]);
   const [previousDate, setPreviousDate] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState(""); // State untuk lokasi
+  const [availableLocations, setAvailableLocations] = useState([]);
+
+  useEffect(() => {
+    if (!selectedLocation) return;
+
+    // Ambil daftar tanggal berdasarkan lokasi yang dipilih
+    const dates = [
+      ...new Set(
+        dataPenyimpanan
+          .filter((item) => item.lokasi === selectedLocation)
+          .map((item) => item.tanggal.substring(0, 10))
+      ),
+    ]
+      .sort()
+      .reverse();
+
+    setAvailableDates(dates);
+    if (dates.length > 0) {
+      setSelectedDate(dates[0]);
+      setPreviousDate(dates[1] || "");
+    } else {
+      setSelectedDate("");
+      setPreviousDate("");
+    }
+  }, [selectedLocation, dataPenyimpanan]);
 
   useEffect(() => {
     fetch("http://localhost:5000/data_penyimpanan")
@@ -22,6 +48,13 @@ const CatatanPersediaan = () => {
           setSelectedDate(dates[0]);
           setPreviousDate(dates[1] || "");
         }
+
+        // Ambil daftar lokasi unik
+        const locations = [...new Set(data.map((item) => item.lokasi))].sort();
+        setAvailableLocations(locations);
+        if (locations.length > 0) {
+          setSelectedLocation(locations[0]); // Set default lokasi pertama
+        }
       })
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
@@ -31,30 +64,45 @@ const CatatanPersediaan = () => {
     setPreviousDate(index > 0 ? availableDates[index + 1] || "" : "");
   }, [selectedDate, availableDates]);
 
-  const filteredData = dataPenyimpanan.filter((item) =>
-    item.tanggal.startsWith(selectedDate)
+  // Filter data berdasarkan tanggal & lokasi
+  const filteredData = dataPenyimpanan.filter(
+    (item) => item.lokasi === selectedLocation && item.tanggal.startsWith(selectedDate)
+  );
+
+  const filteredDataPrevious = dataPenyimpanan.filter(
+    (item) => item.lokasi === selectedLocation && item.tanggal.startsWith(previousDate)
   );
   
-  const filteredDataPrevious = dataPenyimpanan.filter((item) =>
-    item.tanggal.startsWith(previousDate)
-  );
   
   return (
     <Container>
       <h2 className="text-center mb-4">PERSEDIAAN PRODUKSI CPO & PKO</h2>
-      <Form.Group controlId="tanggalSelect" className="mb-3">
-        <Form.Label>Pilih Tanggal:</Form.Label>
-        <Form.Select
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-        >
-          {availableDates.map((date) => (
-            <option key={date} value={date}>
-              {new Date(date).toLocaleDateString()}
-            </option>
-          ))}
-        </Form.Select>
-      </Form.Group>
+      <Row className="mb-3">
+        <Col md={6}>
+          <Form.Group controlId="tanggalSelect">
+            <Form.Label>Pilih Tanggal:</Form.Label>
+            <Form.Select value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}>
+              {availableDates.map((date) => (
+                <option key={date} value={date}>
+                  {new Date(date).toLocaleDateString()}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={6}>
+          <Form.Group controlId="lokasiSelect">
+            <Form.Label>Pilih Lokasi:</Form.Label>
+            <Form.Select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)}>
+              {availableLocations.map((loc) => (
+                <option key={loc} value={loc}>
+                  {loc}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+      </Row>
       <Row className="d-flex flex-warp">
         <Col md={6}>
           <h4 className="text-center">

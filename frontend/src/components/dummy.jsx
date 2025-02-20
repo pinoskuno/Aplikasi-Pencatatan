@@ -1,187 +1,131 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { Table, Container, Form, Row, Col, Button } from "react-bootstrap";
 
-const CatatanList = () => {
-  const [catatan, setCatatan] = useState([]);
-  const [selectedCatatan, setSelectedCatatan] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [filterState, setFilterState] = useState({});
-  const [currentPage, setCurrentPage] = useState({});
-  const itemsPerPage = 5; // Jumlah item per halaman
+const CatatanPersediaan = () => {
+  const [dataPenyimpanan, setDataPenyimpanan] = useState([]);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [availableDates, setAvailableDates] = useState([]);
+  const [previousDate, setPreviousDate] = useState("");
+
+  // State untuk Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
+
+  // State untuk Sorting
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/catatan")
-      .then((res) => res.json())
+    fetch("http://localhost:5000/data_penyimpanan")
+      .then((response) => response.json())
       .then((data) => {
-        setCatatan(data);
-      });
+        setDataPenyimpanan(data);
+        const dates = [...new Set(data.map((item) => item.tanggal.substring(0, 10)))]
+          .sort()
+          .reverse();
+        setAvailableDates(dates);
+        if (dates.length > 0) {
+          setSelectedDate(dates[0]);
+          setPreviousDate(dates[1] || "");
+        }
+      })
+      .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
-  const handleEdit = (cat) => {
-    setSelectedCatatan(cat);
-    setIsEditModalOpen(true);
+  useEffect(() => {
+    const index = availableDates.indexOf(selectedDate);
+    setPreviousDate(index > 0 ? availableDates[index + 1] || "" : "");
+  }, [selectedDate, availableDates]);
+
+  const filteredData = dataPenyimpanan.filter((item) => item.tanggal.startsWith(selectedDate));
+  const filteredDataPrevious = dataPenyimpanan.filter((item) => item.tanggal.startsWith(previousDate));
+
+  // Fungsi Sorting
+  const handleSort = (column) => {
+    const order = sortColumn === column && sortOrder === "asc" ? "desc" : "asc";
+    setSortColumn(column);
+    setSortOrder(order);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus catatan ini?")) {
-      fetch(`http://localhost:5000/api/catatan/${id}`, { method: "DELETE" })
-        .then((res) => res.json())
-        .then(() => {
-          setCatatan(catatan.filter((cat) => cat.id !== id));
-        });
-    }
+  // Fungsi untuk mendapatkan data yang sudah di-sort
+  const getSortedData = (data) => {
+    if (!sortColumn) return data;
+    return [...data].sort((a, b) => {
+      const valA = a[sortColumn];
+      const valB = b[sortColumn];
+
+      if (typeof valA === "number" && typeof valB === "number") {
+        return sortOrder === "asc" ? valA - valB : valB - valA;
+      }
+      return sortOrder === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
+    });
   };
 
-  // Data dikategorikan berdasarkan status pembayaran dan subkategori (judul)
-  const categorizedData = catatan.reduce((acc, cat) => {
-    const kategori = cat.status_pembayaran;
-    if (!acc[kategori]) acc[kategori] = {};
-    const subKategori = cat.judul;
-    if (!acc[kategori][subKategori]) acc[kategori][subKategori] = [];
-    acc[kategori][subKategori].push(cat);
-    return acc;
-  }, {});
-
-  // Fungsi untuk menangani perubahan input filter
-  const handleFilterChange = (e, subKategori) => {
-    const { name, value } = e.target;
-    setFilterState((prev) => ({
-      ...prev,
-      [subKategori]: { ...prev[subKategori], [name]: value },
-    }));
+  // Fungsi Pagination
+  const paginate = (data) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return data.slice(startIndex, startIndex + itemsPerPage);
   };
+
+  const sortedFilteredData = getSortedData(filteredData);
+  const paginatedData = paginate(sortedFilteredData);
 
   return (
-    <div className="container mt-4">
-      <h2 className="text-center mb-4">
-        OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO
-      </h2>
-      <h2 className="text-center mb-4">PTPN IV REGIONAL 7 KSO</h2>
+    <Container>
+      <h2 className="text-center mb-4">PERSEDIAAN PRODUKSI CPO & PKO</h2>
+      <Form.Group controlId="tanggalSelect" className="mb-3">
+        <Form.Label>Pilih Tanggal:</Form.Label>
+        <Form.Select value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}>
+          {availableDates.map((date) => (
+            <option key={date} value={date}>
+              {new Date(date).toLocaleDateString()}
+            </option>
+          ))}
+        </Form.Select>
+      </Form.Group>
 
-      {Object.entries(categorizedData).map(([kategori, subData]) => (
-        <div key={kategori} className="mb-5">
-          <h2 className="h3 text-primary">{kategori}</h2>
-          {Object.entries(subData).map(([subKategori, data]) => {
-            // Default state pagination per subkategori
-            if (!currentPage[subKategori]) {
-              setCurrentPage((prev) => ({ ...prev, [subKategori]: 1 }));
-            }
+      <Row>
+        <Col md={6}>
+          <h4 className="text-center">Data {new Date(selectedDate).toLocaleDateString()}</h4>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th onClick={() => handleSort("tanggal")}>Tanggal {sortColumn === "tanggal" ? (sortOrder === "asc" ? "⬆️" : "⬇️") : ""}</th>
+                <th onClick={() => handleSort("lokasi")}>Lokasi {sortColumn === "lokasi" ? (sortOrder === "asc" ? "⬆️" : "⬇️") : ""}</th>
+                <th>Kategori</th>
+                <th>Penyimpanan</th>
+                <th onClick={() => handleSort("stok")}>Stok {sortColumn === "stok" ? (sortOrder === "asc" ? "⬆️" : "⬇️") : ""}</th>
+                <th>Mutu</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedData.map((item, index) => (
+                <tr key={index}>
+                  <td>{new Date(item.tanggal).toLocaleDateString()}</td>
+                  <td>{item.lokasi}</td>
+                  <td>{item.kategori?.nama}</td>
+                  <td>{item.kategori?.penyimpanan?.map((p) => p.jenis_tank).join(", ")}</td>
+                  <td>{item.kategori?.penyimpanan?.map((p) => p.stok).join(", ")}</td>
+                  <td>Mutu Placeholder</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
 
-            // Default state filter per kolom
-            if (!filterState[subKategori]) {
-              setFilterState((prev) => ({ ...prev, [subKategori]: {} }));
-            }
-
-            // Filter data berdasarkan input filter di setiap kolom
-            const filteredData = data.filter((item) =>
-              Object.entries(filterState[subKategori] || {}).every(([key, value]) =>
-                item[key]?.toString().toLowerCase().includes(value.toLowerCase())
-              )
-            );
-
-            // Pagination data
-            const startIdx = (currentPage[subKategori] - 1) * itemsPerPage;
-            const paginatedData = filteredData.slice(startIdx, startIdx + itemsPerPage);
-            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
-            return (
-              <div key={subKategori} className="mb-4">
-                <h3 className="h5 mb-3">{subKategori}</h3>
-                <div className="table-responsive">
-                  <table className="table table-bordered">
-                    <thead>
-                      <tr className="gray-header">
-                        {[
-                          "deskripsi",
-                          "nomor_kontrak",
-                          "tanggal_kontrak",
-                          "pembeli",
-                          "jatuh_tempo_pembayaran",
-                          "tanggal_bayar",
-                          "mutu_alb",
-                          "vol_belum_serah",
-                          "harga_excl",
-                          "nilai",
-                          "fraco_fob",
-                          "rencana_pelayanan",
-                          "realisasi_pelayanan",
-                        ].map((col) => (
-                          <th key={col} style={{ backgroundColor: "#52D3D8" }}>
-                            <input
-                              type="text"
-                              placeholder={`Cari ${col}`}
-                              className="form-control form-control-sm"
-                              name={col}
-                              value={filterState[subKategori]?.[col] || ""}
-                              onChange={(e) => handleFilterChange(e, subKategori)}
-                            />
-                          </th>
-                        ))}
-                        <th style={{ backgroundColor: "#52D3D8" }}>Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedData.map((cat) => (
-                        <tr key={cat.id}>
-                          <td>{cat.deskripsi}</td>
-                          <td>{cat.nomor_kontrak}</td>
-                          <td>{cat.tanggal_kontrak}</td>
-                          <td>{cat.pembeli}</td>
-                          <td>{cat.jatuh_tempo_pembayaran}</td>
-                          <td>{cat.tanggal_bayar}</td>
-                          <td>{cat.mutu_alb}%</td>
-                          <td>{cat.vol_belum_serah} kg</td>
-                          <td>Rp {cat.harga_excl?.toLocaleString()}</td>
-                          <td>Rp {cat.nilai?.toLocaleString()}</td>
-                          <td>{cat.fraco_fob}</td>
-                          <td>{cat.rencana_pelayanan}</td>
-                          <td>{cat.realisasi_pelayanan}</td>
-                          <td>
-                            <button className="btn btn-warning btn-sm" onClick={() => handleEdit(cat)}>Edit</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cat.id)}>Delete</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination Controls */}
-                <div className="d-flex justify-content-between align-items-center">
-                  <button
-                    className="btn btn-outline-primary btn-sm"
-                    disabled={currentPage[subKategori] === 1}
-                    onClick={() =>
-                      setCurrentPage((prev) => ({
-                        ...prev,
-                        [subKategori]: prev[subKategori] - 1,
-                      }))
-                    }
-                  >
-                    Previous
-                  </button>
-                  <span>
-                    Page {currentPage[subKategori]} of {totalPages}
-                  </span>
-                  <button
-                    className="btn btn-outline-primary btn-sm"
-                    disabled={currentPage[subKategori] === totalPages}
-                    onClick={() =>
-                      setCurrentPage((prev) => ({
-                        ...prev,
-                        [subKategori]: prev[subKategori] + 1,
-                      }))
-                    }
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ))}
-    </div>
+          {/* Pagination Controls */}
+          <div className="d-flex justify-content-between">
+            <Button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
+              ⬅️ Previous
+            </Button>
+            <span>Page {currentPage}</span>
+            <Button disabled={paginatedData.length < itemsPerPage} onClick={() => setCurrentPage(currentPage + 1)}>
+              Next ➡️
+            </Button>
+          </div>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
-export default CatatanList;
+export default CatatanPersediaan;
