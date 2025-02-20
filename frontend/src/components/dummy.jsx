@@ -1,329 +1,187 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const AddPersediaan = () => {
-  const [formData, setFormData] = useState({
-    tanggal: "",
-    lokasi: "Bekri",
-    pkm: { nilai_pkm: "", do: "", hi: "" },
-    kernel: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "",do: "", hi: "" },
-    kategori: [],
-  });
-  const [notification, setNotification] = useState(null);
+const CatatanList = () => {
+  const [catatan, setCatatan] = useState([]);
+  const [selectedCatatan, setSelectedCatatan] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [filterState, setFilterState] = useState({});
+  const [currentPage, setCurrentPage] = useState({});
+  const itemsPerPage = 5; // Jumlah item per halaman
 
-  const lokasiOptions = ["Bekri", "Betung", "Talang sawit", "Sungai Lengi"];
-  const kategoriOptions = ["CPO", "PKO"];
-  const jenisTankOptions = [
-    "Storage Tank I",
-    "Storage Tank II",
-    "Storage Tank III",
-    "Storage Tank IV",
-    "Storage Tank V",
-    "Storage Tank VI",
-    "Storage Tank VII",
-    "Storage Tank VIII",
-    "Storage Tank IX",
-    "Storage Tank X",
-    "Tanki I",
-    "Tanki II",
-    "Tanki III",
-    "Tanki IV",
-    "Tanki V",
-    "Tanki VI",
-    "Tanki VII",
-    "Tanki VIII",
-    "Tanki IX",
-    "Tanki X",
-    "Gudang Repa",
-    "Gudang Pabrik",
-  ];
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleKernelChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      kernel: { ...formData.kernel, [name]: value },
-    });
-  };
-
-  const handlePKMChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      pkm: { ...formData.pkm, [name]: value },
-    });
-  };
-  const addKategori = () => {
-    setFormData({
-      ...formData,
-      kategori: [
-        ...formData.kategori,
-        {
-          nama: "CPO",
-          penyimpanan: [],
-          jumlah: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "" ,do:"", hi:""},
-
-        },
-      ],
-    });
-  };
-
-  const handleKategoriChange = (index, e) => {
-    const { value } = e.target;
-    let kategori = [...formData.kategori];
-    kategori[index].nama = value;
-    setFormData({ ...formData, kategori });
-  };
-
-  const handleJumlahChange = (index, e) => {
-    const { name, value } = e.target;
-    let kategori = [...formData.kategori];
-    kategori[index].jumlah[name] = value;
-    setFormData({ ...formData, kategori });
-  };
-
-
-  const addPenyimpanan = (kategoriIndex) => {
-    let kategori = [...formData.kategori];
-    kategori[kategoriIndex].penyimpanan.push({
-      jenis_tank: "Storage Tank I",
-      stok: "",
-      alb: "",
-      kadar_air: "",
-      kadar_kotoran: "",
-      do:"",
-      hi:"",
-    });
-    setFormData({ ...formData, kategori });
-  };
-
-  const handlePenyimpananChange = (kategoriIndex, penyimpananIndex, e) => {
-    const { name, value } = e.target;
-    let kategori = [...formData.kategori];
-    kategori[kategoriIndex].penyimpanan[penyimpananIndex][name] = value;
-    setFormData({ ...formData, kategori });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const validFormData = { ...formData };
-  
-    // Filter kategori yang tidak memiliki penyimpanan
-    validFormData.kategori = validFormData.kategori.filter(kat => kat.penyimpanan.length > 0);
-  
-    try {
-      const response = await fetch("http://localhost:5000/penyimpanan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(validFormData),
+  useEffect(() => {
+    fetch("http://localhost:5000/api/catatan")
+      .then((res) => res.json())
+      .then((data) => {
+        setCatatan(data);
       });
-      const data = await response.json();
-      if (response.ok) {
-        setNotification({ type: "success", message: "Data berhasil diunggah!" });
-      } else {
-        setNotification({ type: "error", message: `Gagal: ${data.error}` });
-      }
-    } catch (error) {
-      setNotification({ type: "error", message: "Terjadi kesalahan!" });
-    }
-    setTimeout(() => setNotification(null), 5000);
+  }, []);
+
+  const handleEdit = (cat) => {
+    setSelectedCatatan(cat);
+    setIsEditModalOpen(true);
   };
-  
+
+  const handleDelete = (id) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus catatan ini?")) {
+      fetch(`http://localhost:5000/api/catatan/${id}`, { method: "DELETE" })
+        .then((res) => res.json())
+        .then(() => {
+          setCatatan(catatan.filter((cat) => cat.id !== id));
+        });
+    }
+  };
+
+  // Data dikategorikan berdasarkan status pembayaran dan subkategori (judul)
+  const categorizedData = catatan.reduce((acc, cat) => {
+    const kategori = cat.status_pembayaran;
+    if (!acc[kategori]) acc[kategori] = {};
+    const subKategori = cat.judul;
+    if (!acc[kategori][subKategori]) acc[kategori][subKategori] = [];
+    acc[kategori][subKategori].push(cat);
+    return acc;
+  }, {});
+
+  // Fungsi untuk menangani perubahan input filter
+  const handleFilterChange = (e, subKategori) => {
+    const { name, value } = e.target;
+    setFilterState((prev) => ({
+      ...prev,
+      [subKategori]: { ...prev[subKategori], [name]: value },
+    }));
+  };
 
   return (
     <div className="container mt-4">
-      {/* <h2>Input Data Penyimpanan</h2> */}
-      <h2 className="text-center mb-4">PERSEDIAAN PRODUKSI CPO & PKO</h2>
-      {notification && (
-        <div className={`alert alert-${notification.type === "success" ? "success" : "danger"}`}>
-          {notification.message}
-        </div>
-      )}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Tanggal</label>
-          <input
-            type="date"
-            name="tanggal"
-            className="form-control"
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Lokasi</label>
-          <select
-            name="lokasi"
-            className="form-control"
-            onChange={handleChange}
-          >
-            {lokasiOptions.map((loc) => (
-              <option key={loc} value={loc}>
-                {loc}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-3">
-          <label className="form-label">PKM</label>
-          {Object.keys(formData.pkm).map((key) => (
-          <div className="mb-3" key={key}>
-            <label className="form-label">{key.toUpperCase()}</label>
-            <input type="number" name={key} className="form-control" onChange={handlePKMChange} required />
-          </div>
-        ))}
-        </div>
+      <h2 className="text-center mb-4">
+        OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO
+      </h2>
+      <h2 className="text-center mb-4">PTPN IV REGIONAL 7 KSO</h2>
 
-        <h5>Kernel</h5>
-        <div className="mb-3">
-          <label className="form-label">Stok</label>
-          <input
-            type="number"
-            name="stok"
-            className="form-control"
-            value={formData.kernel.stok}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">ALB</label>
-          <input
-            type="number"
-            name="alb"
-            step="0.01"
-            className="form-control"
-            value={formData.kernel.alb}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Kadar Air</label>
-          <input
-            type="number"
-            name="kadar_air"
-            step="0.01"
-            className="form-control"
-            value={formData.kernel.kadar_air}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Kadar Kotoran</label>
-          <input
-            type="number"
-            name="kadar_kotoran"
-            step="0.01"
-            className="form-control"
-            value={formData.kernel.kadar_kotoran}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Kernel DO</label>
-          <input
-            type="number"
-            name="do"
-            step="0.01"
-            className="form-control"
-            value={formData.kernel.do}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
+      {Object.entries(categorizedData).map(([kategori, subData]) => (
+        <div key={kategori} className="mb-5">
+          <h2 className="h3 text-primary">{kategori}</h2>
+          {Object.entries(subData).map(([subKategori, data]) => {
+            // Default state pagination per subkategori
+            if (!currentPage[subKategori]) {
+              setCurrentPage((prev) => ({ ...prev, [subKategori]: 1 }));
+            }
 
-        <div className="mb-3">
-          <label className="form-label">Kernel HI</label>
-          <input
-            type="number"
-            name="hi"
-            step="0.01"
-            className="form-control"
-            value={formData.kernel.hi}
-            onChange={handleKernelChange}
-            required
-          />
-        </div>
+            // Default state filter per kolom
+            if (!filterState[subKategori]) {
+              setFilterState((prev) => ({ ...prev, [subKategori]: {} }));
+            }
 
+            // Filter data berdasarkan input filter di setiap kolom
+            const filteredData = data.filter((item) =>
+              Object.entries(filterState[subKategori] || {}).every(([key, value]) =>
+                item[key]?.toString().toLowerCase().includes(value.toLowerCase())
+              )
+            );
 
-        <button type="button" className="btn btn-primary" onClick={addKategori}>
-          Tambah Kategori
-        </button>
-        {formData.kategori.map((kat, katIndex) => (
-          <div key={katIndex} className="mt-3 border p-3">
-            <h5>Kategori</h5>
-            <select
-              className="form-control"
-              onChange={(e) => handleKategoriChange(katIndex, e)}
-            >
-              {kategoriOptions.map((katOpt) => (
-                <option key={katOpt} value={katOpt}>
-                  {katOpt}
-                </option>
-              ))}
-            </select>
-            <h6>Jumlah</h6>
-            {Object.keys(kat.jumlah).map((key) => (
-              <input
-                key={key}
-                type="number"
-                name={key}
-                placeholder={key}
-                className="form-control mt-2"
-                onChange={(e) => handleJumlahChange(katIndex, e)}
-              />
-            ))}
-            <button
-              type="button"
-              className="btn btn-secondary mt-2"
-              onClick={() => addPenyimpanan(katIndex)}
-            >
-              Tambah Penyimpanan
-            </button>
-            {kat.penyimpanan.map((p, pIndex) => (
-              <div key={pIndex} className="mt-2 border p-2">
-                <select
-                  name="jenis_tank"
-                  className="form-control"
-                  onChange={(e) => handlePenyimpananChange(katIndex, pIndex, e)}
-                >
-                  {jenisTankOptions.map((tank) => (
-                    <option key={tank} value={tank}>
-                      {tank}
-                    </option>
-                  ))}
-                </select>
-                {Object.keys(p)
-                  .filter((key) => key !== "jenis_tank")
-                  .map((key) => (
-                    <input
-                      key={key}
-                      type="number"
-                      name={key}
-                      placeholder={key}
-                      className="form-control mt-2"
-                      onChange={(e) =>
-                        handlePenyimpananChange(katIndex, pIndex, e)
-                      }
-                    />
-                  ))}
+            // Pagination data
+            const startIdx = (currentPage[subKategori] - 1) * itemsPerPage;
+            const paginatedData = filteredData.slice(startIdx, startIdx + itemsPerPage);
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+            return (
+              <div key={subKategori} className="mb-4">
+                <h3 className="h5 mb-3">{subKategori}</h3>
+                <div className="table-responsive">
+                  <table className="table table-bordered">
+                    <thead>
+                      <tr className="gray-header">
+                        {[
+                          "deskripsi",
+                          "nomor_kontrak",
+                          "tanggal_kontrak",
+                          "pembeli",
+                          "jatuh_tempo_pembayaran",
+                          "tanggal_bayar",
+                          "mutu_alb",
+                          "vol_belum_serah",
+                          "harga_excl",
+                          "nilai",
+                          "fraco_fob",
+                          "rencana_pelayanan",
+                          "realisasi_pelayanan",
+                        ].map((col) => (
+                          <th key={col} style={{ backgroundColor: "#52D3D8" }}>
+                            <input
+                              type="text"
+                              placeholder={`Cari ${col}`}
+                              className="form-control form-control-sm"
+                              name={col}
+                              value={filterState[subKategori]?.[col] || ""}
+                              onChange={(e) => handleFilterChange(e, subKategori)}
+                            />
+                          </th>
+                        ))}
+                        <th style={{ backgroundColor: "#52D3D8" }}>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedData.map((cat) => (
+                        <tr key={cat.id}>
+                          <td>{cat.deskripsi}</td>
+                          <td>{cat.nomor_kontrak}</td>
+                          <td>{cat.tanggal_kontrak}</td>
+                          <td>{cat.pembeli}</td>
+                          <td>{cat.jatuh_tempo_pembayaran}</td>
+                          <td>{cat.tanggal_bayar}</td>
+                          <td>{cat.mutu_alb}%</td>
+                          <td>{cat.vol_belum_serah} kg</td>
+                          <td>Rp {cat.harga_excl?.toLocaleString()}</td>
+                          <td>Rp {cat.nilai?.toLocaleString()}</td>
+                          <td>{cat.fraco_fob}</td>
+                          <td>{cat.rencana_pelayanan}</td>
+                          <td>{cat.realisasi_pelayanan}</td>
+                          <td>
+                            <button className="btn btn-warning btn-sm" onClick={() => handleEdit(cat)}>Edit</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cat.id)}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="d-flex justify-content-between align-items-center">
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    disabled={currentPage[subKategori] === 1}
+                    onClick={() =>
+                      setCurrentPage((prev) => ({
+                        ...prev,
+                        [subKategori]: prev[subKategori] - 1,
+                      }))
+                    }
+                  >
+                    Previous
+                  </button>
+                  <span>
+                    Page {currentPage[subKategori]} of {totalPages}
+                  </span>
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    disabled={currentPage[subKategori] === totalPages}
+                    onClick={() =>
+                      setCurrentPage((prev) => ({
+                        ...prev,
+                        [subKategori]: prev[subKategori] + 1,
+                      }))
+                    }
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        ))}
-        <button type="submit" className="btn btn-success mt-3">
-          Submit
-        </button>
-      </form>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 };
 
-export default AddPersediaan;
+export default CatatanList;

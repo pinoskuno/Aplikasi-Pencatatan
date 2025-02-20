@@ -16,10 +16,7 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
     "Cangkang",
   ];
 
-  const kategoriPembayaran = [
-    "Sudah Bayar",
-    "Belum Bayar",
-  ];
+  const kategoriPembayaran = ["Sudah Bayar", "Belum Bayar"];
 
   useEffect(() => {
     setEditedCatatan(catatan); // Set nilai awal ketika modal terbuka
@@ -29,16 +26,18 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
     const { name, value } = e.target;
 
     // Periksa apakah nilai yang dimasukkan adalah angka atau teks
-    const newValue = name === 'harga_excl' || name === 'vol_belum_serah'
-      ? parseFloat(value) || 0  // Untuk harga_excl dan vol_belum_serah, pastikan selalu jadi angka
-      : value;  // Untuk input teks, biarkan sebagai string
+    const newValue =
+      name === "harga_excl" || name === "vol_belum_serah"
+        ? parseFloat(value) || 0 // Untuk harga_excl dan vol_belum_serah, pastikan selalu jadi angka
+        : value; // Untuk input teks, biarkan sebagai string
 
     setEditedCatatan((prev) => {
       const updatedCatatan = { ...prev, [name]: newValue };
 
       // Perhitungan nilai hanya jika harga_excl dan vol_belum_serah ada
       if (updatedCatatan.harga_excl && updatedCatatan.vol_belum_serah) {
-        updatedCatatan.nilai = updatedCatatan.harga_excl * updatedCatatan.vol_belum_serah;
+        updatedCatatan.nilai =
+          updatedCatatan.harga_excl * updatedCatatan.vol_belum_serah;
       } else {
         updatedCatatan.nilai = null;
       }
@@ -92,12 +91,12 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
                   value={editedCatatan?.judul || ""}
                   onChange={handleChange}
                 >
-                    <option value="">Pilih Kategori</option>
-                    {kategoriOptions.map((kategori) => (
-                      <option key={kategori} value={kategori}>
-                        {kategori}
-                      </option>
-                    ))}
+                  <option value="">Pilih Kategori</option>
+                  {kategoriOptions.map((kategori) => (
+                    <option key={kategori} value={kategori}>
+                      {kategori}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -246,10 +245,18 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
               </div>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={onClose}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={onClose}
+              >
                 Close
               </button>
-              <button type="button" className="btn btn-primary" onClick={handleSave}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSave}
+              >
                 Save changes
               </button>
             </div>
@@ -264,6 +271,9 @@ const CatatanList = () => {
   const [catatan, setCatatan] = useState([]);
   const [selectedCatatan, setSelectedCatatan] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState({});
+  const itemsPerPage = 2; // Jumlah item per halaman
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   useEffect(() => {
     fetch("http://localhost:5000/api/catatan")
@@ -273,25 +283,25 @@ const CatatanList = () => {
 
   useEffect(() => {
     $(document).ready(function () {
-      $('#poliTable').DataTable({
-        "paging": true,
-        "searching": true,
-        "ordering": true,
-        "responsive": true,
-        "language": {
-          "lengthMenu": "Show _MENU_ entries",
-          "zeroRecords": "No data found",
-          "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-          "infoEmpty": "No records available",
-          "infoFiltered": "(filtered from _MAX_ total records)",
-          "search": "Search:",
-          "paginate": {
-            "first": "First",
-            "last": "Last",
-            "next": "Next",
-            "previous": "Previous"
-          }
-        }
+      $("#poliTable").DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        responsive: true,
+        language: {
+          lengthMenu: "Show _MENU_ entries",
+          zeroRecords: "No data found",
+          info: "Showing _START_ to _END_ of _TOTAL_ entries",
+          infoEmpty: "No records available",
+          infoFiltered: "(filtered from _MAX_ total records)",
+          search: "Search:",
+          paginate: {
+            first: "First",
+            last: "Last",
+            next: "Next",
+            previous: "Previous",
+          },
+        },
       });
     });
   }, []);
@@ -311,7 +321,9 @@ const CatatanList = () => {
       .then((data) => {
         if (data.message === "Catatan berhasil diperbarui") {
           setCatatan(
-            catatan.map((cat) => (cat.id === updatedCatatan.id ? updatedCatatan : cat))
+            catatan.map((cat) =>
+              cat.id === updatedCatatan.id ? updatedCatatan : cat
+            )
           );
         }
       });
@@ -329,81 +341,155 @@ const CatatanList = () => {
     }
   };
 
+    // Fungsi untuk sorting
+    const handleSort = (key) => {
+      let direction = "asc";
+      if (sortConfig.key === key && sortConfig.direction === "asc") {
+        direction = "desc";
+      }
+      setSortConfig({ key, direction });
+  
+      setCatatan((prevCatatan) =>
+        [...prevCatatan].sort((a, b) => {
+          let valA = a[key];
+          let valB = b[key];
+  
+          // Jika angka, bandingkan sebagai angka
+          if (!isNaN(valA) && !isNaN(valB)) {
+            return direction === "asc" ? valA - valB : valB - valA;
+          }
+  
+          // Jika teks, bandingkan sebagai string
+          return direction === "asc"
+            ? String(valA).localeCompare(String(valB))
+            : String(valB).localeCompare(String(valA));
+        })
+      );
+    };
+
   // Pisahkan catatan menjadi dua kategori utama: Sudah Bayar dan Belum Bayar
   const categorizedData = catatan.reduce((acc, cat) => {
-    const kategori = cat.status_pembayaran ;
+    const kategori = cat.status_pembayaran;
     if (!acc[kategori]) acc[kategori] = {};
     const subKategori = cat.judul;
     if (!acc[kategori][subKategori]) acc[kategori][subKategori] = [];
     acc[kategori][subKategori].push(cat);
     return acc;
-  },
-  {});
+  }, {});
+
+  
+  
 
   return (
     <div className="container mt-4">
       {/* <h2 style={{ color: "#808080" }} className="text-center mb-4">OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO</h2> */}
-      <h2 className="text-center mb-4">OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO</h2>
+      <h2 className="text-center mb-4">
+        OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO
+      </h2>
       <h2 className="text-center mb-4">PTPN IV REGIONAL 7 KSO</h2>
       {Object.entries(categorizedData).map(([kategori, subData]) => (
         <div key={kategori} className="mb-5">
           <h2 className="h3 text-primary">{kategori}</h2>
           {Object.entries(subData).map(([subKategori, data]) => {
-            const totalVolBelumSerah = data.reduce((sum, cat) => sum + parseFloat(cat.vol_belum_serah || 0), 0);
-            const totalNilai = data.reduce((sum, cat) => sum + parseFloat(cat.nilai || 0), 0);
+            if (!currentPage[subKategori]) {
+              setCurrentPage((prev) => ({ ...prev, [subKategori]: 1 }));
+            }
+
+            // Pagination data
+            const startIdx = (currentPage[subKategori] - 1) * itemsPerPage;
+            const paginatedData = data.slice(startIdx, startIdx + itemsPerPage);
+            const totalPages = Math.ceil(data.length / itemsPerPage);
+
             return (
               <div key={subKategori} className="mb-4">
                 <h3 className="h5 mb-3">{subKategori}</h3>
-                <table className="table  table-bordered">
-                  <thead>
-                    <tr className="gray-header">
-                      <th style={{ backgroundColor: "#52D3D8" }}>Deskripsi</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Nomor Kontrak</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Tanggal Kontrak</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Pembeli</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Jatuh Tempo Pembayaran</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Tanggal Bayar</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Mutu ALB (%)</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Vol Belum Serah (kg)</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Harga Excl (Rp/Kg)</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Nilai (Rp)</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Fraco/FOB</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Rencana Pelayanan</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Realisasi Pelayanan</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.map((cat) => (
-                      <tr key={cat.id}>
-                        <td>{cat.deskripsi}</td>
-                        <td>{cat.nomor_kontrak}</td>
-                        <td>{cat.tanggal_kontrak}</td>
-                        <td>{cat.pembeli}</td>
-                        <td>{cat.jatuh_tempo_pembayaran}</td>
-                        <td>{cat.tanggal_bayar}</td>
-                        <td>{cat.mutu_alb}%</td>
-                        <td>{cat.vol_belum_serah} kg</td>
-                        <td>Rp {cat.harga_excl?.toLocaleString()}</td>
-                        <td>Rp {cat.nilai?.toLocaleString()}</td>
-                        <td>{cat.fraco_fob}</td>
-                        <td>{cat.rencana_pelayanan}</td>
-                        <td>{cat.realisasi_pelayanan}</td>
-                        <td>
-                          <button className="btn btn-warning btn-sm" onClick={() => handleEdit(cat)}>Edit</button>
-                          <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cat.id)}>Delete</button>
-                        </td>
+                <div className="table-responsive">
+                  <table className="table table-bordered">
+                    <thead>
+                      <tr className="gray-header">
+                        {[
+                          "deskripsi",
+                          "nomor_kontrak",
+                          "tanggal_kontrak",
+                          "pembeli",
+                          "jatuh_tempo_pembayaran",
+                          "tanggal_bayar",
+                          "mutu_alb",
+                          "vol_belum_serah",
+                          "harga_excl",
+                          "nilai",
+                          "fraco_fob",
+                          "rencana_pelayanan",
+                          "realisasi_pelayanan",
+                        ].map((col) => (
+                          <th
+                            key={col}
+                            style={{ backgroundColor: "#52D3D8", cursor: "pointer" }}
+                            onClick={() => handleSort(col)}
+                          >
+                            {col}{" "}
+                            {sortConfig.key === col ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                          </th>
+                        ))}
+                        <th style={{ backgroundColor: "#52D3D8" }}>Aksi</th>
                       </tr>
-                    ))}
-                    <tr>
-                      <td colSpan="7" className="text-end fw-bold">Total</td>
-                      <td>{totalVolBelumSerah.toFixed(2)} kg</td>
-                      <td></td>
-                      <td>Rp {totalNilai.toLocaleString()}</td>
-                      <td colSpan="3"></td>
-                    </tr>
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {paginatedData.map((cat) => (
+                        <tr key={cat.id}>
+                          <td>{cat.deskripsi}</td>
+                          <td>{cat.nomor_kontrak}</td>
+                          <td>{cat.tanggal_kontrak}</td>
+                          <td>{cat.pembeli}</td>
+                          <td>{cat.jatuh_tempo_pembayaran}</td>
+                          <td>{cat.tanggal_bayar}</td>
+                          <td>{cat.mutu_alb}%</td>
+                          <td>{cat.vol_belum_serah} kg</td>
+                          <td>Rp {cat.harga_excl?.toLocaleString()}</td>
+                          <td>Rp {cat.nilai?.toLocaleString()}</td>
+                          <td>{cat.fraco_fob}</td>
+                          <td>{cat.rencana_pelayanan}</td>
+                          <td>{cat.realisasi_pelayanan}</td>
+                          <td>
+                            <button className="btn btn-warning btn-sm" onClick={() => handleEdit(cat)}>Edit</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cat.id)}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="d-flex justify-content-between align-items-center">
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    disabled={currentPage[subKategori] === 1}
+                    onClick={() =>
+                      setCurrentPage((prev) => ({
+                        ...prev,
+                        [subKategori]: prev[subKategori] - 1,
+                      }))
+                    }
+                  >
+                    Previous
+                  </button>
+                  <span>
+                    Page {currentPage[subKategori]} of {totalPages}
+                  </span>
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    disabled={currentPage[subKategori] === totalPages}
+                    onClick={() =>
+                      setCurrentPage((prev) => ({
+                        ...prev,
+                        [subKategori]: prev[subKategori] + 1,
+                      }))
+                    }
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -417,7 +503,6 @@ const CatatanList = () => {
         catatan={selectedCatatan}
         onSave={handleSaveEdit}
       />
-
     </div>
   );
 };
