@@ -8128,3 +8128,53 @@ html {
     left: -2vw;
   }
 }
+
+body.light-mode {
+  background-color: #ffffff;
+  color: #000000;
+}
+body.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+.theme-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  padding: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+}
+
+/* Dark Mode dan Light Mode */
+
+body.light-mode {
+  background-color: #ffffff;
+  color: #000000;
+}
+body.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+.theme-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  padding: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+  z-index: 1000;
+}
+.navbar, .header {
+    transition: background-color 0.3s ease;
+}
+.dark-mode .navbar {
+    background-color: #1f1f1f !important;
+}
+.dark-mode .header {
+    background-color: #1a1a1a !important;
+}
