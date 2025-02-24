@@ -107,7 +107,7 @@ const AddCatatan = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="text-center mb-4">Tambah Catatan</h2>
+      <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline"> INPUT KONTRAK PENJUALAN REGIONAL VII KSO</span></h2>
       <form onSubmit={handleSubmit}>
 
         <div className="form-row">

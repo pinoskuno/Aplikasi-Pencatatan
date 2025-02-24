@@ -21,7 +21,7 @@ const TotalSummary = () => {
   }, []);
 
   return (
-    <div className="row my-4">
+    <div className="row my-5">
       <div className="col-md-6">
         <div className="card text-white bg-primary mb-3">
           <div className="card-body">
