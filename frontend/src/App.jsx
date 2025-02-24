@@ -12,20 +12,21 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "./styles/CatatanList.css";
 import "./styles/Coba.css";
+import "./index.css";
+
 
 function App() {
   return (
     <div className="container">
-      <h1 className="text-center my-4">Aplikasi Pencatatan</h1>
 
       {/* Tombol Navigasi */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <Link to="/" className="btn btn-primary me-2">Dashboard</Link>
         <Link to="/persediaan" className="btn btn-primary m-2">Catatan Stock Persediaan</Link>
         <Link to="/input" className="btn btn-success">Input Data</Link>
         <Link to="/inputPersediaan" className="btn btn-success m-2">Input Stock Persediaan</Link>
         
-      </div>
+      </div> */}
 
       {/* Definisi Routes */}
       <Routes>

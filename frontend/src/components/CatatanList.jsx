@@ -426,10 +426,8 @@ const CatatanList = () => {
   return (
     <div className="container mt-4">
       {/* <h2 style={{ color: "#808080" }} className="text-center mb-4">OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO</h2> */}
-      <h2 className="text-center mb-4">
-        OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO
-      </h2>
-      <h2 className="text-center mb-4">PTPN IV REGIONAL 7 KSO</h2>
+      <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO</span></h2>
+      <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">PTPN IV REGIONAL 7 KSO</span></h2>
 
       <div className="row mb-3">
   <div className="col-md-4">

@@ -128,7 +128,7 @@ const AddPersediaan = () => {
 
   return (
     <div className="container mt-4">
-      <h2>Input Data Penyimpanan</h2>
+      <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">INPUT PERSEDIAAN PRODUKSI CPO & PKO</span></h2>
       {notification && (
         <div className={`alert alert-${notification.type === "success" ? "success" : "danger"}`}>
           {notification.message}
@@ -284,9 +284,11 @@ const AddPersediaan = () => {
           </div>
         </div>              
 
-        <button type="button" className="btn btn-primary" onClick={addKategori}>
-          Tambah Kategori
-        </button>
+        <div class="d-grid gap-2 mt-2">
+          <button type="button" className="btn btn-primary" onClick={addKategori}>
+            Tambah Kategori
+          </button>
+        </div>
         {formData.kategori.map((kat, katIndex) => (
           <div key={katIndex} className="mt-3 border p-3">
             <h5>Kategori</h5>
@@ -349,9 +351,12 @@ const AddPersediaan = () => {
             ))}
           </div>
         ))}
-        <button type="submit" className="btn btn-success mt-3">
-          Submit
-        </button>
+        <div class="d-grid gap-2 mt-2">
+          <button type="submit" className="btn btn-success mt-3">
+            Submit
+          </button>
+        </div>
+        
       </form>
     </div>
   );
