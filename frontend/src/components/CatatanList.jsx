@@ -479,56 +479,93 @@ const CatatanList = () => {
             return (
               <div key={subKategori} className="mb-4">
                 <h3 className="h5 mb-3">{subKategori}</h3>
-                <table className="table table-bordered">
-                  <thead>
-                    <tr className="gray-header">
-                      <th>Deskripsi</th>
-                      <th>Nomor Kontrak</th>
-                      <th>Tanggal Kontrak</th>
-                      <th>Pembeli</th>
-                      <th>Jatuh Tempo Pembayaran</th>
-                      <th>Tanggal Bayar</th>
-                      <th>Mutu ALB (%)</th>
-                      <th>Vol Belum Serah (kg)</th>
-                      <th>Harga Excl (Rp/Kg)</th>
-                      <th>Nilai (Rp)</th>
-                      <th>Fraco/FOB</th>
-                      <th>Rencana Pelayanan</th>
-                      <th>Realisasi Pelayanan</th>
-                      <th>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.map((cat) => (
-                      <tr key={cat.id}>
-                        <td>{cat.deskripsi}</td>
-                        <td>{cat.nomor_kontrak}</td>
-                        <td>{cat.tanggal_kontrak}</td>
-                        <td>{cat.pembeli}</td>
-                        <td>{cat.jatuh_tempo_pembayaran}</td>
-                        <td>{cat.tanggal_bayar}</td>
-                        <td>{cat.mutu_alb}%</td>
-                        <td>{cat.vol_belum_serah} kg</td>
-                        <td>Rp {cat.harga_excl?.toLocaleString()}</td>
-                        <td>Rp {cat.nilai?.toLocaleString()}</td>
-                        <td>{cat.fraco_fob}</td>
-                        <td>{cat.rencana_pelayanan}</td>
-                        <td>{cat.realisasi_pelayanan}</td>
-                        <td>
-                          <button className="btn btn-warning btn-sm" onClick={() => handleEdit(cat)}>Edit</button>
-                          <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cat.id)}>Delete</button>
-                        </td>
+                <div className="table-responsive">
+                  <table className="table table-bordered">
+                    <thead>
+                      <tr className="gray-header">
+                        {[
+                          "deskripsi",
+                          "nomor_kontrak",
+                          "tanggal_kontrak",
+                          "pembeli",
+                          "jatuh_tempo_pembayaran",
+                          "tanggal_bayar",
+                          "mutu_alb",
+                          "vol_belum_serah",
+                          "harga_excl",
+                          "nilai",
+                          "fraco_fob",
+                          "rencana_pelayanan",
+                          "realisasi_pelayanan",
+                        ].map((col) => (
+                          <th
+                            key={col}
+                            style={{ backgroundColor: "#52D3D8", cursor: "pointer" }}
+                            onClick={() => handleSort(col)}
+                          >
+                            {col}{" "}
+                            {sortConfig.key === col ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                          </th>
+                        ))}
+                        <th style={{ backgroundColor: "#52D3D8" }}>Aksi</th>
                       </tr>
-                    ))}
-                    <tr>
-                      <td colSpan="7" className="text-end fw-bold">Total</td>
-                      <td>{totalVolBelumSerah.toFixed(2)} kg</td>
-                      <td></td>
-                      <td>Rp {totalNilai.toLocaleString()}</td>
-                      <td colSpan="3"></td>
-                    </tr>
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {paginatedData.map((cat) => (
+                        <tr key={cat.id}>
+                          <td>{cat.deskripsi}</td>
+                          <td>{cat.nomor_kontrak}</td>
+                          <td>{cat.tanggal_kontrak}</td>
+                          <td>{cat.pembeli}</td>
+                          <td>{cat.jatuh_tempo_pembayaran}</td>
+                          <td>{cat.tanggal_bayar}</td>
+                          <td>{cat.mutu_alb}%</td>
+                          <td>{cat.vol_belum_serah} kg</td>
+                          <td>Rp {cat.harga_excl?.toLocaleString()}</td>
+                          <td>Rp {cat.nilai?.toLocaleString()}</td>
+                          <td>{cat.fraco_fob}</td>
+                          <td>{cat.rencana_pelayanan}</td>
+                          <td>{cat.realisasi_pelayanan}</td>
+                          <td>
+                            <button className="btn btn-warning btn-sm" onClick={() => handleEdit(cat)}>Edit</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cat.id)}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="d-flex justify-content-between align-items-center">
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    disabled={currentPage[subKategori] === 1}
+                    onClick={() =>
+                      setCurrentPage((prev) => ({
+                        ...prev,
+                        [subKategori]: prev[subKategori] - 1,
+                      }))
+                    }
+                  >
+                    Previous
+                  </button>
+                  <span>
+                    Page {currentPage[subKategori]} of {totalPages}
+                  </span>
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    disabled={currentPage[subKategori] === totalPages}
+                    onClick={() =>
+                      setCurrentPage((prev) => ({
+                        ...prev,
+                        [subKategori]: prev[subKategori] + 1,
+                      }))
+                    }
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             );
           })}
