@@ -479,23 +479,23 @@ const CatatanList = () => {
             return (
               <div key={subKategori} className="mb-4">
                 <h3 className="h5 mb-3">{subKategori}</h3>
-                <table className="table  table-bordered">
+                <table className="table table-bordered">
                   <thead>
                     <tr className="gray-header">
-                      <th style={{ backgroundColor: "#52D3D8" }}>Deskripsi</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Nomor Kontrak</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Tanggal Kontrak</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Pembeli</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Jatuh Tempo Pembayaran</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Tanggal Bayar</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Mutu ALB (%)</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Vol Belum Serah (kg)</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Harga Excl (Rp/Kg)</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Nilai (Rp)</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Fraco/FOB</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Rencana Pelayanan</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Realisasi Pelayanan</th>
-                      <th style={{ backgroundColor: "#52D3D8" }}>Aksi</th>
+                      <th>Deskripsi</th>
+                      <th>Nomor Kontrak</th>
+                      <th>Tanggal Kontrak</th>
+                      <th>Pembeli</th>
+                      <th>Jatuh Tempo Pembayaran</th>
+                      <th>Tanggal Bayar</th>
+                      <th>Mutu ALB (%)</th>
+                      <th>Vol Belum Serah (kg)</th>
+                      <th>Harga Excl (Rp/Kg)</th>
+                      <th>Nilai (Rp)</th>
+                      <th>Fraco/FOB</th>
+                      <th>Rencana Pelayanan</th>
+                      <th>Realisasi Pelayanan</th>
+                      <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
