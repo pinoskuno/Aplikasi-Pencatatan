@@ -22,6 +22,8 @@ const TotalSummary = () => {
 
   return (
     <div className="row my-5">
+       <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO</span></h2>
+       <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">PTPN IV REGIONAL 7 KSO</span></h2>
       <div className="col-md-6">
         <div className="card text-white bg-primary mb-3">
           <div className="card-body">

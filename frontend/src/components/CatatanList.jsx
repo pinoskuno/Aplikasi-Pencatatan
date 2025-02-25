@@ -425,47 +425,44 @@ const CatatanList = () => {
 
   return (
     <div className="container mt-4">
-      {/* <h2 style={{ color: "#808080" }} className="text-center mb-4">OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO</h2> */}
-      <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO</span></h2>
-      <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">PTPN IV REGIONAL 7 KSO</span></h2>
-
       <div className="row mb-3">
-  <div className="col-md-4">
-    <input
-      type="text"
-      name="fraco_fob"
-      className="form-control"
-      placeholder="Cari Fraco FOB"
-      value={searchQuery.fraco_fob}
-      onChange={handleSearchChange}
-    />
-  </div>
-  <div className="col-md-4">
-    <input
-      type="text"
-      name="pembeli"
-      className="form-control"
-      placeholder="Cari Pembeli"
-      value={searchQuery.pembeli}
-      onChange={handleSearchChange}
-    />
-  </div>
-  <div className="col-md-4">
-    <input
-      type="text"
-      name="tanggal"
-      className="form-control"
-      placeholder="Cari Tanggal (DD/MM/YYYY atau MM/YYYY)"
-      value={searchQuery.tanggal}
-      onChange={handleSearchChange}
-    />
-  </div>
-</div>
-
+        <div className="col-md-4">
+          <input
+            type="text"
+            name="fraco_fob"
+            className="form-control"
+            placeholder="Cari Fraco FOB"
+            value={searchQuery.fraco_fob}
+            onChange={handleSearchChange}
+          />
+        </div>
+        <div className="col-md-4">
+          <input
+            type="text"
+            name="pembeli"
+            className="form-control"
+            placeholder="Cari Pembeli"
+            value={searchQuery.pembeli}
+            onChange={handleSearchChange}
+          />
+        </div>
+        <div className="col-md-4">
+          <input
+            type="text"
+            name="tanggal"
+            className="form-control"
+            placeholder="Cari Tanggal (DD/MM/YYYY atau MM/YYYY)"
+            value={searchQuery.tanggal}
+            onChange={handleSearchChange}
+          />
+        </div>
+      </div>
 
       {Object.entries(categorizedData).map(([kategori, subData]) => (
         <div key={kategori} className="mb-5">
-          <h2 className="h3 text-primary">{kategori}</h2>
+          <h2 className="h1 text-primary badge bg-gradient-primary-to-secondary text-white fs-4">
+            {kategori} <i className="fa-solid fa-list-check"></i>
+          </h2>
           {Object.entries(subData).map(([subKategori, data]) => {
             if (!currentPage[subKategori]) {
               setCurrentPage((prev) => ({ ...prev, [subKategori]: 1 }));
@@ -500,11 +497,18 @@ const CatatanList = () => {
                         ].map((col) => (
                           <th
                             key={col}
-                            style={{ backgroundColor: "#52D3D8", cursor: "pointer" }}
+                            style={{
+                              backgroundColor: "#52D3D8",
+                              cursor: "pointer",
+                            }}
                             onClick={() => handleSort(col)}
                           >
                             {col}{" "}
-                            {sortConfig.key === col ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                            {sortConfig.key === col
+                              ? sortConfig.direction === "asc"
+                                ? "▲"
+                                : "▼"
+                              : ""}
                           </th>
                         ))}
                         <th style={{ backgroundColor: "#52D3D8" }}>Aksi</th>
@@ -527,8 +531,18 @@ const CatatanList = () => {
                           <td>{cat.rencana_pelayanan}</td>
                           <td>{cat.realisasi_pelayanan}</td>
                           <td>
-                            <button className="btn btn-warning btn-sm" onClick={() => handleEdit(cat)}>Edit</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cat.id)}>Delete</button>
+                            <button
+                              className="btn btn-warning btn-sm"
+                              onClick={() => handleEdit(cat)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => handleDelete(cat.id)}
+                            >
+                              Delete
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -537,7 +551,7 @@ const CatatanList = () => {
                 </div>
 
                 {/* Pagination Controls */}
-                <div className="d-flex justify-content-between align-items-center">
+                <div className="d-flex justify-content-between align-items-center mt-3">
                   <button
                     className="btn btn-outline-primary btn-sm"
                     disabled={currentPage[subKategori] === 1}

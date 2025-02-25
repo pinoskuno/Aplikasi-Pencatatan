@@ -17,9 +17,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   </head>
   <body>
-      <button class="theme-toggle" onclick="toggleTheme()">
-        <i id="theme-icon" class="bi bi-moon"></i>
-      </button>
     <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
         <div class="container">
             <a class="navbar-brand">
@@ -208,25 +205,6 @@
   </header>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <script>
-        function toggleTheme() {
-        const body = document.body;
-        const icon = document.getElementById("theme-icon");
-        const isDarkMode = body.classList.toggle("dark-mode");
-        body.classList.toggle("light-mode", !isDarkMode);
-        localStorage.setItem("theme", isDarkMode ? "dark-mode" : "light-mode");
-        icon.classList.replace(isDarkMode ? "bi-moon" : "bi-sun", isDarkMode ? "bi-sun" : "bi-moon");
-      }
-      
-      (function () {
-        const savedTheme = localStorage.getItem("theme") || "light-mode";
-        document.body.classList.add(savedTheme);
-        const icon = document.getElementById("theme-icon");
-        if (savedTheme === "dark-mode") {
-          icon.classList.replace("bi-moon", "bi-sun");
-        }
-        })();
-      </script>
 
     <footer class="py-5 bg-gradient-primary-to-secondary text-white" style="background-color: #ECEFF1">
         <!-- Section: Links  -->
