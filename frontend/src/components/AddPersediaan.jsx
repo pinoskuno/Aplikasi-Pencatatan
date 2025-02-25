@@ -351,7 +351,7 @@ const AddPersediaan = () => {
             ))}
           </div>
         ))}
-        <div class="d-grid gap-2 mt-2">
+        <div class="d-grid gap-2 mt-2 mb-5">
           <button type="submit" className="btn btn-success mt-3">
             Submit
           </button>

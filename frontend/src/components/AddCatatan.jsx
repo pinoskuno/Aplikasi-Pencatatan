@@ -318,7 +318,7 @@ const AddCatatan = () => {
           </button>
         </div>
 
-        <div class="d-grid gap-2 mt-2">
+        <div class="d-grid gap-2 mt-2 mb-5">
               <button type="reset" class="btn btn-secondary" onClick={handleReset} >Reset</button>
         </div>
       </form>

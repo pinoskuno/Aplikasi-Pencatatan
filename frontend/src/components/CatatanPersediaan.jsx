@@ -77,7 +77,7 @@ const CatatanPersediaan = () => {
 
   return (
     <Container>
-      <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">PERSEDIAAN PRODUKSI CPO & PKO</span></h2>
+      <h2 class="text-center mb-4 fw-bolder center mt-4"><span class="text-gradient d-inline">PERSEDIAAN PRODUKSI CPO & PKO</span></h2>
       <Row className="mb-3">
         <Col md={6}>
           <Form.Group controlId="tanggalSelect">
