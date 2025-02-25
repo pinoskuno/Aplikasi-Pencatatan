@@ -78,12 +78,7 @@ const AddPersediaan = () => {
     setFormData({ ...formData, kategori });
   };
 
-  const handleJumlahChange = (index, e) => {
-    const { name, value } = e.target;
-    let kategori = [...formData.kategori];
-    kategori[index].jumlah[name] = value;
-    setFormData({ ...formData, kategori });
-  };
+  
 
   const addPenyimpanan = (kategoriIndex) => {
     let kategori = [...formData.kategori];
@@ -302,17 +297,7 @@ const AddPersediaan = () => {
                 </option>
               ))}
             </select>
-            <h6>Jumlah</h6>
-            {Object.keys(kat.jumlah).map((key) => (
-              <input
-                key={key}
-                type="number"
-                name={key}
-                placeholder={key}
-                className="form-control mt-2"
-                onChange={(e) => handleJumlahChange(katIndex, e)}
-              />
-            ))}
+
             <button
               type="button"
               className="btn btn-secondary mt-2"
