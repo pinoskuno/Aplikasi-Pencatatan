@@ -226,7 +226,7 @@ const CatatanPersediaan = () => {
                       <td colSpan={2}>
                         <strong>PKM</strong>
                       </td>
-                      <td>{item.pkm.stok}</td>
+                      <td>{item.pkm.nilai_pkm}</td>
                       <td></td>
                       <td></td>
                       <td></td>
@@ -369,7 +369,7 @@ const CatatanPersediaan = () => {
                       <td colSpan={2}>
                         <strong>PKM</strong>
                       </td>
-                      <td>{item.pkm.stok}</td>
+                      <td>{item.pkm.nilai_pkm}</td>
                       <td></td>
                       <td></td>
                       <td></td>
