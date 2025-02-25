@@ -371,6 +371,7 @@ app.delete("/penyimpanan/:id", (req, res) => {
   });
 });
 
+
 app.post("/penyimpanan", (req, res) => {
   const { tanggal, lokasi, pkm, kernel, kategori } = req.body;
 
@@ -381,13 +382,13 @@ app.post("/penyimpanan", (req, res) => {
       if (err) return res.status(500).json(err);
 
       let totalPkm = {
-        nilai_pkm: Number(pkm.nilai_pkm),
+        nilai_pkm: pkm.nilai_hi ? Number(pkm.nilai_pkm) - Number(pkm.nilai_hi) : Number(pkm.nilai_pkm),
         nilai_do: Number(pkm.nilai_do),
         nilai_hi: Number(pkm.nilai_hi),
       };
 
       let totalKernel = {
-        stok: Number(kernel.stok),
+        stok: kernel.hi ? Number(kernel.stok) - Number(kernel.hi) : Number(kernel.stok),
         alb: Number(kernel.alb),
         kadar_air: Number(kernel.kadar_air),
         kadar_kotoran: Number(kernel.kadar_kotoran),
@@ -396,8 +397,17 @@ app.post("/penyimpanan", (req, res) => {
       };
 
       let totalKategori = kategori.map((kat) => {
-        // Hitung total dari semua penyimpanan di kategori ini
-        const penyimpananTotals = kat.penyimpanan.reduce(
+        const adjustedPenyimpanan = kat.penyimpanan.map((p) => ({
+          jenis_tank: p.jenis_tank,
+          stok: p.hi ? Number(p.stok) - Number(p.hi) : Number(p.stok),
+          alb: Number(p.alb),
+          kadar_air: Number(p.kadar_air),
+          kadar_kotoran: Number(p.kadar_kotoran),
+          do: Number(p.do),
+          hi: Number(p.hi),
+        }));
+      
+        const penyimpananTotals = adjustedPenyimpanan.reduce(
           (acc, p) => ({
             stok: acc.stok + Number(p.stok),
             alb: acc.alb + Number(p.alb),
@@ -408,19 +418,11 @@ app.post("/penyimpanan", (req, res) => {
           }),
           { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 }
         );
-
+      
         return {
           nama: kat.nama,
-          jumlah: penyimpananTotals, // Gunakan hasil penjumlahan dari penyimpanan
-          penyimpanan: kat.penyimpanan.map((p) => ({
-            jenis_tank: p.jenis_tank,
-            stok: Number(p.stok),
-            alb: Number(p.alb),
-            kadar_air: Number(p.kadar_air),
-            kadar_kotoran: Number(p.kadar_kotoran),
-            do: Number(p.do),
-            hi: Number(p.hi),
-          })),
+          jumlah: penyimpananTotals,
+          penyimpanan: adjustedPenyimpanan,
         };
       });
 
@@ -434,9 +436,8 @@ app.post("/penyimpanan", (req, res) => {
             if (err) return res.status(500).json(err);
             if (pkmResults.length > 0) {
               totalPkm.nilai_pkm += Number(pkmResults[0].nilai_pkm);
-              totalPkm.nilai_do += Number(pkmResults[0].nilai_do);
-              totalPkm.nilai_hi += Number(pkmResults[0].nilai_hi);
-            }
+              totalPkm.nilai_do = pkm.nilai_do ? Number(pkm.nilai_do) : (totalPkm.nilai_do + Number(pkmResults[0].nilai_do));
+              totalPkm.nilai_hi = pkm.nilai_hi ? Number(pkm.nilai_hi) : (totalPkm.nilai_hi + Number(pkmResults[0].nilai_hi));         }
 
             db.query(
               "SELECT * FROM kernel WHERE id_penyimpanan = ?",
@@ -449,10 +450,9 @@ app.post("/penyimpanan", (req, res) => {
                   totalKernel.kadar_air += Number(kernelResults[0].kadar_air);
                   totalKernel.kadar_kotoran += Number(
                     kernelResults[0].kadar_kotoran
-                  );
-                  totalKernel.do += Number(kernelResults[0].do);
-                  totalKernel.hi += Number(kernelResults[0].hi);
-                }
+                  );// Hanya tambahkan dari database jika input do atau hi tidak ada atau 0
+                  totalKernel.do = kernel.do ? Number(kernel.do) : (totalKernel.do + Number(kernelResults[0].do));
+                  totalKernel.hi = kernel.hi ? Number(kernel.hi) : (totalKernel.hi + Number(kernelResults[0].hi));}
 
                 db.query(
                   "SELECT * FROM kategori WHERE id_penyimpanan = ?",
@@ -542,46 +542,43 @@ app.post("/penyimpanan", (req, res) => {
 
                         // Menggabungkan penyimpanan lama ke dalam kategori baru
                         totalKategori.forEach((kat) => {
-                          let previousPenyimpanan =
-                            penyimpananMap.get(kat.nama) || [];
-
+                          let previousPenyimpanan = penyimpananMap.get(kat.nama) || [];
+                        
                           previousPenyimpanan.forEach((pPrev) => {
                             let existingPenyimpanan = kat.penyimpanan.find(
                               (p) => p.jenis_tank === pPrev.jenis_tank
                             );
-
+                        
                             if (existingPenyimpanan) {
-                              existingPenyimpanan.stok += pPrev.stok;
+                              existingPenyimpanan.stok += pPrev.hi ? Number(pPrev.stok) - Number(pPrev.hi) : Number(pPrev.stok);
                               existingPenyimpanan.alb += pPrev.alb;
                               existingPenyimpanan.kadar_air += pPrev.kadar_air;
-                              existingPenyimpanan.kadar_kotoran +=
-                                pPrev.kadar_kotoran;
-                              existingPenyimpanan.do += pPrev.do;
-                              existingPenyimpanan.hi += pPrev.hi;
+                              existingPenyimpanan.kadar_kotoran += pPrev.kadar_kotoran;
+                              existingPenyimpanan.do = existingPenyimpanan.do ? Number(existingPenyimpanan.do) : (existingPenyimpanan.do + pPrev.do);
+                              existingPenyimpanan.hi = existingPenyimpanan.hi ? Number(existingPenyimpanan.hi) : (existingPenyimpanan.hi + pPrev.hi);
                             } else {
-                              kat.penyimpanan.push(pPrev);
+                              kat.penyimpanan.push({
+                                jenis_tank: pPrev.jenis_tank,
+                                stok: pPrev.hi ? Number(pPrev.stok) - Number(pPrev.hi) : Number(pPrev.stok),
+                                alb: Number(pPrev.alb),
+                                kadar_air: Number(pPrev.kadar_air),
+                                kadar_kotoran: Number(pPrev.kadar_kotoran),
+                                do: Number(pPrev.do),
+                                hi: Number(pPrev.hi),
+                              });
                             }
                           });
-
-                          // Hitung ulang jumlah setelah penggabungan
+                        
                           kat.jumlah = kat.penyimpanan.reduce(
                             (acc, p) => ({
                               stok: acc.stok + Number(p.stok),
                               alb: acc.alb + Number(p.alb),
                               kadar_air: acc.kadar_air + Number(p.kadar_air),
-                              kadar_kotoran:
-                                acc.kadar_kotoran + Number(p.kadar_kotoran),
+                              kadar_kotoran: acc.kadar_kotoran + Number(p.kadar_kotoran),
                               do: acc.do + Number(p.do),
                               hi: acc.hi + Number(p.hi),
                             }),
-                            {
-                              stok: 0,
-                              alb: 0,
-                              kadar_air: 0,
-                              kadar_kotoran: 0,
-                              do: 0,
-                              hi: 0,
-                            }
+                            { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 }
                           );
                         });
 
@@ -779,6 +776,7 @@ app.post("/penyimpanan", (req, res) => {
     }
   );
 });
+
 
 // Jalankan server
 app.listen(port, () => {
