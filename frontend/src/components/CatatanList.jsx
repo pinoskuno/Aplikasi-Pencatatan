@@ -481,19 +481,19 @@ const CatatanList = () => {
                     <thead>
                       <tr className="gray-header">
                         {[
-                          "deskripsi",
-                          "nomor_kontrak",
-                          "tanggal_kontrak",
-                          "pembeli",
-                          "jatuh_tempo_pembayaran",
-                          "tanggal_bayar",
-                          "mutu_alb",
-                          "vol_belum_serah",
-                          "harga_excl",
-                          "nilai",
-                          "fraco_fob",
-                          "rencana_pelayanan",
-                          "realisasi_pelayanan",
+                          "Deskripsi",
+                          "Nomor Kontrak",
+                          "Tanggal Kontrak",
+                          "Pembeli",
+                          "Jatuh Tempo Pembayaran",
+                          "Tanggal Bayar",
+                          "Mutu ALB (%)",
+                          "Vol Belum Serah",
+                          "Harga Excl",
+                          "Nilai",
+                          "Fraco / FOB",
+                          "Rencana Pelayanan",
+                          "Realisasi Pelayanan",
                         ].map((col) => (
                           <th
                             key={col}
