@@ -7,6 +7,7 @@ import AddCatatan from "./components/AddCatatan";
 import TotalSummary from './components/TotalSummary';
 import AddPersediaan from "./components/AddPersediaan";
 import CatatanPersediaan from "./components/CatatanPersediaan";
+import TotalPersediaan from "./components/dummy";
 import './App.css';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -37,6 +38,7 @@ function App() {
           </>
         } />
         <Route path="/input" element={<AddCatatan />} />
+        <Route path="/persediaanDummy" element={<TotalPersediaan />} />
         <Route path="/inputPersediaan" element={<AddPersediaan />} />
         <Route path="/persediaan" element={<CatatanPersediaan />} />
       </Routes>
