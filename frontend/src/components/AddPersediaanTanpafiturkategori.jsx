@@ -1,54 +1,104 @@
 import { useState } from "react";
 
-const AddPersediaan = () => {
+const AddPersediaanDummy = () => {
   const [formData, setFormData] = useState({
     tanggal: "",
-    lokasi: "Bekri",
+    lokasi: "Bekri", // Default lokasi
     pkm: { nilai_pkm: "", nilai_do: "", nilai_hi: "" },
-    kernel: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "",do: "", hi: "" },
+    kernel: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
     kategori: [],
   });
   const [notification, setNotification] = useState(null);
 
-  const lokasiOptions = ["Bekri", "Betung", "Talang sawit", "Sungai Lengi"];
-  const kategoriOptions = ["CPO", "PKO"];
-  const jenisTankOptions = [
-    "Storage Tank I",
-    "Storage Tank II",
-    "Storage Tank III",
-    "Storage Tank IV",
-    "Storage Tank V",
-    "Storage Tank VI",
-    "Storage Tank VII",
-    "Storage Tank VIII",
-    "Storage Tank IX",
-    "Storage Tank X",
-    "Tanki I",
-    "Tanki II",
-    "Tanki III",
-    "Tanki IV",
-    "Tanki V",
-    "Tanki VI",
-    "Tanki VII",
-    "Tanki VIII",
-    "Tanki IX",
-    "Tanki X",
-    "Gudang Repa",
-    "Gudang Pabrik",
-  ];
+  // Definisi cluster berdasarkan lokasi
+  const clusters = {
+    "Bekri": [
+      {
+        nama: "CPO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank VI (1500T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank VII (1500T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank VIII (1500T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank IX (1500T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+      {
+        nama: "PKO",
+        penyimpanan: [
+          { jenis_tank: "Tangki I (44.000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki IV (300000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki V (700000)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki IX (600000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+    ],
+    "Betung": [
+      {
+        nama: "CPO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank I (3000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II (3000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+      {
+        nama: "PKO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank IV (3000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank V", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+    ],
+    "Talang Sawit": [
+      {
+        nama: "CPO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II (3000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank III (3000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+    ],
+    "Sungai Lengi": [
+      {
+        nama: "CPO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank I (2000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II (2000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+      {
+        nama: "Kernel Lengi",
+        penyimpanan: [
+          { jenis_tank: "Gudang Repa", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Gudang Pabrik", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+    ],
+  };
+
+  const lokasiOptions = Object.keys(clusters);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    if (name === "lokasi") {
+      // Ketika lokasi berubah, reset kategori sesuai cluster
+      setFormData({
+        ...formData,
+        lokasi: value,
+        kategori: clusters[value].map((kat) => ({
+          nama: kat.nama,
+          penyimpanan: kat.penyimpanan.map((peny) => ({ ...peny })),
+        })),
+      });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
-  const handleKernelChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      kernel: { ...formData.kernel, [name]: value },
-    });
-  };
   const handlePKMChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -57,41 +107,12 @@ const AddPersediaan = () => {
     });
   };
 
-  const addKategori = () => {
+  const handleKernelChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      kategori: [
-        ...formData.kategori,
-        {
-          nama: "CPO",
-          penyimpanan: [],
-          jumlah: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "",do:"",hi:"" },
-        },
-      ],
+      kernel: { ...formData.kernel, [name]: value },
     });
-  };
-
-  const handleKategoriChange = (index, e) => {
-    const { value } = e.target;
-    let kategori = [...formData.kategori];
-    kategori[index].nama = value;
-    setFormData({ ...formData, kategori });
-  };
-
-  
-
-  const addPenyimpanan = (kategoriIndex) => {
-    let kategori = [...formData.kategori];
-    kategori[kategoriIndex].penyimpanan.push({
-      jenis_tank: "Storage Tank I",
-      stok: "",
-      alb: "",
-      kadar_air: "",
-      kadar_kotoran: "",
-      do:"",
-      hi:"",
-    });
-    setFormData({ ...formData, kategori });
   };
 
   const handlePenyimpananChange = (kategoriIndex, penyimpananIndex, e) => {
@@ -123,7 +144,9 @@ const AddPersediaan = () => {
 
   return (
     <div className="container mt-4">
-      <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">INPUT PERSEDIAAN PRODUKSI CPO & PKO</span></h2>
+      <h2 className="text-center mb-4 fw-bolder center">
+        <span className="text-gradient d-inline">INPUT PERSEDIAAN PRODUKSI CPO & PKO</span>
+      </h2>
       {notification && (
         <div className={`alert alert-${notification.type === "success" ? "success" : "danger"}`}>
           {notification.message}
@@ -146,6 +169,7 @@ const AddPersediaan = () => {
             <select
               name="lokasi"
               className="form-control"
+              value={formData.lokasi}
               onChange={handleChange}
             >
               {lokasiOptions.map((loc) => (
@@ -156,19 +180,19 @@ const AddPersediaan = () => {
             </select>
           </div>
         </div>
-        {/* <h5>Kernel</h5> */}
+
+        {/* Form PKM */}
         <div className="mb-3">
-          <label className="form-label">PKM STOK</label>
+          <label className="form-label">PKM Stok</label>
           <input
             type="number"
             name="nilai_pkm"
             className="form-control"
             value={formData.pkm.nilai_pkm}
-            onChange={handlePKMChange }
+            onChange={handlePKMChange}
             required
           />
         </div>
-
         <div className="form-row">
           <div className="col-md-6">
             <label className="form-label">PKM DO Hi</label>
@@ -182,9 +206,8 @@ const AddPersediaan = () => {
               required
             />
           </div>
-
           <div className="col-md-6">
-            <label className="form-label">PKM DO Sd HI</label>
+            <label className="form-label">PKM Sd Hi</label>
             <input
               type="number"
               name="nilai_hi"
@@ -197,7 +220,7 @@ const AddPersediaan = () => {
           </div>
         </div>
 
-        {/* <h5>Kernel</h5> */}
+        {/* Form Kernel */}
         <div className="form-row">
           <div className="col-md-6">
             <label className="form-label">Kernel Stok</label>
@@ -223,7 +246,6 @@ const AddPersediaan = () => {
             />
           </div>
         </div>
-
         <div className="form-row">
           <div className="col-md-6">
             <label className="form-label">Kernel Kadar Air</label>
@@ -250,7 +272,6 @@ const AddPersediaan = () => {
             />
           </div>
         </div>
-
         <div className="form-row">
           <div className="col-md-6">
             <label className="form-label">Kernel DO Hi</label>
@@ -264,9 +285,8 @@ const AddPersediaan = () => {
               required
             />
           </div>
-
           <div className="col-md-6">
-            <label className="form-label">Kernel Sd HI</label>
+            <label className="form-label">Kernel Sd Hi</label>
             <input
               type="number"
               name="hi"
@@ -277,47 +297,15 @@ const AddPersediaan = () => {
               required
             />
           </div>
-        </div>              
-
-        <div class="d-grid gap-2 mt-2">
-          <button type="button" className="btn btn-primary" onClick={addKategori}>
-            Tambah Kategori
-          </button>
         </div>
+
+        {/* Kategori dan Penyimpanan sesuai Cluster */}
         {formData.kategori.map((kat, katIndex) => (
           <div key={katIndex} className="mt-3 border p-3">
-            <h5>Kategori</h5>
-            <select
-              className="form-control"
-              onChange={(e) => handleKategoriChange(katIndex, e)}
-            >
-              {kategoriOptions.map((katOpt) => (
-                <option key={katOpt} value={katOpt}>
-                  {katOpt}
-                </option>
-              ))}
-            </select>
-
-            <button
-              type="button"
-              className="btn btn-secondary mt-2"
-              onClick={() => addPenyimpanan(katIndex)}
-            >
-              Tambah Penyimpanan
-            </button>
+            <h5>Kategori: {kat.nama}</h5>
             {kat.penyimpanan.map((p, pIndex) => (
               <div key={pIndex} className="mt-2 border p-2">
-                <select
-                  name="jenis_tank"
-                  className="form-control"
-                  onChange={(e) => handlePenyimpananChange(katIndex, pIndex, e)}
-                >
-                  {jenisTankOptions.map((tank) => (
-                    <option key={tank} value={tank}>
-                      {tank}
-                    </option>
-                  ))}
-                </select>
+                <label className="form-label">Tank: {p.jenis_tank}</label>
                 {Object.keys(p)
                   .filter((key) => key !== "jenis_tank")
                   .map((key) => (
@@ -327,24 +315,24 @@ const AddPersediaan = () => {
                       name={key}
                       placeholder={key}
                       className="form-control mt-2"
-                      onChange={(e) =>
-                        handlePenyimpananChange(katIndex, pIndex, e)
-                      }
+                      value={p[key]}
+                      onChange={(e) => handlePenyimpananChange(katIndex, pIndex, e)}
+                      required
                     />
                   ))}
               </div>
             ))}
           </div>
         ))}
-        <div class="d-grid gap-2 mt-2 mb-5">
+
+        <div className="d-grid gap-2 mt-2 mb-5">
           <button type="submit" className="btn btn-success mt-3">
             Submit
           </button>
         </div>
-        
       </form>
     </div>
   );
 };
 
-export default AddPersediaan;
+export default AddPersediaanDummy;
