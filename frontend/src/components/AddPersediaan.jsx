@@ -136,7 +136,7 @@ const AddPersediaan = () => {
             <input
               type="date"
               name="tanggal"
-              className="form-control"
+              className="form-control bg-light"
               onChange={handleChange}
               required
             />
@@ -145,7 +145,7 @@ const AddPersediaan = () => {
             <label className="form-label">Lokasi</label>
             <select
               name="lokasi"
-              className="form-control"
+              className="form-control bg-light"
               onChange={handleChange}
             >
               {lokasiOptions.map((loc) => (
@@ -162,7 +162,7 @@ const AddPersediaan = () => {
           <input
             type="number"
             name="nilai_pkm"
-            className="form-control"
+            className="form-control bg-light"
             value={formData.pkm.nilai_pkm}
             onChange={handlePKMChange }
             required
@@ -176,7 +176,7 @@ const AddPersediaan = () => {
               type="number"
               name="nilai_do"
               step="0.01"
-              className="form-control"
+              className="form-control bg-light"
               value={formData.pkm.nilai_do}
               onChange={handlePKMChange}
               required
@@ -189,7 +189,7 @@ const AddPersediaan = () => {
               type="number"
               name="nilai_hi"
               step="0.01"
-              className="form-control"
+              className="form-control bg-light"
               value={formData.pkm.nilai_hi}
               onChange={handlePKMChange}
               required
@@ -204,7 +204,7 @@ const AddPersediaan = () => {
             <input
               type="number"
               name="stok"
-              className="form-control"
+              className="form-control bg-light"
               value={formData.kernel.stok}
               onChange={handleKernelChange}
               required
@@ -216,7 +216,7 @@ const AddPersediaan = () => {
               type="number"
               name="alb"
               step="0.01"
-              className="form-control"
+              className="form-control bg-light"
               value={formData.kernel.alb}
               onChange={handleKernelChange}
               required
@@ -231,7 +231,7 @@ const AddPersediaan = () => {
               type="number"
               name="kadar_air"
               step="0.01"
-              className="form-control"
+              className="form-control bg-light"
               value={formData.kernel.kadar_air}
               onChange={handleKernelChange}
               required
@@ -243,7 +243,7 @@ const AddPersediaan = () => {
               type="number"
               name="kadar_kotoran"
               step="0.01"
-              className="form-control"
+              className="form-control bg-light"
               value={formData.kernel.kadar_kotoran}
               onChange={handleKernelChange}
               required
@@ -258,7 +258,7 @@ const AddPersediaan = () => {
               type="number"
               name="do"
               step="0.01"
-              className="form-control"
+              className="form-control bg-light"
               value={formData.kernel.do}
               onChange={handleKernelChange}
               required
@@ -271,7 +271,7 @@ const AddPersediaan = () => {
               type="number"
               name="hi"
               step="0.01"
-              className="form-control"
+              className="form-control bg-light"
               value={formData.kernel.hi}
               onChange={handleKernelChange}
               required
