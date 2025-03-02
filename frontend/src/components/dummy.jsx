@@ -7,7 +7,7 @@ const TotalPersediaan = () => {
   const [availableDates, setAvailableDates] = useState([]);
   const [previousDate, setPreviousDate] = useState("");
 
-  // Daftar penyimpanan untuk CPO dan Kernel
+  // Daftar penyimpanan untuk CPO dan Kernel berdasarkan nama lengkap
   const cpoInspecTanks = [
     "Bekri CPO Storage Tank VII",
     "Bekri CPO Storage Tank VIII",
@@ -20,21 +20,22 @@ const TotalPersediaan = () => {
     "Betung CPO Storage Tank I",
     "Sungai Lengi CPO Storage Tank II",
   ];
-  const kernelInspecTanks = [
-    "Bekri Kernel",
-    "Betung Kernel",
-    "Talang Sawit Kernel",
-    "Sungai Lengi Kernel",
+  const kernelInspecLocations = [
+    "Bekri",
+    "Betung",
+    "Talang Sawit",
+    "Sungai Lengi",
   ];
-  const kernelOutspecTanks = [
-    "Sungai Lengi Kernel",
-    "Gudang Repa kernel",
+  const kernelOutspecLocations = [
+    "Sungai Lengi",
+    "Gudang Repa",
   ];
 
   useEffect(() => {
     fetch("http://localhost:5000/data_penyimpanan")
       .then((response) => response.json())
       .then((data) => {
+        console.log("Data dari backend:", data);
         setDataPenyimpanan(data);
         const dates = [
           ...new Set(data.map((item) => item.tanggal.substring(0, 10))),
@@ -55,7 +56,7 @@ const TotalPersediaan = () => {
     setPreviousDate(index >= 0 && index + 1 < availableDates.length ? availableDates[index + 1] : "");
   }, [selectedDate, availableDates]);
 
-  // Filter data berdasarkan tanggal saja (tanpa lokasi)
+  // Filter data berdasarkan tanggal saja
   const filteredData = dataPenyimpanan.filter((item) =>
     item.tanggal.startsWith(selectedDate)
   );
@@ -63,7 +64,7 @@ const TotalPersediaan = () => {
     item.tanggal.startsWith(previousDate)
   );
 
-  // Fungsi untuk menghitung total berdasarkan data
+  // Fungsi untuk menghitung total
   const calculateTotals = (data) => {
     const totals = {
       cpoInspec: { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 },
@@ -76,61 +77,64 @@ const TotalPersediaan = () => {
 
     data.forEach((item) => {
       // Total PKM
-      totals.pkm.stok += item.pkm.nilai_pkm || 0;
-      totals.pkm.do += item.pkm.nilai_do || 0;
-      totals.pkm.hi += item.pkm.nilai_hi || 0;
+      totals.pkm.stok += Number(item.pkm.nilai_pkm) || 0;
+      totals.pkm.do += Number(item.pkm.nilai_do) || 0;
+      totals.pkm.hi += Number(item.pkm.nilai_hi) || 0;
 
-      // Total Kategori (CPO, PKO, dan Kernel)
+      // Total Kernel berdasarkan lokasi
+      if (kernelInspecLocations.includes(item.lokasi)) {
+        totals.kernelInspec.stok += Number(item.kernel.stok) || 0;
+        totals.kernelInspec.alb += Number(item.kernel.alb) || 0;
+        totals.kernelInspec.kadar_air += Number(item.kernel.kadar_air) || 0;
+        totals.kernelInspec.kadar_kotoran += Number(item.kernel.kadar_kotoran) || 0;
+        totals.kernelInspec.do += Number(item.kernel.do) || 0;
+        totals.kernelInspec.hi += Number(item.kernel.hi) || 0;
+      }
+      if (kernelOutspecLocations.includes(item.lokasi)) {
+        totals.kernelOutspec.stok += Number(item.kernel.stok) || 0;
+        totals.kernelOutspec.alb += Number(item.kernel.alb) || 0;
+        totals.kernelOutspec.kadar_air += Number(item.kernel.kadar_air) || 0;
+        totals.kernelOutspec.kadar_kotoran += Number(item.kernel.kadar_kotoran) || 0;
+        totals.kernelOutspec.do += Number(item.kernel.do) || 0;
+        totals.kernelOutspec.hi += Number(item.kernel.hi) || 0;
+      }
+
+      // Total CPO dan PKO dari kategori
       Object.values(item.kategori).forEach((kat) => {
         if (kat.nama === "PKO") {
-          // Total PKO dari jumlah
-          totals.pko.stok += kat.jumlah.stok || 0;
-          totals.pko.alb += kat.jumlah.alb || 0;
-          totals.pko.kadar_air += kat.jumlah.kadar_air || 0;
-          totals.pko.kadar_kotoran += kat.jumlah.kadar_kotoran || 0;
-          totals.pko.do += kat.jumlah.do || 0;
-          totals.pko.hi += kat.jumlah.hi || 0;
+          kat.penyimpanan.forEach((penyimpanan) => {
+            totals.pko.stok += Number(penyimpanan.stok) || 0;
+            totals.pko.alb += Number(penyimpanan.alb) || 0;
+            totals.pko.kadar_air += Number(penyimpanan.kadar_air) || 0;
+            totals.pko.kadar_kotoran += Number(penyimpanan.kadar_kotoran) || 0;
+            totals.pko.do += Number(penyimpanan.do) || 0;
+            totals.pko.hi += Number(penyimpanan.hi) || 0;
+          });
         } else if (kat.nama === "CPO") {
           kat.penyimpanan.forEach((penyimpanan) => {
-            if (cpoInspecTanks.includes(penyimpanan.jenis_tank)) {
-              totals.cpoInspec.stok += penyimpanan.stok || 0;
-              totals.cpoInspec.alb += penyimpanan.alb || 0;
-              totals.cpoInspec.kadar_air += penyimpanan.kadar_air || 0;
-              totals.cpoInspec.kadar_kotoran += penyimpanan.kadar_kotoran || 0;
-              totals.cpoInspec.do += penyimpanan.do || 0;
-              totals.cpoInspec.hi += penyimpanan.hi || 0;
-            } else if (cpoOutspecTanks.includes(penyimpanan.jenis_tank)) {
-              totals.cpoOutspec.stok += penyimpanan.stok || 0;
-              totals.cpoOutspec.alb += penyimpanan.alb || 0;
-              totals.cpoOutspec.kadar_air += penyimpanan.kadar_air || 0;
-              totals.cpoOutspec.kadar_kotoran += penyimpanan.kadar_kotoran || 0;
-              totals.cpoOutspec.do += penyimpanan.do || 0;
-              totals.cpoOutspec.hi += penyimpanan.hi || 0;
-            }
-          });
-        } else if (kat.nama === "Kernel") {
-          kat.penyimpanan.forEach((penyimpanan) => {
-            if (kernelInspecTanks.includes(penyimpanan.jenis_tank)) {
-              totals.kernelInspec.stok += penyimpanan.stok || 0;
-              totals.kernelInspec.alb += penyimpanan.alb || 0;
-              totals.kernelInspec.kadar_air += penyimpanan.kadar_air || 0;
-              totals.kernelInspec.kadar_kotoran += penyimpanan.kadar_kotoran || 0;
-              totals.kernelInspec.do += penyimpanan.do || 0;
-              totals.kernelInspec.hi += penyimpanan.hi || 0;
-            }
-            if (kernelOutspecTanks.includes(penyimpanan.jenis_tank)) {
-              totals.kernelOutspec.stok += penyimpanan.stok || 0;
-              totals.kernelOutspec.alb += penyimpanan.alb || 0;
-              totals.kernelOutspec.kadar_air += penyimpanan.kadar_air || 0;
-              totals.kernelOutspec.kadar_kotoran += penyimpanan.kadar_kotoran || 0;
-              totals.kernelOutspec.do += penyimpanan.do || 0;
-              totals.kernelOutspec.hi += penyimpanan.hi || 0;
+            // Gabungkan lokasi dengan jenis_tank untuk membentuk nama lengkap
+            const fullTankName = `${item.lokasi} CPO ${penyimpanan.jenis_tank}`;
+            if (cpoInspecTanks.includes(fullTankName)) {
+              totals.cpoInspec.stok += Number(penyimpanan.stok) || 0;
+              totals.cpoInspec.alb += Number(penyimpanan.alb) || 0;
+              totals.cpoInspec.kadar_air += Number(penyimpanan.kadar_air) || 0;
+              totals.cpoInspec.kadar_kotoran += Number(penyimpanan.kadar_kotoran) || 0;
+              totals.cpoInspec.do += Number(penyimpanan.do) || 0;
+              totals.cpoInspec.hi += Number(penyimpanan.hi) || 0;
+            } else if (cpoOutspecTanks.includes(fullTankName)) {
+              totals.cpoOutspec.stok += Number(penyimpanan.stok) || 0;
+              totals.cpoOutspec.alb += Number(penyimpanan.alb) || 0;
+              totals.cpoOutspec.kadar_air += Number(penyimpanan.kadar_air) || 0;
+              totals.cpoOutspec.kadar_kotoran += Number(penyimpanan.kadar_kotoran) || 0;
+              totals.cpoOutspec.do += Number(penyimpanan.do) || 0;
+              totals.cpoOutspec.hi += Number(penyimpanan.hi) || 0;
             }
           });
         }
       });
     });
 
+    console.log("Calculated Totals:", totals);
     return totals;
   };
 
