@@ -27,7 +27,7 @@ const TotalPersediaan = () => {
     "Sungai Lengi",
   ];
   const kernelOutspecLocations = [ 
-    "Gudang Repa",
+    "Sungai Lengi Kernel Lenging Gudang Repa",
   ];
 
   useEffect(() => {
@@ -89,14 +89,7 @@ const TotalPersediaan = () => {
         totals.kernelInspec.do += Number(item.kernel.do) || 0;
         totals.kernelInspec.hi += Number(item.kernel.hi) || 0;
       }
-      if (kernelOutspecLocations.includes(item.lokasi)) {
-        totals.kernelOutspec.stok += Number(item.kernel.stok) || 0;
-        totals.kernelOutspec.alb += Number(item.kernel.alb) || 0;
-        totals.kernelOutspec.kadar_air += Number(item.kernel.kadar_air) || 0;
-        totals.kernelOutspec.kadar_kotoran += Number(item.kernel.kadar_kotoran) || 0;
-        totals.kernelOutspec.do += Number(item.kernel.do) || 0;
-        totals.kernelOutspec.hi += Number(item.kernel.hi) || 0;
-      }
+      
 
       // Total CPO dan PKO dari kategori
       Object.values(item.kategori).forEach((kat) => {
@@ -128,6 +121,20 @@ const TotalPersediaan = () => {
               totals.cpoOutspec.do += Number(penyimpanan.do) || 0;
               totals.cpoOutspec.hi += Number(penyimpanan.hi) || 0;
             }
+          });
+        } else if (kat.nama === "Kernel Lengi") {
+          kat.penyimpanan.forEach((penyimpanan) => {
+            // Gabungkan lokasi dengan jenis_tank untuk membentuk nama lengkap
+            const fullTankName = `${item.lokasi} Kernel Lengi ${penyimpanan.jenis_tank}`;
+            if (kernelOutspecLocations.includes(fullTankName)) {
+              totals.kernelOutspec.stok += Number(penyimpanan.stok) || 0;
+              totals.kernelOutspec.alb += Number(penyimpanan.alb) || 0;
+              totals.kernelOutspec.kadar_air += Number(penyimpanan.kadar_air) || 0;
+              totals.kernelOutspec.kadar_kotoran += Number(penyimpanan.kadar_kotoran) || 0;
+              totals.kernelOutspec.do += Number(penyimpanan.do) || 0;
+              totals.kernelOutspec.hi += Number(penyimpanan.hi) || 0;
+            } 
+            
           });
         }
       });
