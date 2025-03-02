@@ -28,7 +28,7 @@ const AddPersediaanDummy = () => {
           { jenis_tank: "Tangki I (44.000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
           { jenis_tank: "Tangki III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
           { jenis_tank: "Tangki IV (300000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Tangki V (700000)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki V (700000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
           { jenis_tank: "Tangki IX (600000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
         ],
       },
