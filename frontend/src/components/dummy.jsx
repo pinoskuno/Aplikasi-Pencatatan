@@ -12,7 +12,7 @@ const TotalPersediaan = () => {
     "Bekri CPO Storage Tank VII",
     "Bekri CPO Storage Tank VIII",
     "Betung CPO Storage Tank II",
-    "Talang Swit CPO Talang Sawit",
+    "Total CPO Talang Sawit",
     "Sungai Lengi CPO Storage Tank I",
   ];
   const cpoOutspecTanks = [
@@ -26,8 +26,7 @@ const TotalPersediaan = () => {
     "Talang Sawit",
     "Sungai Lengi",
   ];
-  const kernelOutspecLocations = [
-    "Sungai Lengi",
+  const kernelOutspecLocations = [ 
     "Gudang Repa",
   ];
 

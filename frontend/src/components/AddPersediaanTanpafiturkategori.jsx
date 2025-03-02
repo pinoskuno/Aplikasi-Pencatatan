@@ -16,20 +16,20 @@ const AddPersediaanDummy = () => {
       {
         nama: "CPO",
         penyimpanan: [
-          { jenis_tank: "Storage Tank VI (1500T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Storage Tank VII (1500T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Storage Tank VIII (1500T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Storage Tank IX (1500T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank VI", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank VII", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank VIII", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank IX", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
         ],
       },
       {
         nama: "PKO",
         penyimpanan: [
-          { jenis_tank: "Tangki I (44.000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
           { jenis_tank: "Tangki III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Tangki IV (300000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Tangki V (700000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Tangki IX (600000kg)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki V", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki IX", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
         ],
       },
     ],
@@ -37,8 +37,8 @@ const AddPersediaanDummy = () => {
       {
         nama: "CPO",
         penyimpanan: [
-          { jenis_tank: "Storage Tank I (3000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Storage Tank II (3000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
           { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
         ],
       },
@@ -46,7 +46,7 @@ const AddPersediaanDummy = () => {
         nama: "PKO",
         penyimpanan: [
           { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Storage Tank IV (3000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
           { jenis_tank: "Storage Tank V", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
         ],
       },
@@ -56,8 +56,8 @@ const AddPersediaanDummy = () => {
         nama: "CPO",
         penyimpanan: [
           { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Storage Tank II (3000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Storage Tank III (3000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
         ],
       },
     ],
@@ -65,8 +65,8 @@ const AddPersediaanDummy = () => {
       {
         nama: "CPO",
         penyimpanan: [
-          { jenis_tank: "Storage Tank I (2000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-          { jenis_tank: "Storage Tank II (2000T)", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
           { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
         ],
       },
