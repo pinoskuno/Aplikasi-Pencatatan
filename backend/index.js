@@ -173,28 +173,40 @@ app.delete("/api/catatan/:id", (req, res) => {
 // GET all data
 app.get("/data_penyimpanan", (req, res) => {
   const sql = `
-  SELECT dp.id, dp.tanggal, dp.lokasi, 
-         pk.nilai_pkm, pk.nilai_do AS pkm_do, pk.nilai_hi AS pkm_hi,
-         k.stok AS kernel_stok, k.alb AS kernel_alb, k.kadar_air AS kernel_kadar_air, k.kadar_kotoran AS kernel_kadar_kotoran,k.do AS kernel_do, k.hi AS kernel_hi,
-         ka.id AS kategori_id, ka.nama_kategori,
-         p.id AS penyimpanan_id, p.jenis_tank, p.stok AS penyimpanan_stok, p.alb AS penyimpanan_alb, p.kadar_air AS penyimpanan_kadar_air, p.kadar_kotoran AS penyimpanan_kadar_kotoran,  p.do AS penyimpanan_do, p.hi AS penyimpanan_hi,
-         jt.stok AS jumlah_stok, jt.alb AS jumlah_alb, jt.kadar_air AS jumlah_kadar_air, jt.kadar_kotoran AS jumlah_kadar_kotoran, jt.do AS jumlah_do, jt.hi AS jumlah_hi
-  FROM data_penyimpanan dp
-  LEFT JOIN data_pkm pk ON pk.id_penyimpanan = dp.id
-  LEFT JOIN kernel k ON k.id_penyimpanan = dp.id
-  LEFT JOIN kategori ka ON ka.id_penyimpanan = dp.id
-  LEFT JOIN penyimpanan p ON p.id_kategori = ka.id
-  LEFT JOIN jumlah_total jt ON jt.id_kategori = ka.id`;
+    SELECT dp.id,
+           DATE_FORMAT(dp.tanggal, '%Y-%m-%d') AS tanggal,  -- Normalisasi ke YYYY-MM-DD
+           dp.lokasi, 
+           pk.nilai_pkm, pk.nilai_do AS pkm_do, pk.nilai_hi AS pkm_hi,
+           k.stok AS kernel_stok, k.alb AS kernel_alb, k.kadar_air AS kernel_kadar_air, 
+           k.kadar_kotoran AS kernel_kadar_kotoran, k.do AS kernel_do, k.hi AS kernel_hi,
+           ka.id AS kategori_id, ka.nama_kategori,
+           p.id AS penyimpanan_id, p.jenis_tank, p.stok AS penyimpanan_stok, 
+           p.alb AS penyimpanan_alb, p.kadar_air AS penyimpanan_kadar_air, 
+           p.kadar_kotoran AS penyimpanan_kadar_kotoran, p.do AS penyimpanan_do, 
+           p.hi AS penyimpanan_hi,
+           jt.stok AS jumlah_stok, jt.alb AS jumlah_alb, jt.kadar_air AS jumlah_kadar_air, 
+           jt.kadar_kotoran AS jumlah_kadar_kotoran, jt.do AS jumlah_do, jt.hi AS jumlah_hi
+    FROM data_penyimpanan dp
+    LEFT JOIN data_pkm pk ON pk.id_penyimpanan = dp.id
+    LEFT JOIN kernel k ON k.id_penyimpanan = dp.id
+    LEFT JOIN kategori ka ON ka.id_penyimpanan = dp.id
+    LEFT JOIN penyimpanan p ON p.id_kategori = ka.id
+    LEFT JOIN jumlah_total jt ON jt.id_kategori = ka.id`;
 
   db.query(sql, (err, results) => {
-    if (err) return res.status(500).json(err);
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json(err);
+    }
+
+    console.log("Raw results from database:", results); // Debugging hasil mentah
 
     const dataMap = {};
     results.forEach((row) => {
       if (!dataMap[row.id]) {
         dataMap[row.id] = {
           id: row.id,
-          tanggal: row.tanggal,
+          tanggal: row.tanggal, // Sudah dalam format YYYY-MM-DD dari query
           lokasi: row.lokasi,
           pkm: {
             nilai_pkm: row.nilai_pkm,
@@ -241,7 +253,9 @@ app.get("/data_penyimpanan", (req, res) => {
       }
     });
 
-    res.json(Object.values(dataMap));
+    const responseData = Object.values(dataMap);
+    console.log("Data yang dikirim ke frontend:", responseData); // Debugging data akhir
+    res.json(responseData);
   });
 });
 
