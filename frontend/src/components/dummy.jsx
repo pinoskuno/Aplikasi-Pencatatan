@@ -26,9 +26,7 @@ const TotalPersediaan = () => {
     "Talang Sawit",
     "Sungai Lengi",
   ];
-  const kernelOutspecLocations = [ 
-    "Sungai Lengi Kernel Lenging Gudang Repa",
-  ];
+  const kernelOutspecLocations = ["Sungai Lengi"];
 
   useEffect(() => {
     fetch("http://localhost:5000/data_penyimpanan")
@@ -90,6 +88,15 @@ const TotalPersediaan = () => {
         totals.kernelInspec.hi += Number(item.kernel.hi) || 0;
       }
       
+      if (kernelOutspecLocations.includes(item.lokasi)) {
+        // Tambahkan data kernel dari root untuk Outspec jika lokasi cocok
+        totals.kernelOutspec.stok += Number(item.kernel.stok) || 0;
+        totals.kernelOutspec.alb += Number(item.kernel.alb) || 0;
+        totals.kernelOutspec.kadar_air += Number(item.kernel.kadar_air) || 0;
+        totals.kernelOutspec.kadar_kotoran += Number(item.kernel.kadar_kotoran) || 0;
+        totals.kernelOutspec.do += Number(item.kernel.do) || 0;
+        totals.kernelOutspec.hi += Number(item.kernel.hi) || 0;
+      }
 
       // Total CPO dan PKO dari kategori
       Object.values(item.kategori).forEach((kat) => {
@@ -124,17 +131,16 @@ const TotalPersediaan = () => {
           });
         } else if (kat.nama === "Kernel Lengi") {
           kat.penyimpanan.forEach((penyimpanan) => {
-            // Gabungkan lokasi dengan jenis_tank untuk membentuk nama lengkap
             const fullTankName = `${item.lokasi} Kernel Lengi ${penyimpanan.jenis_tank}`;
-            if (kernelOutspecLocations.includes(fullTankName)) {
+            console.log("Checking Kernel Outspec:", fullTankName); // Debugging
+            if (fullTankName === "Sungai Lengi Kernel Lengi Gudang Repa") { // Cocokkan secara eksplisit
               totals.kernelOutspec.stok += Number(penyimpanan.stok) || 0;
               totals.kernelOutspec.alb += Number(penyimpanan.alb) || 0;
               totals.kernelOutspec.kadar_air += Number(penyimpanan.kadar_air) || 0;
               totals.kernelOutspec.kadar_kotoran += Number(penyimpanan.kadar_kotoran) || 0;
               totals.kernelOutspec.do += Number(penyimpanan.do) || 0;
               totals.kernelOutspec.hi += Number(penyimpanan.hi) || 0;
-            } 
-            
+            }
           });
         }
       });
