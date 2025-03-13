@@ -78,6 +78,18 @@ const AddPersediaanDummy = () => {
         ],
       },
     ],
+    "IPMG Boom Baru": [
+      {
+        nama: "CPO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+      
+    ],
   };
 
   const lokasiOptions = Object.keys(clusters);
