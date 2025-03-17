@@ -195,6 +195,31 @@ const calculateTotalSeluruh = (data, totalsAtas) => {
   totals.cpoInspec.do = totalsAtas.totalCPO.do;
   totals.cpoInspec.hi = totalsAtas.totalCPO.hi;
 
+<<<<<<< HEAD
+  return (
+    <Container className="mt-5">
+      <h2 className="text-center mb-4">TOTAL PKS DAN PPIS REGIONAL VII</h2>
+      <Row className="mb-4 justify-content-center">
+        <Col md={6}>
+          <Form.Group controlId="dateSelect">
+            <Form.Label>Pilih Tanggal</Form.Label>
+            <Form.Control
+              as="select"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            >
+              <option value="">Pilih Tanggal</option>
+              {availableDates.map((date) => (
+                <option key={date} value={date}>
+                  {new Date(date).toLocaleDateString()}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+        </Col>
+      </Row>
+      {selectedDate && (
+=======
   // Tambahkan data dari tank tambahan untuk CPO Inspec dan Outspec
   data.forEach((item) => {
     Object.values(item.kategori).forEach((kat) => {
@@ -396,6 +421,7 @@ return (
     </Row>
     {selectedDate && (
       <>
+>>>>>>> 75977a5790a80ac5c821b6e066e647b043ce4f20
         <Row>
           {renderTable(currentTotals, `Data ${new Date(selectedDate).toLocaleDateString()}`)}
           {previousDate && renderTable(previousTotals, `Data Sebelumnya ${new Date(previousDate).toLocaleDateString()}`)}
