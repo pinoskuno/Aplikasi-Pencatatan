@@ -93,19 +93,29 @@ const AddPersediaanDummy = () => {
   };
 
   const lokasiOptions = Object.keys(clusters);
+  const lokasiDenganPKM = ["Bekri", "Betung"]; // Lokasi yang memiliki PKM
+  const lokasiDenganKernel = ["Bekri", "Betung", "Talang Sawit"];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "lokasi") {
       // Ketika lokasi berubah, reset kategori sesuai cluster
-      setFormData({
+      const newFormData = {
         ...formData,
         lokasi: value,
         kategori: clusters[value].map((kat) => ({
           nama: kat.nama,
           penyimpanan: kat.penyimpanan.map((peny) => ({ ...peny })),
         })),
-      });
+      };
+      // Reset PKM dan Kernel jika lokasi tidak mendukung
+      if (!lokasiDenganPKM.includes(value)) {
+        newFormData.pkm = { nilai_pkm: "", nilai_do: "", nilai_hi: "" };
+      }
+      if (!lokasiDenganKernel.includes(value)) {
+        newFormData.kernel = { stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" };
+      }
+      setFormData(newFormData);
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -193,123 +203,130 @@ const AddPersediaanDummy = () => {
           </div>
         </div>
 
-        {/* Form PKM */}
-        <div className="mb-3">
-          <label className="form-label">PKM Stok</label>
-          <input
-            type="number"
-            name="nilai_pkm"
-            className="form-control"
-            value={formData.pkm.nilai_pkm}
-            onChange={handlePKMChange}
-            required
-          />
-        </div>
-        <div className="form-row">
-          <div className="col-md-6">
-            <label className="form-label">PKM DO Hi</label>
-            <input
-              type="number"
-              name="nilai_do"
-              step="0.01"
-              className="form-control"
-              value={formData.pkm.nilai_do}
-              onChange={handlePKMChange}
-              required
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">PKM Sd Hi</label>
-            <input
-              type="number"
-              name="nilai_hi"
-              step="0.01"
-              className="form-control"
-              value={formData.pkm.nilai_hi}
-              onChange={handlePKMChange}
-              required
-            />
-          </div>
-        </div>
-
-        {/* Form Kernel */}
-        <div className="form-row">
-          <div className="col-md-6">
-            <label className="form-label">Kernel Stok</label>
-            <input
-              type="number"
-              name="stok"
-              className="form-control"
-              value={formData.kernel.stok}
-              onChange={handleKernelChange}
-              required
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">Kernel ALB</label>
-            <input
-              type="number"
-              name="alb"
-              step="0.01"
-              className="form-control"
-              value={formData.kernel.alb}
-              onChange={handleKernelChange}
-              required
-            />
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="col-md-6">
-            <label className="form-label">Kernel Kadar Air</label>
-            <input
-              type="number"
-              name="kadar_air"
-              step="0.01"
-              className="form-control"
-              value={formData.kernel.kadar_air}
-              onChange={handleKernelChange}
-              required
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">Kernel Kadar Kotoran</label>
-            <input
-              type="number"
-              name="kadar_kotoran"
-              step="0.01"
-              className="form-control"
-              value={formData.kernel.kadar_kotoran}
-              onChange={handleKernelChange}
-              required
-            />
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="col-md-6">
-            <label className="form-label">Kernel DO Hi</label>
-            <input
-              type="number"
-              name="do"
-              step="0.01"
-              className="form-control"
-              value={formData.kernel.do}
-              onChange={handleKernelChange}
-              required
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">Kernel Sd Hi</label>
-            <input
-              type="number"
-              name="hi"
-              step="0.01"
-              className="form-control"
-              value={formData.kernel.hi}
-              onChange={handleKernelChange}
-              required
-            />
-          </div>
-        </div>
+{/* Form PKM - Hanya tampil untuk Bekri, Betung, Talang Sawit */}
+{lokasiDenganPKM.includes(formData.lokasi) && (
+          <>
+            <div className="mb-3">
+              <label className="form-label">PKM Stok</label>
+              <input
+                type="number"
+                name="nilai_pkm"
+                className="form-control"
+                value={formData.pkm.nilai_pkm}
+                onChange={handlePKMChange}
+                required
+              />
+            </div>
+            <div className="form-row">
+              <div className="col-md-6">
+                <label className="form-label">PKM DO Hi</label>
+                <input
+                  type="number"
+                  name="nilai_do"
+                  step="0.01"
+                  className="form-control"
+                  value={formData.pkm.nilai_do}
+                  onChange={handlePKMChange}
+                  required
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label">PKM Sd Hi</label>
+                <input
+                  type="number"
+                  name="nilai_hi"
+                  step="0.01"
+                  className="form-control"
+                  value={formData.pkm.nilai_hi}
+                  onChange={handlePKMChange}
+                  required
+                />
+              </div>
+            </div>
+          </>
+        )}
+{/* Form Kernel - Hanya tampil untuk Bekri, Betung, Talang Sawit */}
+{lokasiDenganKernel.includes(formData.lokasi) && (
+          <>
+            <div className="form-row">
+              <div className="col-md-6">
+                <label className="form-label">Kernel Stok</label>
+                <input
+                  type="number"
+                  name="stok"
+                  className="form-control"
+                  value={formData.kernel.stok}
+                  onChange={handleKernelChange}
+                  required
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label">Kernel ALB</label>
+                <input
+                  type="number"
+                  name="alb"
+                  step="0.01"
+                  className="form-control"
+                  value={formData.kernel.alb}
+                  onChange={handleKernelChange}
+                  required
+                />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="col-md-6">
+                <label className="form-label">Kernel Kadar Air</label>
+                <input
+                  type="number"
+                  name="kadar_air"
+                  step="0.01"
+                  className="form-control"
+                  value={formData.kernel.kadar_air}
+                  onChange={handleKernelChange}
+                  required
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label">Kernel Kadar Kotoran</label>
+                <input
+                  type="number"
+                  name="kadar_kotoran"
+                  step="0.01"
+                  className="form-control"
+                  value={formData.kernel.kadar_kotoran}
+                  onChange={handleKernelChange}
+                  required
+                />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="col-md-6">
+                <label className="form-label">Kernel DO Hi</label>
+                <input
+                  type="number"
+                  name="do"
+                  step="0.01"
+                  className="form-control"
+                  value={formData.kernel.do}
+                  onChange={handleKernelChange}
+                  required
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label">Kernel Sd Hi</label>
+                <input
+                  type="number"
+                  name="hi"
+                  step="0.01"
+                  className="form-control"
+                  value={formData.kernel.hi}
+                  onChange={handleKernelChange}
+                  required
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Kategori dan Penyimpanan sesuai Cluster */}
         {formData.kategori.map((kat, katIndex) => (
