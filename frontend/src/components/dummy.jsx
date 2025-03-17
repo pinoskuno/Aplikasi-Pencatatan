@@ -236,7 +236,7 @@ const TotalPersediaan = () => {
 
   return (
     <Container className="mt-5">
-      <h2 className="text-center mb-4">Total Persediaan Semua Lokasi</h2>
+      <h2 className="text-center mb-4">TOTAL PKS DAN PPIS REGIONAL VII</h2>
       <Row className="mb-4 justify-content-center">
         <Col md={6}>
           <Form.Group controlId="dateSelect">
