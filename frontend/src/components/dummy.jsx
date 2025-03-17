@@ -55,10 +55,10 @@ const TotalPersediaan = () => {
     setPreviousDate(index >= 0 && index + 1 < availableDates.length ? availableDates[index + 1] : "");
   }, [selectedDate, availableDates]);
 
-  const filteredData = dataPenyimpanan.filter((item) =>
+  const filteredDataNewTabel = dataPenyimpanan.filter((item) =>
     item.tanggal.startsWith(selectedDate)
   );
-  const filteredDataPrevious = dataPenyimpanan.filter((item) =>
+  const filteredDataPreviousNewTabel = dataPenyimpanan.filter((item) =>
     item.tanggal.startsWith(previousDate)
   );
 
@@ -221,13 +221,6 @@ const calculateTotalSeluruh = (data, totalsAtas) => {
     });
   });
 
-  // Hitung jumlahInspec (hanya CPO Inspec)
-  totals.jumlahInspec.stok = totals.cpoInspec.stok;
-  totals.jumlahInspec.alb = totals.cpoInspec.alb;
-  totals.jumlahInspec.kadar_air = totals.cpoInspec.kadar_air;
-  totals.jumlahInspec.kadar_kotoran = totals.cpoInspec.kadar_kotoran;
-  totals.jumlahInspec.do = totals.cpoInspec.do;
-  totals.jumlahInspec.hi = totals.cpoInspec.hi;
 
   // Hitung jumlahTotal (CPO Inspec + CPO Outspec)
   totals.jumlahTotal.stok = totals.cpoInspec.stok + totals.cpoOutspec.stok;
@@ -241,10 +234,10 @@ const calculateTotalSeluruh = (data, totalsAtas) => {
   return totals;
 };
 
-const currentTotals = calculateTotals(filteredData);
-const previousTotals = calculateTotals(filteredDataPrevious);
-const currentTotalSeluruh = calculateTotalSeluruh(filteredData, currentTotals);
-const previousTotalSeluruh = calculateTotalSeluruh(filteredDataPrevious, previousTotals);
+const currentTotals = calculateTotals(filteredDataNewTabel);
+const previousTotals = calculateTotals(filteredDataPreviousNewTabel);
+const currentTotalSeluruh = calculateTotalSeluruh(filteredDataNewTabel, currentTotals);
+const previousTotalSeluruh = calculateTotalSeluruh(filteredDataPreviousNewTabel, previousTotals);
 
 const renderTable = (totals, title, isTotalSeluruh = false) => (
   <Col md={6}>
@@ -277,15 +270,6 @@ const renderTable = (totals, title, isTotalSeluruh = false) => (
                 <td>{totals.cpoInspec.kadar_kotoran}</td>
                 <td>{totals.cpoInspec.do}</td>
                 <td>{totals.cpoInspec.hi}</td>
-              </tr>
-              <tr>
-                <td>Jumlah (Inspec)</td>
-                <td>{totals.jumlahInspec.stok}</td>
-                <td>{totals.jumlahInspec.alb}</td>
-                <td>{totals.jumlahInspec.kadar_air}</td>
-                <td>{totals.jumlahInspec.kadar_kotoran}</td>
-                <td>{totals.jumlahInspec.do}</td>
-                <td>{totals.jumlahInspec.hi}</td>
               </tr>
               <tr>
                 <td>CPO Outspec</td>
