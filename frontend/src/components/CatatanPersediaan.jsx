@@ -743,7 +743,7 @@ const renderTable = (totals, title, isTotalSeluruh = false) => (
         </Col>
       </Row>
       <Row>
-        <h2 className="text-center mb-4">Total Persediaan Semua Lokasi</h2>
+        <h2 className="mt-4 text-center mb-4">Total Persediaan Semua Lokasi</h2>
 
             {selectedDate && (
               <>
