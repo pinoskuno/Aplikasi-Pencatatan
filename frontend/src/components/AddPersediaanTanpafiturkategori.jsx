@@ -214,7 +214,7 @@ const AddPersediaanDummy = () => {
                 className="form-control bg-light"
                 value={formData.pkm.nilai_pkm}
                 onChange={handlePKMChange}
-                required
+                
               />
             </div>
             <div className="form-row">
@@ -227,7 +227,7 @@ const AddPersediaanDummy = () => {
                   className="form-control bg-light"
                   value={formData.pkm.nilai_do}
                   onChange={handlePKMChange}
-                  required
+                  
                 />
               </div>
               <div className="col-md-6">
@@ -239,7 +239,7 @@ const AddPersediaanDummy = () => {
                   className="form-control bg-light"
                   value={formData.pkm.nilai_hi}
                   onChange={handlePKMChange}
-                  required
+                  
                 />
               </div>
             </div>
@@ -257,7 +257,7 @@ const AddPersediaanDummy = () => {
                   className="form-control bg-light"
                   value={formData.kernel.stok}
                   onChange={handleKernelChange}
-                  required
+                  
                 />
               </div>
               <div className="col-md-6">
@@ -269,7 +269,7 @@ const AddPersediaanDummy = () => {
                   className="form-control bg-light"
                   value={formData.kernel.alb}
                   onChange={handleKernelChange}
-                  required
+                  
                 />
               </div>
             </div>
@@ -283,7 +283,7 @@ const AddPersediaanDummy = () => {
                   className="form-control bg-light"
                   value={formData.kernel.kadar_air}
                   onChange={handleKernelChange}
-                  required
+                  
                 />
               </div>
               <div className="col-md-6">
@@ -295,7 +295,7 @@ const AddPersediaanDummy = () => {
                   className="form-control bg-light"
                   value={formData.kernel.kadar_kotoran}
                   onChange={handleKernelChange}
-                  required
+                  
                 />
               </div>
             </div>
@@ -309,7 +309,7 @@ const AddPersediaanDummy = () => {
                   className="form-control bg-light"
                   value={formData.kernel.do}
                   onChange={handleKernelChange}
-                  required
+                  
                 />
               </div>
               <div className="col-md-6">
@@ -321,7 +321,7 @@ const AddPersediaanDummy = () => {
                   className="form-control bg-light"
                   value={formData.kernel.hi}
                   onChange={handleKernelChange}
-                  required
+                  
                 />
               </div>
             </div>
@@ -346,7 +346,7 @@ const AddPersediaanDummy = () => {
                       className="form-control mt-2"
                       value={p[key]}
                       onChange={(e) => handlePenyimpananChange(katIndex, pIndex, e)}
-                      required
+                      
                     />
                   ))}
               </div>
