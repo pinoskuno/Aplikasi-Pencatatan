@@ -3,10 +3,13 @@ import React, { useEffect, useState } from "react";
 import "../App.css";
 import $ from "jquery";
 import "datatables.net";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // Component untuk modal edit
+// Component untuk modal edit
 const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
-  const [editedCatatan, setEditedCatatan] = useState(catatan);
+  const [editedCatatan, setEditedCatatan] = useState(null); // Inisialisasi dengan null
 
   const kategoriOptions = [
     "Minyak sawit (CPO)",
@@ -17,40 +20,59 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
   ];
 
   const kategoriPembayaran = ["Sudah Bayar", "Belum Bayar"];
-
   useEffect(() => {
-    setEditedCatatan(catatan); // Set nilai awal ketika modal terbuka
+    if (catatan) {
+      // Hanya set state jika catatan ada dan bukan null
+      setEditedCatatan({
+        ...catatan,
+        tanggal_kontrak: catatan.tanggal_kontrak ? new Date(catatan.tanggal_kontrak) : null,
+        jatuh_tempo_pembayaran: catatan.jatuh_tempo_pembayaran ? new Date(catatan.jatuh_tempo_pembayaran) : null,
+        tanggal_bayar: catatan.tanggal_bayar ? new Date(catatan.tanggal_bayar) : null,
+        rencana_pelayanan: catatan.rencana_pelayanan ? new Date(catatan.rencana_pelayanan) : null,
+        realisasi_pelayanan: catatan.realisasi_pelayanan ? new Date(catatan.realisasi_pelayanan) : null,
+      });
+    }
   }, [catatan]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Periksa apakah nilai yang dimasukkan adalah angka atau teks
     const newValue =
       name === "harga_excl" || name === "vol_belum_serah"
-        ? parseFloat(value) || 0 // Untuk harga_excl dan vol_belum_serah, pastikan selalu jadi angka
-        : value; // Untuk input teks, biarkan sebagai string
-
+        ? parseFloat(value) || 0
+        : value;
     setEditedCatatan((prev) => {
       const updatedCatatan = { ...prev, [name]: newValue };
-
-      // Perhitungan nilai hanya jika harga_excl dan vol_belum_serah ada
       if (updatedCatatan.harga_excl && updatedCatatan.vol_belum_serah) {
-        updatedCatatan.nilai =
-          updatedCatatan.harga_excl * updatedCatatan.vol_belum_serah;
+        updatedCatatan.nilai = updatedCatatan.harga_excl * updatedCatatan.vol_belum_serah;
       } else {
         updatedCatatan.nilai = null;
       }
-
       return updatedCatatan;
     });
   };
 
-  const handleSave = () => {
-    onSave(editedCatatan);
-    onClose(); // Tutup modal setelah disimpan
+  const handleDateChange = (date, field) => {
+    setEditedCatatan((prev) => ({ ...prev, [field]: date }));
   };
 
+const handleSave = () => {
+    if (editedCatatan) {
+      onSave(editedCatatan);
+      onClose(); // Tutup modal setelah disimpan
+    }
+  };
+  // Fungsi untuk menghitung tanggal minimal (20 hari setelah tanggal kontrak)
+  const getMinDateForPayment = () => {
+    if (!editedCatatan.tanggal_kontrak) return null;
+    const minDate = new Date(editedCatatan.tanggal_kontrak);
+    minDate.setDate(minDate.getDate() + 20);
+    return minDate;
+  };
+
+  // Guard clause: Jangan render form jika editedCatatan belum siap
+  if (!editedCatatan) {
+    return null;
+  }
   return (
     isOpen && (
       <div className="modal fade show" style={{ display: "block" }}>
@@ -124,12 +146,12 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
 
               <div className="form-group">
                 <label>Tanggal Kontrak</label>
-                <input
-                  type="date"
+                <DatePicker
+                  selected={editedCatatan?.tanggal_kontrak || null}
+                  onChange={(date) => handleDateChange(date, "tanggal_kontrak")}
+                  dateFormat="yyyy-MM-dd"
                   className="form-control"
-                  name="tanggal_kontrak"
-                  value={editedCatatan?.tanggal_kontrak || ""}
-                  onChange={handleChange}
+                  placeholderText="Pilih Tanggal"
                 />
               </div>
 
@@ -146,23 +168,25 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
 
               <div className="form-group">
                 <label>Jatuh Tempo Pembayaran</label>
-                <input
-                  type="date"
+                <DatePicker
+                  selected={editedCatatan?.jatuh_tempo_pembayaran || null}
+                  onChange={(date) => handleDateChange(date, "jatuh_tempo_pembayaran")}
+                  dateFormat="yyyy-MM-dd"
                   className="form-control"
-                  name="jatuh_tempo_pembayaran"
-                  value={editedCatatan?.jatuh_tempo_pembayaran || ""}
-                  onChange={handleChange}
+                  placeholderText="Pilih Tanggal"
+                  minDate={getMinDateForPayment()}
                 />
               </div>
 
               <div className="form-group">
                 <label>Tanggal Bayar</label>
-                <input
-                  type="date"
+                <DatePicker
+                  selected={editedCatatan?.tanggal_bayar || null}
+                  onChange={(date) => handleDateChange(date, "tanggal_bayar")}
+                  dateFormat="yyyy-MM-dd"
                   className="form-control"
-                  name="tanggal_bayar"
-                  value={editedCatatan?.tanggal_bayar || ""}
-                  onChange={handleChange}
+                  placeholderText="Pilih Tanggal"
+                  minDate={getMinDateForPayment()}
                 />
               </div>
 
@@ -174,8 +198,8 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
                   name="mutu_alb"
                   value={editedCatatan?.mutu_alb || ""}
                   onChange={handleChange}
-                  min="0"
-                  max="100"
+                  max="5"
+                  step="0.01"
                 />
               </div>
 
@@ -214,23 +238,25 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
 
               <div className="form-group">
                 <label>Rencana Pelayanan</label>
-                <input
-                  type="date"
+                <DatePicker
+                  selected={editedCatatan?.rencana_pelayanan || null}
+                  onChange={(date) => handleDateChange(date, "rencana_pelayanan")}
+                  dateFormat="yyyy-MM-dd"
                   className="form-control"
-                  name="rencana_pelayanan"
-                  value={editedCatatan?.rencana_pelayanan || ""}
-                  onChange={handleChange}
+                  placeholderText="Pilih Tanggal"
+                  minDate={editedCatatan?.tanggal_bayar || null}
                 />
               </div>
 
               <div className="form-group">
                 <label>Realisasi Pelayanan</label>
-                <input
-                  type="date"
+                <DatePicker
+                  selected={editedCatatan?.realisasi_pelayanan || null}
+                  onChange={(date) => handleDateChange(date, "realisasi_pelayanan")}
+                  dateFormat="yyyy-MM-dd"
                   className="form-control"
-                  name="realisasi_pelayanan"
-                  value={editedCatatan?.realisasi_pelayanan || ""}
-                  onChange={handleChange}
+                  placeholderText="Pilih Tanggal"
+                  minDate={editedCatatan?.tanggal_bayar || null}
                 />
               </div>
 
