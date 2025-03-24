@@ -382,7 +382,7 @@ const CatatanPersediaan = () => {
     previousTotals
   );
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!filteredData.length) {
       alert("Tidak ada data untuk dihapus pada tanggal dan lokasi ini.");
       return;
@@ -393,51 +393,29 @@ const CatatanPersediaan = () => {
         `Apakah Anda yakin ingin menghapus semua data untuk tanggal ${selectedDate} dan lokasi ${selectedLocation}?`
       )
     ) {
-      try {
-        // Temukan semua ID yang sesuai dengan selectedDate dan selectedLocation
-        const idsToDelete = dataPenyimpanan
-          .filter(
-            (item) =>
-              item.lokasi === selectedLocation &&
-              item.tanggal.startsWith(selectedDate)
-          )
-          .map((item) => item.id);
-  
-        if (idsToDelete.length === 0) {
-          alert("Tidak ada data yang cocok untuk dihapus.");
-          return;
-        }
-  
-        // Hapus setiap entri satu per satu
-        const deletePromises = idsToDelete.map((id) =>
-          fetch(`http://localhost:5000/data_penyimpanan/${id}`, {
-            method: "DELETE",
-          }).then((res) => res.json())
-        );
-  
-        // Tunggu semua penghapusan selesai
-        const deleteResults = await Promise.all(deletePromises);
-  
-        // Periksa apakah semua penghapusan berhasil
-        const allDeleted = deleteResults.every(
-          (result) => result.message === "Data berhasil dihapus"
-        );
-  
-        if (allDeleted) {
-          // Ambil ulang semua data dari backend untuk mencerminkan perubahan
-          const response = await fetch("http://localhost:5000/data_penyimpanan");
-          const updatedData = await response.json();
-  
-          // Perbarui state dengan data terbaru
-          setDataPenyimpanan(updatedData);
-          alert("Data berhasil dihapus dan state diperbarui.");
-        } else {
-          throw new Error("Beberapa data gagal dihapus.");
-        }
-      } catch (error) {
-        console.error("Error deleting data:", error);
-        alert("Terjadi kesalahan saat menghapus data.");
-      }
+      fetch(
+        `http://localhost:5000/data_penyimpanan/by_date_location?date=${selectedDate}&location=${selectedLocation}`,
+        { method: "DELETE" }
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.message === "Data berhasil dihapus") {
+            setDataPenyimpanan(
+              dataPenyimpanan.filter(
+                (item) =>
+                  !(
+                    item.lokasi === selectedLocation &&
+                    item.tanggal.startsWith(selectedDate)
+                  )
+              )
+            );
+            alert("Data berhasil dihapus.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error deleting data:", error);
+          alert("Terjadi kesalahan saat menghapus data.");
+        });
     }
   };
 

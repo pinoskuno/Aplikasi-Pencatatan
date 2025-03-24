@@ -6,6 +6,10 @@ const bodyParser = require("body-parser");
 const app = express();
 const port = 5000;
 
+
+
+
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
@@ -22,6 +26,288 @@ db.connect((err) => {
   if (err) throw err;
   console.log("Terhubung ke database MySQL");
 });
+
+
+// Fungsi untuk memperbarui data berikutnya
+const updateFollowingData = (lokasi, changedDate, db) => {
+  db.query(
+    "SELECT * FROM data_penyimpanan WHERE lokasi = ? AND tanggal > ? ORDER BY tanggal ASC",
+    [lokasi, changedDate],
+    (err, results) => {
+      if (err) {
+        console.error("Error fetching following data:", err);
+        return;
+      }
+      if (results.length === 0) return;
+
+      results.forEach((entry) => {
+        const currentDate = entry.tanggal;
+        db.query(
+          "SELECT * FROM data_penyimpanan WHERE lokasi = ? AND tanggal < ? ORDER BY tanggal DESC LIMIT 1",
+          [lokasi, currentDate],
+          (err, prevResults) => {
+            if (err) {
+              console.error("Error fetching previous data:", err);
+              return;
+            }
+
+            const prevId = prevResults.length > 0 ? prevResults[0].id : null;
+            let basePkm = { nilai_pkm: 0, nilai_do: 0, nilai_hi: 0 };
+            let baseKernel = {
+              stok: 0,
+              alb: 0,
+              kadar_air: 0,
+              kadar_kotoran: 0,
+              do: 0,
+              hi: 0,
+            };
+            let baseKategori = {};
+
+            if (prevId) {
+              db.query(
+                "SELECT * FROM data_pkm WHERE id_penyimpanan = ?",
+                [prevId],
+                (err, pkmResults) => {
+                  if (pkmResults.length > 0) {
+                    basePkm = pkmResults[0];
+                  }
+
+                  db.query(
+                    "SELECT * FROM kernel WHERE id_penyimpanan = ?",
+                    [prevId],
+                    (err, kernelResults) => {
+                      if (kernelResults.length > 0) {
+                        baseKernel = kernelResults[0];
+                      }
+
+                      db.query(
+                        "SELECT * FROM kategori WHERE id_penyimpanan = ?",
+                        [prevId],
+                        (err, kategoriResults) => {
+                          kategoriResults.forEach((kat) => {
+                            db.query(
+                              "SELECT * FROM penyimpanan WHERE id_kategori = ?",
+                              [kat.id],
+                              (err, penyimpananResults) => {
+                                baseKategori[kat.nama_kategori] = penyimpananResults;
+                              }
+                            );
+                          });
+
+                          db.query(
+                            "SELECT * FROM data_pkm WHERE id_penyimpanan = ?",
+                            [entry.id],
+                            (err, currentPkm) => {
+                              if (currentPkm.length > 0) {
+                                const updatedPkm = {
+                                  nilai_pkm:
+                                    basePkm.nilai_pkm +
+                                    (currentPkm[0].nilai_hi
+                                      ? Number(currentPkm[0].nilai_pkm) -
+                                        Number(currentPkm[0].nilai_hi)
+                                      : Number(currentPkm[0].nilai_pkm)),
+                                  nilai_do: currentPkm[0].nilai_do
+                                    ? Number(currentPkm[0].nilai_do)
+                                    : Number(basePkm.nilai_do) +
+                                      Number(currentPkm[0].nilai_do),
+                                  nilai_hi: currentPkm[0].nilai_hi
+                                    ? Number(currentPkm[0].nilai_hi)
+                                    : Number(basePkm.nilai_hi) +
+                                      Number(currentPkm[0].nilai_hi),
+                                };
+                                db.query(
+                                  "UPDATE data_pkm SET nilai_pkm = ?, nilai_do = ?, nilai_hi = ? WHERE id_penyimpanan = ?",
+                                  [
+                                    updatedPkm.nilai_pkm,
+                                    updatedPkm.nilai_do,
+                                    updatedPkm.nilai_hi,
+                                    entry.id,
+                                  ]
+                                );
+                              }
+                            }
+                          );
+
+                          db.query(
+                            "SELECT * FROM kernel WHERE id_penyimpanan = ?",
+                            [entry.id],
+                            (err, currentKernel) => {
+                              if (currentKernel.length > 0) {
+                                const updatedKernel = {
+                                  stok:
+                                    baseKernel.stok +
+                                    (currentKernel[0].hi
+                                      ? Number(currentKernel[0].stok) -
+                                        Number(currentKernel[0].hi)
+                                      : Number(currentKernel[0].stok)),
+                                  alb:
+                                    baseKernel.alb +
+                                    Number(currentKernel[0].alb),
+                                  kadar_air:
+                                    baseKernel.kadar_air +
+                                    Number(currentKernel[0].kadar_air),
+                                  kadar_kotoran:
+                                    baseKernel.kadar_kotoran +
+                                    Number(currentKernel[0].kadar_kotoran),
+                                  do: currentKernel[0].do
+                                    ? Number(currentKernel[0].do)
+                                    : Number(baseKernel.do) +
+                                      Number(currentKernel[0].do),
+                                  hi: currentKernel[0].hi
+                                    ? Number(currentKernel[0].hi)
+                                    : Number(baseKernel.hi) +
+                                      Number(currentKernel[0].hi),
+                                };
+                                db.query(
+                                  "UPDATE kernel SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_penyimpanan = ?",
+                                  [
+                                    updatedKernel.stok,
+                                    updatedKernel.alb,
+                                    updatedKernel.kadar_air,
+                                    updatedKernel.kadar_kotoran,
+                                    updatedKernel.do,
+                                    updatedKernel.hi,
+                                    entry.id,
+                                  ]
+                                );
+                              }
+                            }
+                          );
+
+                          db.query(
+                            "SELECT * FROM kategori WHERE id_penyimpanan = ?",
+                            [entry.id],
+                            (err, currentKategori) => {
+                              currentKategori.forEach((kat) => {
+                                db.query(
+                                  "SELECT * FROM penyimpanan WHERE id_kategori = ?",
+                                  [kat.id],
+                                  (err, currentPenyimpanan) => {
+                                    const prevPenyimpanan =
+                                      baseKategori[kat.nama_kategori] || [];
+                                    currentPenyimpanan.forEach((p) => {
+                                      const prevP = prevPenyimpanan.find(
+                                        (prev) => prev.jenis_tank === p.jenis_tank
+                                      ) || {
+                                        stok: 0,
+                                        alb: 0,
+                                        kadar_air: 0,
+                                        kadar_kotoran: 0,
+                                        do: 0,
+                                        hi: 0,
+                                      };
+                                      const updatedPenyimpanan = {
+                                        stok:
+                                          prevP.stok +
+                                          (p.hi
+                                            ? Number(p.stok) - Number(p.hi)
+                                            : Number(p.stok)),
+                                        alb: prevP.alb + Number(p.alb),
+                                        kadar_air:
+                                          prevP.kadar_air + Number(p.kadar_air),
+                                        kadar_kotoran:
+                                          prevP.kadar_kotoran +
+                                          Number(p.kadar_kotoran),
+                                        do: p.do
+                                          ? Number(p.do)
+                                          : Number(prevP.do) + Number(p.do),
+                                        hi: p.hi
+                                          ? Number(p.hi)
+                                          : Number(prevP.hi) + Number(p.hi),
+                                      };
+                                      db.query(
+                                        "UPDATE penyimpanan SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id = ?",
+                                        [
+                                          updatedPenyimpanan.stok,
+                                          updatedPenyimpanan.alb,
+                                          updatedPenyimpanan.kadar_air,
+                                          updatedPenyimpanan.kadar_kotoran,
+                                          updatedPenyimpanan.do,
+                                          updatedPenyimpanan.hi,
+                                          p.id,
+                                        ]
+                                      );
+                                    });
+
+                                    const totalPenyimpanan = currentPenyimpanan.reduce(
+                                      (acc, p) => ({
+                                        stok:
+                                          acc.stok +
+                                          (p.hi
+                                            ? Number(p.stok) - Number(p.hi)
+                                            : Number(p.stok)),
+                                        alb: acc.alb + Number(p.alb),
+                                        kadar_air:
+                                          acc.kadar_air + Number(p.kadar_air),
+                                        kadar_kotoran:
+                                          acc.kadar_kotoran +
+                                          Number(p.kadar_kotoran),
+                                        do:
+                                          acc.do +
+                                          (p.do ? Number(p.do) : Number(p.do)),
+                                        hi:
+                                          acc.hi +
+                                          (p.hi ? Number(p.hi) : Number(p.hi)),
+                                      }),
+                                      {
+                                        stok: prevPenyimpanan.reduce(
+                                          (acc, p) => acc + Number(p.stok),
+                                          0
+                                        ),
+                                        alb: prevPenyimpanan.reduce(
+                                          (acc, p) => acc + Number(p.alb),
+                                          0
+                                        ),
+                                        kadar_air: prevPenyimpanan.reduce(
+                                          (acc, p) => acc + Number(p.kadar_air),
+                                          0
+                                        ),
+                                        kadar_kotoran: prevPenyimpanan.reduce(
+                                          (acc, p) =>
+                                            acc + Number(p.kadar_kotoran),
+                                          0
+                                        ),
+                                        do: prevPenyimpanan.reduce(
+                                          (acc, p) => acc + Number(p.do),
+                                          0
+                                        ),
+                                        hi: prevPenyimpanan.reduce(
+                                          (acc, p) => acc + Number(p.hi),
+                                          0
+                                        ),
+                                      }
+                                    );
+                                    db.query(
+                                      "UPDATE jumlah_total SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_kategori = ?",
+                                      [
+                                        totalPenyimpanan.stok,
+                                        totalPenyimpanan.alb,
+                                        totalPenyimpanan.kadar_air,
+                                        totalPenyimpanan.kadar_kotoran,
+                                        totalPenyimpanan.do,
+                                        totalPenyimpanan.hi,
+                                        kat.id,
+                                      ]
+                                    );
+                                  }
+                                );
+                              });
+                            }
+                          );
+                        }
+                      );
+                    }
+                  );
+                }
+              );
+            }
+          }
+        );
+      });
+    }
+  );
+};
+
 
 // API untuk mendapatkan semua catatan
 app.get("/api/catatan", (req, res) => {
@@ -261,128 +547,128 @@ app.get("/data_penyimpanan", (req, res) => {
 
 // PUT update data
 app.put("/data_penyimpanan/:id", (req, res) => {
-  const id = req.params.id;
+  const { id } = req.params;
   const { tanggal, lokasi, pkm, kernel, kategori } = req.body;
 
-  db.beginTransaction((err) => {
-    if (err) return res.status(500).json(err);
+  // Update data_penyimpanan
+  db.query(
+    "UPDATE data_penyimpanan SET tanggal = ?, lokasi = ? WHERE id = ?",
+    [tanggal, lokasi, id],
+    (err) => {
+      if (err) return res.status(500).json(err);
 
-    // Update data_penyimpanan
-    db.query(
-      "UPDATE data_penyimpanan SET tanggal = ?, lokasi = ? WHERE id = ?",
-      [tanggal, lokasi, id],
-      (err) => {
-        if (err) return db.rollback(() => res.status(500).json(err));
+      // Update data_pkm
+      db.query(
+        "UPDATE data_pkm SET nilai_pkm = ?, nilai_do = ?, nilai_hi = ? WHERE id_penyimpanan = ?",
+        [pkm.nilai_pkm, pkm.nilai_do, pkm.nilai_hi, id],
+        (err) => {
+          if (err) return res.status(500).json(err);
 
-        // Update pkm
-        db.query(
-          "UPDATE pkm SET nilai_pkm = ?, nilai_do = ?, nilai_hi = ? WHERE id_penyimpanan = ?",
-          [pkm.nilai_pkm, pkm.do, pkm.hi, id],
-          (err) => {
-            if (err) return db.rollback(() => res.status(500).json(err));
+          // Update kernel
+          db.query(
+            "UPDATE kernel SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_penyimpanan = ?",
+            [
+              kernel.stok,
+              kernel.alb,
+              kernel.kadar_air,
+              kernel.kadar_kotoran,
+              kernel.do,
+              kernel.hi,
+              id,
+            ],
+            (err) => {
+              if (err) return res.status(500).json(err);
 
-            // Update kernel
-            db.query(
-              "UPDATE kernel SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_penyimpanan = ?",
-              [
-                kernel.stok,
-                kernel.alb,
-                kernel.kadar_air,
-                kernel.kadar_kotoran,
-                kernel.do,
-                kernel.hi,
-                id,
-              ],
-              (err) => {
-                if (err) return db.rollback(() => res.status(500).json(err));
+              // Update kategori dan penyimpanan
+              kategori.forEach((kat) => {
+                db.query(
+                  "UPDATE kategori SET nama_kategori = ? WHERE id_penyimpanan = ? AND nama_kategori = ?",
+                  [kat.nama, id, kat.nama],
+                  (err) => {
+                    if (err) return res.status(500).json(err);
 
-                // Update kategori dan penyimpanan
-                const kategoriPromises = kategori.map((ktg) => {
-                  return new Promise((resolve, reject) => {
-                    db.query(
-                      "UPDATE kategori SET nama_kategori = ? WHERE id = ?",
-                      [ktg.nama, ktg.id],
-                      (err) => {
-                        if (err) return reject(err);
-
-                        // Update penyimpanan
-                        const penyimpananPromises = ktg.penyimpanan.map((p) => {
-                          return new Promise((resolve, reject) => {
-                            db.query(
-                              "UPDATE penyimpanan SET jenis_tank = ?, stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id = ?",
-                              [
-                                p.jenis_tank,
-                                p.stok,
-                                p.alb,
-                                p.kadar_air,
-                                p.kadar_kotoran,
-                                p.do,
-                                p.hi,
-                                p.id,
-                              ],
-                              (err) => {
-                                if (err) return reject(err);
-                                resolve();
-                              }
-                            );
-                          });
-                        });
-
-                        // Update jumlah_total
-                        penyimpananPromises.push(
-                          new Promise((resolve, reject) => {
-                            db.query(
-                              "UPDATE jumlah_total SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_kategori = ?",
-                              [
-                                ktg.jumlah.stok,
-                                ktg.jumlah.alb,
-                                ktg.jumlah.kadar_air,
-                                ktg.jumlah.kadar_kotoran,
-                                ktg.jumlah.do,
-                                ktg.jumlah.hi,
-                                ktg.id,
-                              ],
-                              (err) => {
-                                if (err) return reject(err);
-                                resolve();
-                              }
-                            );
-                          })
-                        );
-
-                        Promise.all(penyimpananPromises)
-                          .then(resolve)
-                          .catch(reject);
-                      }
-                    );
-                  });
-                });
-
-                Promise.all(kategoriPromises)
-                  .then(() => {
-                    db.commit((err) => {
-                      if (err)
-                        return db.rollback(() => res.status(500).json(err));
-                      res.json({ message: "Data updated successfully" });
+                    kat.penyimpanan.forEach((p) => {
+                      db.query(
+                        "UPDATE penyimpanan SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_kategori = (SELECT id FROM kategori WHERE id_penyimpanan = ? AND nama_kategori = ?) AND jenis_tank = ?",
+                        [
+                          p.stok,
+                          p.alb,
+                          p.kadar_air,
+                          p.kadar_kotoran,
+                          p.do,
+                          p.hi,
+                          id,
+                          kat.nama,
+                          p.jenis_tank,
+                        ]
+                      );
                     });
-                  })
-                  .catch((err) => db.rollback(() => res.status(500).json(err)));
-              }
-            );
-          }
-        );
-      }
-    );
-  });
+
+                    const jumlah = kat.penyimpanan.reduce(
+                      (acc, p) => ({
+                        stok: acc.stok + Number(p.stok),
+                        alb: acc.alb + Number(p.alb),
+                        kadar_air: acc.kadar_air + Number(p.kadar_air),
+                        kadar_kotoran: acc.kadar_kotoran + Number(p.kadar_kotoran),
+                        do: acc.do + Number(p.do),
+                        hi: acc.hi + Number(p.hi),
+                      }),
+                      { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 }
+                    );
+                    db.query(
+                      "UPDATE jumlah_total SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_kategori = (SELECT id FROM kategori WHERE id_penyimpanan = ? AND nama_kategori = ?)",
+                      [
+                        jumlah.stok,
+                        jumlah.alb,
+                        jumlah.kadar_air,
+                        jumlah.kadar_kotoran,
+                        jumlah.do,
+                        jumlah.hi,
+                        id,
+                        kat.nama,
+                      ]
+                    );
+                  }
+                );
+              });
+
+              // Perbarui data berikutnya setelah perubahan
+              updateFollowingData(lokasi, tanggal, db);
+              res.json({ message: "Data berhasil diperbarui" });
+            }
+          );
+        }
+      );
+    }
+  );
 });
 
-// DELETE penyimpanan berdasarkan ID (cascade delete kernel, kategori, penyimpanan, jumlah_total)
+
+// DELETE data
 app.delete("/data_penyimpanan/:id", (req, res) => {
   const { id } = req.params;
-  db.query("DELETE FROM data_penyimpanan WHERE id = ?", [id], (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: "Data berhasil dihapus" });
-  });
+  db.query(
+    "SELECT tanggal, lokasi FROM data_penyimpanan WHERE id = ?",
+    [id],
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+      if (result.length === 0)
+        return res.status(404).json({ message: "Data tidak ditemukan" });
+
+      const { tanggal, lokasi } = result[0];
+      db.query(
+        "DELETE FROM data_penyimpanan WHERE id = ?",
+        [id],
+        (err, deleteResult) => {
+          if (err) return res.status(500).json(err);
+
+          // Perbarui data berikutnya setelah penghapusan
+          updateFollowingData(lokasi, tanggal, db);
+          res.json({ message: "Data berhasil dihapus" });
+        }
+      );
+    }
+  );
 });
 
 
@@ -396,13 +682,17 @@ app.post("/penyimpanan", (req, res) => {
       if (err) return res.status(500).json(err);
 
       let totalPkm = {
-        nilai_pkm: pkm.nilai_hi ? Number(pkm.nilai_pkm) - Number(pkm.nilai_hi) : Number(pkm.nilai_pkm),
+        nilai_pkm: pkm.nilai_hi
+          ? Number(pkm.nilai_pkm) - Number(pkm.nilai_hi)
+          : Number(pkm.nilai_pkm),
         nilai_do: Number(pkm.nilai_do),
         nilai_hi: Number(pkm.nilai_hi),
       };
 
       let totalKernel = {
-        stok: kernel.hi ? Number(kernel.stok) - Number(kernel.hi) : Number(kernel.stok),
+        stok: kernel.hi
+          ? Number(kernel.stok) - Number(kernel.hi)
+          : Number(kernel.stok),
         alb: Number(kernel.alb),
         kadar_air: Number(kernel.kadar_air),
         kadar_kotoran: Number(kernel.kadar_kotoran),
@@ -420,7 +710,7 @@ app.post("/penyimpanan", (req, res) => {
           do: Number(p.do),
           hi: Number(p.hi),
         }));
-      
+
         const penyimpananTotals = adjustedPenyimpanan.reduce(
           (acc, p) => ({
             stok: acc.stok + Number(p.stok),
@@ -432,7 +722,7 @@ app.post("/penyimpanan", (req, res) => {
           }),
           { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 }
         );
-      
+
         return {
           nama: kat.nama,
           jumlah: penyimpananTotals,
@@ -450,8 +740,13 @@ app.post("/penyimpanan", (req, res) => {
             if (err) return res.status(500).json(err);
             if (pkmResults.length > 0) {
               totalPkm.nilai_pkm += Number(pkmResults[0].nilai_pkm);
-              totalPkm.nilai_do = pkm.nilai_do ? Number(pkm.nilai_do) : (totalPkm.nilai_do + Number(pkmResults[0].nilai_do));
-              totalPkm.nilai_hi = pkm.nilai_hi ? Number(pkm.nilai_hi) : (totalPkm.nilai_hi + Number(pkmResults[0].nilai_hi));         }
+              totalPkm.nilai_do = pkm.nilai_do
+                ? Number(pkm.nilai_do)
+                : totalPkm.nilai_do + Number(pkmResults[0].nilai_do);
+              totalPkm.nilai_hi = pkm.nilai_hi
+                ? Number(pkm.nilai_hi)
+                : totalPkm.nilai_hi + Number(pkmResults[0].nilai_hi);
+            }
 
             db.query(
               "SELECT * FROM kernel WHERE id_penyimpanan = ?",
@@ -464,17 +759,23 @@ app.post("/penyimpanan", (req, res) => {
                   totalKernel.kadar_air += Number(kernelResults[0].kadar_air);
                   totalKernel.kadar_kotoran += Number(
                     kernelResults[0].kadar_kotoran
-                  );// Hanya tambahkan dari database jika input do atau hi tidak ada atau 0
-                  totalKernel.do = kernel.do ? Number(kernel.do) : (totalKernel.do + Number(kernelResults[0].do));
-                  totalKernel.hi = kernel.hi ? Number(kernel.hi) : (totalKernel.hi + Number(kernelResults[0].hi));}
+                  );
+                  totalKernel.do = kernel.do
+                    ? Number(kernel.do)
+                    : totalKernel.do + Number(kernelResults[0].do);
+                  totalKernel.hi = kernel.hi
+                    ? Number(kernel.hi)
+                    : totalKernel.hi + Number(kernelResults[0].hi);
+                }
 
                 db.query(
                   "SELECT * FROM kategori WHERE id_penyimpanan = ?",
                   [previousId],
                   (err, kategoriResults) => {
                     if (err) return res.status(500).json(err);
-                    let kategoriMap = new Map(); // Untuk menyimpan kategori lama
-                    let penyimpananMap = new Map(); // Untuk menyimpan penyimpanan lama
+
+                    let kategoriMap = new Map();
+                    let penyimpananMap = new Map();
 
                     kategoriResults.forEach((katPrev) => {
                       const existingCategory = totalKategori.find(
@@ -528,6 +829,7 @@ app.post("/penyimpanan", (req, res) => {
                         nama: katPrev.nama_kategori,
                       });
                     });
+
                     db.query(
                       "SELECT * FROM penyimpanan WHERE id_kategori IN (?)",
                       [Array.from(kategoriMap.keys())],
@@ -535,17 +837,15 @@ app.post("/penyimpanan", (req, res) => {
                         if (err) return res.status(500).json(err);
 
                         penyimpananResults.forEach((pPrev) => {
-                          let kategoriNama = kategoriMap.get(
-                            pPrev.id_kategori
-                          ).nama;
-
+                          let kategoriNama = kategoriMap.get(pPrev.id_kategori).nama;
                           if (!penyimpananMap.has(kategoriNama)) {
                             penyimpananMap.set(kategoriNama, []);
                           }
-
                           penyimpananMap.get(kategoriNama).push({
                             jenis_tank: pPrev.jenis_tank,
-                            stok: Number(pPrev.stok),
+                            stok: pPrev.hi
+                              ? Number(pPrev.stok) - Number(pPrev.hi)
+                              : Number(pPrev.stok),
                             alb: Number(pPrev.alb),
                             kadar_air: Number(pPrev.kadar_air),
                             kadar_kotoran: Number(pPrev.kadar_kotoran),
@@ -554,26 +854,32 @@ app.post("/penyimpanan", (req, res) => {
                           });
                         });
 
-                        // Menggabungkan penyimpanan lama ke dalam kategori baru
                         totalKategori.forEach((kat) => {
                           let previousPenyimpanan = penyimpananMap.get(kat.nama) || [];
-                        
                           previousPenyimpanan.forEach((pPrev) => {
                             let existingPenyimpanan = kat.penyimpanan.find(
                               (p) => p.jenis_tank === pPrev.jenis_tank
                             );
-                        
                             if (existingPenyimpanan) {
-                              existingPenyimpanan.stok += pPrev.hi ? Number(pPrev.stok) - Number(pPrev.hi) : Number(pPrev.stok);
+                              existingPenyimpanan.stok += pPrev.hi
+                                ? Number(pPrev.stok) - Number(pPrev.hi)
+                                : Number(pPrev.stok);
                               existingPenyimpanan.alb += pPrev.alb;
                               existingPenyimpanan.kadar_air += pPrev.kadar_air;
-                              existingPenyimpanan.kadar_kotoran += pPrev.kadar_kotoran;
-                              existingPenyimpanan.do = existingPenyimpanan.do ? Number(existingPenyimpanan.do) : (existingPenyimpanan.do + pPrev.do);
-                              existingPenyimpanan.hi = existingPenyimpanan.hi ? Number(existingPenyimpanan.hi) : (existingPenyimpanan.hi + pPrev.hi);
+                              existingPenyimpanan.kadar_kotoran +=
+                                pPrev.kadar_kotoran;
+                              existingPenyimpanan.do = existingPenyimpanan.do
+                                ? Number(existingPenyimpanan.do)
+                                : existingPenyimpanan.do + pPrev.do;
+                              existingPenyimpanan.hi = existingPenyimpanan.hi
+                                ? Number(existingPenyimpanan.hi)
+                                : existingPenyimpanan.hi + pPrev.hi;
                             } else {
                               kat.penyimpanan.push({
                                 jenis_tank: pPrev.jenis_tank,
-                                stok: pPrev.hi ? Number(pPrev.stok) - Number(pPrev.hi) : Number(pPrev.stok),
+                                stok: pPrev.hi
+                                  ? Number(pPrev.stok) - Number(pPrev.hi)
+                                  : Number(pPrev.stok),
                                 alb: Number(pPrev.alb),
                                 kadar_air: Number(pPrev.kadar_air),
                                 kadar_kotoran: Number(pPrev.kadar_kotoran),
@@ -582,13 +888,14 @@ app.post("/penyimpanan", (req, res) => {
                               });
                             }
                           });
-                        
+
                           kat.jumlah = kat.penyimpanan.reduce(
                             (acc, p) => ({
                               stok: acc.stok + Number(p.stok),
                               alb: acc.alb + Number(p.alb),
                               kadar_air: acc.kadar_air + Number(p.kadar_air),
-                              kadar_kotoran: acc.kadar_kotoran + Number(p.kadar_kotoran),
+                              kadar_kotoran:
+                                acc.kadar_kotoran + Number(p.kadar_kotoran),
                               do: acc.do + Number(p.do),
                               hi: acc.hi + Number(p.hi),
                             }),
@@ -596,7 +903,6 @@ app.post("/penyimpanan", (req, res) => {
                           );
                         });
 
-                        // Setelah kategori dan penyimpanan lama digabungkan, masukkan ke database baru
                         db.query(
                           "INSERT INTO data_penyimpanan (tanggal, lokasi) VALUES (?, ?)",
                           [tanggal, lokasi],
@@ -628,26 +934,13 @@ app.post("/penyimpanan", (req, res) => {
                             );
 
                             totalKategori.forEach((kat) => {
-                              // Hitung ulang jumlah sebelum insert
-                              kat.jumlah = kat.penyimpanan.reduce(
-                                (acc, p) => ({
-                                  stok: acc.stok + Number(p.stok),
-                                  alb: acc.alb + Number(p.alb),
-                                  kadar_air: acc.kadar_air + Number(p.kadar_air),
-                                  kadar_kotoran: acc.kadar_kotoran + Number(p.kadar_kotoran),
-                                  do: acc.do + Number(p.do),
-                                  hi: acc.hi + Number(p.hi),
-                                }),
-                                { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 }
-                              );
-                            
                               db.query(
                                 "INSERT INTO kategori (id_penyimpanan, nama_kategori) VALUES (?, ?)",
                                 [penyimpananId, kat.nama],
                                 (err, result) => {
                                   if (err) return res.status(500).json(err);
                                   const kategoriId = result.insertId;
-                            
+
                                   kat.penyimpanan.forEach((p) => {
                                     db.query(
                                       "INSERT INTO penyimpanan (id_kategori, jenis_tank, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -663,7 +956,7 @@ app.post("/penyimpanan", (req, res) => {
                                       ]
                                     );
                                   });
-                            
+
                                   db.query(
                                     "INSERT INTO jumlah_total (id_kategori, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
                                     [
@@ -681,8 +974,7 @@ app.post("/penyimpanan", (req, res) => {
                             });
 
                             res.json({
-                              message:
-                                "Data berhasil diperbarui dan ditambahkan.",
+                              message: "Data berhasil diperbarui dan ditambahkan.",
                             });
                           }
                         );
@@ -695,101 +987,88 @@ app.post("/penyimpanan", (req, res) => {
           }
         );
       } else {
-        {
-          // Langsung insert data baru
-          db.query(
-            "INSERT INTO data_penyimpanan (tanggal, lokasi) VALUES (?, ?)",
-            [tanggal, lokasi],
-            (err, result) => {
-              if (err) return res.status(500).json(err);
-              const penyimpananId = result.insertId;
+        db.query(
+          "INSERT INTO data_penyimpanan (tanggal, lokasi) VALUES (?, ?)",
+          [tanggal, lokasi],
+          (err, result) => {
+            if (err) return res.status(500).json(err);
+            const penyimpananId = result.insertId;
 
+            db.query(
+              "INSERT INTO data_pkm (id_penyimpanan, nilai_pkm, nilai_do, nilai_hi) VALUES (?, ?, ?, ?)",
+              [
+                penyimpananId,
+                totalPkm.nilai_pkm,
+                totalPkm.nilai_do,
+                totalPkm.nilai_hi,
+              ]
+            );
+
+            db.query(
+              "INSERT INTO kernel (id_penyimpanan, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
+              [
+                penyimpananId,
+                totalKernel.stok,
+                totalKernel.alb,
+                totalKernel.kadar_air,
+                totalKernel.kadar_kotoran,
+                totalKernel.do,
+                totalKernel.hi,
+              ]
+            );
+
+            totalKategori.forEach((kat) => {
               db.query(
-                "INSERT INTO data_pkm (id_penyimpanan, nilai_pkm, nilai_do, nilai_hi) VALUES (?, ?, ?, ?)",
-                [
-                  penyimpananId,
-                  totalPkm.nilai_pkm,
-                  totalPkm.nilai_do,
-                  totalPkm.nilai_hi,
-                ]
-              );
+                "INSERT INTO kategori (id_penyimpanan, nama_kategori) VALUES (?, ?)",
+                [penyimpananId, kat.nama],
+                (err, result) => {
+                  if (err) return res.status(500).json(err);
+                  const kategoriId = result.insertId;
 
-              db.query(
-                "INSERT INTO kernel (id_penyimpanan, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                [
-                  penyimpananId,
-                  totalKernel.stok,
-                  totalKernel.alb,
-                  totalKernel.kadar_air,
-                  totalKernel.kadar_kotoran,
-                  totalKernel.do,
-                  totalKernel.hi,
-                ]
-              );
-
-              totalKategori.forEach((kat) => {
-                // Hitung ulang jumlah sebelum insert
-                kat.jumlah = kat.penyimpanan.reduce(
-                  (acc, p) => ({
-                    stok: acc.stok + Number(p.stok),
-                    alb: acc.alb + Number(p.alb),
-                    kadar_air: acc.kadar_air + Number(p.kadar_air),
-                    kadar_kotoran: acc.kadar_kotoran + Number(p.kadar_kotoran),
-                    do: acc.do + Number(p.do),
-                    hi: acc.hi + Number(p.hi),
-                  }),
-                  { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 }
-                );
-              
-                db.query(
-                  "INSERT INTO kategori (id_penyimpanan, nama_kategori) VALUES (?, ?)",
-                  [penyimpananId, kat.nama],
-                  (err, result) => {
-                    if (err) return res.status(500).json(err);
-                    const kategoriId = result.insertId;
-              
-                    kat.penyimpanan.forEach((p) => {
-                      db.query(
-                        "INSERT INTO penyimpanan (id_kategori, jenis_tank, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                        [
-                          kategoriId,
-                          p.jenis_tank,
-                          p.stok,
-                          p.alb,
-                          p.kadar_air,
-                          p.kadar_kotoran,
-                          p.do,
-                          p.hi,
-                        ]
-                      );
-                    });
-              
+                  kat.penyimpanan.forEach((p) => {
                     db.query(
-                      "INSERT INTO jumlah_total (id_kategori, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                      "INSERT INTO penyimpanan (id_kategori, jenis_tank, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                       [
                         kategoriId,
-                        kat.jumlah.stok,
-                        kat.jumlah.alb,
-                        kat.jumlah.kadar_air,
-                        kat.jumlah.kadar_kotoran,
-                        kat.jumlah.do,
-                        kat.jumlah.hi,
+                        p.jenis_tank,
+                        p.stok,
+                        p.alb,
+                        p.kadar_air,
+                        p.kadar_kotoran,
+                        p.do,
+                        p.hi,
                       ]
                     );
-                  }
-                );
-              });
+                  });
 
-              res.json({
-                message: "Data berhasil ditambahkan.",
-              });
-            }
-          );
-        }
+                  db.query(
+                    "INSERT INTO jumlah_total (id_kategori, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    [
+                      kategoriId,
+                      kat.jumlah.stok,
+                      kat.jumlah.alb,
+                      kat.jumlah.kadar_air,
+                      kat.jumlah.kadar_kotoran,
+                      kat.jumlah.do,
+                      kat.jumlah.hi,
+                    ]
+                  );
+                }
+              );
+            });
+
+            res.json({
+              message: "Data berhasil ditambahkan.",
+            });
+          }
+        );
       }
     }
   );
 });
+
+
+
 
 
 // Jalankan server
