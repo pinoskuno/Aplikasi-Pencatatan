@@ -105,6 +105,14 @@ const AddCatatan = () => {
     setFormData({ ...formData, [field]: date });
   };
 
+  // Fungsi untuk menghitung tanggal minimal (20 hari setelah tanggal kontrak)
+  const getMinDateForPayment = () => {
+    if (!formData.tanggal_kontrak) return null;
+    const minDate = new Date(formData.tanggal_kontrak);
+    minDate.setDate(minDate.getDate() + 20);
+    return minDate;
+  };
+
   return (
     <div className="container mt-4">
       <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline"> INPUT KONTRAK PENJUALAN REGIONAL VII KSO</span></h2>
@@ -212,6 +220,7 @@ const AddCatatan = () => {
                 className="form-control bg-light date-picker"
                 placeholderText="Pilih Tanggal"
                 wrapperClassName="w-100"
+                minDate={getMinDateForPayment()}
               />
             </div>
 
@@ -225,6 +234,7 @@ const AddCatatan = () => {
                 className="form-control bg-light"
                 placeholderText="Pilih Tanggal"
                 wrapperClassName="w-100"
+                minDate={getMinDateForPayment()} // Tanggal minimal
               />
             </div>
           </div>
@@ -240,7 +250,8 @@ const AddCatatan = () => {
                 onChange={handleChange}
                 className="form-control bg-light"
                 min="0"
-                max="100"
+                max="5" // Maksimal 5
+                step="0.01" // Mendukung desimal
               />
             </div>
 
@@ -294,6 +305,7 @@ const AddCatatan = () => {
               className="form-control bg-light"
               placeholderText="Pilih Tanggal"
               wrapperClassName="w-100"
+              minDate={formData.tanggal_bayar}
             />
           </div>
 
@@ -307,6 +319,7 @@ const AddCatatan = () => {
               className="form-control bg-light"
               placeholderText="Pilih Tanggal"
               wrapperClassName="w-100"
+              minDate={formData.tanggal_bayar}
             />
           </div>
         </div>
