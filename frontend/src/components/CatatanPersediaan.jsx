@@ -389,12 +389,12 @@ const CatatanPersediaan = () => {
         <Table striped bordered hover>
           <thead>
             <tr>
-              <th rowSpan={2} colSpan={2} className="text-center">Kategori</th>
+              <th rowSpan={2} colSpan={2} className="text-center text-black">Kategori</th>
               <th rowSpan={2}>Stok</th>
-              <th colSpan={3} className="text-center">
+              <th colSpan={3} className="text-center text-black">
                 Mutu
               </th>
-              <th colSpan={2} className="text-center">
+              <th colSpan={2} className="text-center text-black">
                 DO
               </th>
             </tr>
@@ -410,8 +410,8 @@ const CatatanPersediaan = () => {
             {isTotalSeluruh ? (
               <>
                 <tr>
-                  <td rowSpan={2}>CPO</td>
-                  <td>Inspec</td>
+                  <td rowSpan={2}><strong>CPO</strong></td>
+                  <td><strong>Inspec</strong></td>
                   <td>{totals.cpoInspec.stok}</td>
                   <td>{totals.cpoInspec.alb}</td>
                   <td>{totals.cpoInspec.kadar_air}</td>
@@ -420,7 +420,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.cpoInspec.hi}</td>
                 </tr>
                 <tr>
-                  <td>Outspec</td>
+                  <td><strong>Outspec</strong></td>
                   <td>{totals.cpoOutspec.stok}</td>
                   <td>{totals.cpoOutspec.alb}</td>
                   <td>{totals.cpoOutspec.kadar_air}</td>
@@ -429,7 +429,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.cpoOutspec.hi}</td>
                 </tr>
                 <tr>
-                  <td colSpan={2}>Jumlah (Total)</td>
+                  <td colSpan={2}><strong>Jumlah (Total)</strong></td>
                   <td>{totals.jumlahTotal.stok}</td>
                   <td>{totals.jumlahTotal.alb}</td>
                   <td>{totals.jumlahTotal.kadar_air}</td>
@@ -441,8 +441,8 @@ const CatatanPersediaan = () => {
             ) : (
               <>
                 <tr>
-                  <td rowSpan={2}>CPO</td>
-                  <td>Inspec</td>
+                  <td rowSpan={2}><strong>CPO</strong></td>
+                  <td><strong>Inspec</strong></td>
                   <td>{totals.cpoInspec.stok}</td>
                   <td>{totals.cpoInspec.alb}</td>
                   <td>{totals.cpoInspec.kadar_air}</td>
@@ -451,7 +451,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.cpoInspec.hi}</td>
                 </tr>
                 <tr>
-                  <td>Outspec</td>
+                  <td><strong>Outspec</strong></td>
                   <td>{totals.cpoOutspec.stok}</td>
                   <td>{totals.cpoOutspec.alb}</td>
                   <td>{totals.cpoOutspec.kadar_air}</td>
@@ -460,7 +460,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.cpoOutspec.hi}</td>
                 </tr>
                 <tr>
-                  <td colSpan={2}>Total CPO</td>
+                  <td colSpan={2}><strong>Total CPO</strong></td>
                   <td>{totals.totalCPO.stok}</td>
                   <td>{totals.totalCPO.alb}</td>
                   <td>{totals.totalCPO.kadar_air}</td>
@@ -469,8 +469,8 @@ const CatatanPersediaan = () => {
                   <td>{totals.totalCPO.hi}</td>
                 </tr>
                 <tr>
-                  <td rowSpan={2}>Kernel</td>
-                  <td>Inspec</td>
+                  <td rowSpan={2}><strong>Kernel</strong></td>
+                  <td><strong>Inspec</strong></td>
                   <td>{totals.kernelInspec.stok}</td>
                   <td>{totals.kernelInspec.alb}</td>
                   <td>{totals.kernelInspec.kadar_air}</td>
@@ -479,7 +479,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.kernelInspec.hi}</td>
                 </tr>
                 <tr>
-                  <td>Outspec</td>
+                  <td><strong>Outspec</strong></td>
                   <td>{totals.kernelOutspec.stok}</td>
                   <td>{totals.kernelOutspec.alb}</td>
                   <td>{totals.kernelOutspec.kadar_air}</td>
@@ -488,7 +488,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.kernelOutspec.hi}</td>
                 </tr>
                 <tr>
-                  <td colSpan={2}>Total Kernel</td>
+                  <td colSpan={2}><strong>Total Kernel</strong></td>
                   <td>{totals.totalKernel.stok}</td>
                   <td>{totals.totalKernel.alb}</td>
                   <td>{totals.totalKernel.kadar_air}</td>
@@ -497,7 +497,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.totalKernel.hi}</td>
                 </tr>
                 <tr>
-                  <td colSpan={2}>PKO</td>
+                  <td colSpan={2}><strong>PKO</strong></td>
                   <td>{totals.pko.stok}</td>
                   <td>{totals.pko.alb}</td>
                   <td>{totals.pko.kadar_air}</td>
@@ -506,7 +506,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.pko.hi}</td>
                 </tr>
                 <tr>
-                  <td colSpan={2}>PKM</td>
+                  <td colSpan={2}><strong>PKM</strong></td>
                   <td>{totals.pkm.stok}</td>
                   <td>-</td>
                   <td>-</td>
@@ -573,10 +573,10 @@ const CatatanPersediaan = () => {
                   <th rowSpan={2}>Kategori</th>
                   <th rowSpan={2}>Penyimpanan</th>
                   <th rowSpan={2}>Stok</th>
-                  <th colSpan={3} className="text-center">
+                  <th colSpan={3} className="text-center text-black">
                     Mutu
                   </th>
-                  <th colSpan={2} className="text-center">
+                  <th colSpan={2} className="text-center text-black">
                     DO
                   </th>
                 </tr>
@@ -679,7 +679,7 @@ const CatatanPersediaan = () => {
         </Col>
         <Col md={6}>
           <h4 className="text-center">
-            Data
+            Data Hari Ini
           </h4>
           <div className="table-responsive">
             <Table striped bordered hover>
@@ -689,10 +689,10 @@ const CatatanPersediaan = () => {
                   <th rowSpan={2}>Kategori</th>
                   <th rowSpan={2}>Penyimpanan</th>
                   <th rowSpan={2}>Stok</th>
-                  <th colSpan={3} className="text-center">
+                  <th colSpan={3} className="text-center text-black">
                     Mutu
                   </th>
-                  <th colSpan={2} className="text-center">
+                  <th colSpan={2} className="text-center text-black">
                     DO
                   </th>
                 </tr>
@@ -803,7 +803,7 @@ const CatatanPersediaan = () => {
                 Total Persediaan Semua Lokasi
               </h2>
               {renderTable(previousTotals , `Data Sebelumnya`)}
-              {previousDate && renderTable(currentTotals, `Data `)}
+              {previousDate && renderTable(currentTotals, `Data Hari Ini`)}
             </Row>
             <Row className="mt-4">
               <h2 className="mt-4 text-center mb-4">
