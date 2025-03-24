@@ -526,7 +526,7 @@ const CatatanPersediaan = () => {
     <Container>
       <h2 class="text-center mb-4 fw-bolder center mt-4">
         <span class="text-gradient d-inline">
-          PERSEDIAAN PRODUKSI CPO & PKO
+          PERSEDIAAN PRODUKSI
         </span>
       </h2>
       <Row className="mb-3">
@@ -799,21 +799,21 @@ const CatatanPersediaan = () => {
         {selectedDate && (
           <>
             <Row>
-              <h2 className="mt-4 text-center mb-4">
-                Total Persediaan Semua Lokasi
+              <h2 className="mt-4 text-center text-gradient mb-4">
+                Total Persediaan Seluruh PKS
               </h2>
               {renderTable(previousTotals , `Data Sebelumnya`)}
               {previousDate && renderTable(currentTotals, `Data Hari Ini`)}
             </Row>
             <Row className="mt-4">
-              <h2 className="mt-4 text-center mb-4">
-                Total Seluruh Persediaan Semua Lokasi
+              <h2 className="mt-4 text-center text-gradient mb-4">
+                Total Seluruh Persediaan Regional VII
               </h2>
               {renderTable(previousTotalSeluruh, `Total Seluruh Sebelumnya `, true)}
               {previousDate &&
                 renderTable(
                    currentTotalSeluruh,
-                  `Total Seluruh  `,
+                  `Total Seluruh Hari Ini`,
                   true
                 )}
             </Row>

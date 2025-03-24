@@ -76,195 +76,240 @@ const handleSave = () => {
   return (
     isOpen && (
       <div className="modal fade show" style={{ display: "block" }}>
-        <div className="modal-dialog">
+        <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Edit Catatan</h5>
-              <button type="button" className="close" onClick={onClose}>
-                &times;
-              </button>
+              <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
             <div className="modal-body">
               {/* Edit Form */}
-              <div className="form-group">
-                <label>Kategori Pembayaran</label>
-                <select
-                  type="text"
-                  className="form-control"
-                  name="status_pembayaran"
-                  value={editedCatatan?.status_pembayaran || ""}
-                  onChange={handleChange}
-                >
-                  <option value="">Pilih Kategori</option>
-                  {kategoriPembayaran.map((kategori) => (
-                    <option key={kategori} value={kategori}>
-                      {kategori}
-                    </option>
-                  ))}
-                </select>
+              <div className="form-row gap-1">
+                <div className="col-md-6">
+                    <div className="form-group">
+                      <label className="form-label">Kategori Pembayaran</label>
+                      <select
+                        type="text"
+                        className="form-control bg-light"
+                        name="status_pembayaran"
+                        value={editedCatatan?.status_pembayaran || ""}
+                        onChange={handleChange}
+                      >
+                        <option value="">Pilih Kategori</option>
+                        {kategoriPembayaran.map((kategori) => (
+                          <option key={kategori} value={kategori}>
+                            {kategori}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Kategori Barang</label>
+                    <select
+                      type="text"
+                      className="form-control bg-light"
+                      name="judul"
+                      value={editedCatatan?.judul || ""}
+                      onChange={handleChange}
+                    >
+                      <option value="">Pilih Kategori</option>
+                      {kategoriOptions.map((kategori) => (
+                        <option key={kategori} value={kategori}>
+                          {kategori}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-row gap-1">
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Deskripsi</label>
+                    <input
+                      type="text"
+                      className="form-control bg-light"
+                      name="deskripsi"
+                      value={editedCatatan?.deskripsi || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Nomor Kontrak</label>
+                    <input
+                      type="text"
+                      className="form-control bg-light"
+                      name="nomor_kontrak"
+                      value={editedCatatan?.nomor_kontrak || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-row gap-1">
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Tanggal Kontrak</label>
+                    <DatePicker
+                      selected={editedCatatan?.tanggal_kontrak || null}
+                      onChange={(date) => handleDateChange(date, "tanggal_kontrak")}
+                      dateFormat="yyyy-MM-dd"
+                      className="form-control bg-light"
+                      placeholderText="Pilih Tanggal"
+                      wrapperClassName="w-100"
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Pembeli</label>
+                    <input
+                      type="text"
+                      className="form-control bg-light"
+                      name="pembeli"
+                      value={editedCatatan?.pembeli || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-row gap-1">
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Jatuh Tempo Pembayaran</label>
+                    <DatePicker
+                      selected={editedCatatan?.jatuh_tempo_pembayaran || null}
+                      onChange={(date) => handleDateChange(date, "jatuh_tempo_pembayaran")}
+                      dateFormat="yyyy-MM-dd"
+                      className="form-control bg-light"
+                      placeholderText="Pilih Tanggal"
+                      wrapperClassName="w-100"
+                      minDate={getMinDateForPayment()}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Tanggal Bayar</label>
+                    <DatePicker
+                      selected={editedCatatan?.tanggal_bayar || null}
+                      onChange={(date) => handleDateChange(date, "tanggal_bayar")}
+                      dateFormat="yyyy-MM-dd"
+                      className="form-control bg-light"
+                      placeholderText="Pilih Tanggal"
+                      wrapperClassName="w-100"
+                      minDate={getMinDateForPayment()}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-row gap-1">
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Mutu ALB (%)</label>
+                    <input
+                      type="number"
+                      className="form-control bg-light"
+                      name="mutu_alb"
+                      value={editedCatatan?.mutu_alb || ""}
+                      onChange={handleChange}
+                      max="5"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Vol Belum Serah (kg)</label>
+                    <input
+                      type="number"
+                      className="form-control bg-light"
+                      name="vol_belum_serah"
+                      value={editedCatatan?.vol_belum_serah || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-row gap-1">
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Harga Excl (Rp/Kg)</label>
+                    <input
+                      type="number"
+                      className="form-control bg-light"
+                      name="harga_excl"
+                      value={editedCatatan?.harga_excl || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Fraco/FOB</label>
+                    <input
+                      type="text"
+                      className="form-control bg-light"
+                      name="fraco_fob"
+                      value={editedCatatan?.fraco_fob || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-row gap-1">
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Rencana Pelayanan</label>
+                    <DatePicker
+                      selected={editedCatatan?.rencana_pelayanan || null}
+                      onChange={(date) => handleDateChange(date, "rencana_pelayanan")}
+                      dateFormat="yyyy-MM-dd"
+                      className="form-control bg-light"
+                      placeholderText="Pilih Tanggal"
+                      wrapperClassName="w-100"
+                      minDate={editedCatatan?.tanggal_bayar || null}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label className="form-label">Realisasi Pelayanan</label>
+                    <DatePicker
+                      selected={editedCatatan?.realisasi_pelayanan || null}
+                      onChange={(date) => handleDateChange(date, "realisasi_pelayanan")}
+                      dateFormat="yyyy-MM-dd"
+                      className="form-control bg-light"
+                      placeholderText="Pilih Tanggal"
+                      wrapperClassName="w-100"
+                      minDate={editedCatatan?.tanggal_bayar || null}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="form-group">
-                <label>Kategori Barang</label>
-                <select
-                  type="text"
-                  className="form-control"
-                  name="judul"
-                  value={editedCatatan?.judul || ""}
-                  onChange={handleChange}
-                >
-                  <option value="">Pilih Kategori</option>
-                  {kategoriOptions.map((kategori) => (
-                    <option key={kategori} value={kategori}>
-                      {kategori}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Deskripsi</label>
+                <label className="form-label">Nilai</label>
                 <input
                   type="text"
-                  className="form-control"
-                  name="deskripsi"
-                  value={editedCatatan?.deskripsi || ""}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Nomor Kontrak</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="nomor_kontrak"
-                  value={editedCatatan?.nomor_kontrak || ""}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Tanggal Kontrak</label>
-                <DatePicker
-                  selected={editedCatatan?.tanggal_kontrak || null}
-                  onChange={(date) => handleDateChange(date, "tanggal_kontrak")}
-                  dateFormat="yyyy-MM-dd"
-                  className="form-control"
-                  placeholderText="Pilih Tanggal"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Pembeli</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="pembeli"
-                  value={editedCatatan?.pembeli || ""}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Jatuh Tempo Pembayaran</label>
-                <DatePicker
-                  selected={editedCatatan?.jatuh_tempo_pembayaran || null}
-                  onChange={(date) => handleDateChange(date, "jatuh_tempo_pembayaran")}
-                  dateFormat="yyyy-MM-dd"
-                  className="form-control"
-                  placeholderText="Pilih Tanggal"
-                  minDate={getMinDateForPayment()}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Tanggal Bayar</label>
-                <DatePicker
-                  selected={editedCatatan?.tanggal_bayar || null}
-                  onChange={(date) => handleDateChange(date, "tanggal_bayar")}
-                  dateFormat="yyyy-MM-dd"
-                  className="form-control"
-                  placeholderText="Pilih Tanggal"
-                  minDate={getMinDateForPayment()}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Mutu ALB (%)</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  name="mutu_alb"
-                  value={editedCatatan?.mutu_alb || ""}
-                  onChange={handleChange}
-                  max="5"
-                  step="0.01"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Vol Belum Serah (kg)</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  name="vol_belum_serah"
-                  value={editedCatatan?.vol_belum_serah || ""}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Harga Excl (Rp/Kg)</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  name="harga_excl"
-                  value={editedCatatan?.harga_excl || ""}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Fraco/FOB</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="fraco_fob"
-                  value={editedCatatan?.fraco_fob || ""}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Rencana Pelayanan</label>
-                <DatePicker
-                  selected={editedCatatan?.rencana_pelayanan || null}
-                  onChange={(date) => handleDateChange(date, "rencana_pelayanan")}
-                  dateFormat="yyyy-MM-dd"
-                  className="form-control"
-                  placeholderText="Pilih Tanggal"
-                  minDate={editedCatatan?.tanggal_bayar || null}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Realisasi Pelayanan</label>
-                <DatePicker
-                  selected={editedCatatan?.realisasi_pelayanan || null}
-                  onChange={(date) => handleDateChange(date, "realisasi_pelayanan")}
-                  dateFormat="yyyy-MM-dd"
-                  className="form-control"
-                  placeholderText="Pilih Tanggal"
-                  minDate={editedCatatan?.tanggal_bayar || null}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Nilai</label>
-                <input
-                  type="text"
-                  className="form-control"
+                  className="form-control bg-light"
                   value={editedCatatan?.nilai || ""}
                   disabled
                 />
