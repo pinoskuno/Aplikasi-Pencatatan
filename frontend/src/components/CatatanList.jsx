@@ -127,19 +127,7 @@ const handleSave = () => {
               </div>
 
               <div className="form-row gap-1">
-                <div className="col-md-6">
-                  <div className="form-group">
-                    <label className="form-label">Deskripsi</label>
-                    <input
-                      type="text"
-                      className="form-control bg-light"
-                      name="deskripsi"
-                      value={editedCatatan?.deskripsi || ""}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
+              
                 <div className="col-md-6">
                   <div className="form-group">
                     <label className="form-label">Nomor Kontrak</label>
@@ -351,6 +339,11 @@ const CatatanList = () => {
     tanggal: "",
   });
   
+  // State untuk menyimpan opsi dropdown
+  const [fracoFobOptions, setFracoFobOptions] = useState([]);
+  const [pembeliOptions, setPembeliOptions] = useState([]);
+  const [tanggalOptions, setTanggalOptions] = useState([]);
+
   const handleSearchChange = (e) => {
     setSearchQuery({
       ...searchQuery,
@@ -362,9 +355,30 @@ const CatatanList = () => {
   useEffect(() => {
     fetch("http://localhost:5000/api/catatan")
       .then((res) => res.json())
-      .then((data) => setCatatan(data));
-  }, []);
+      .then((data) => {
+        setCatatan(data);
 
+        // Mengambil opsi unik untuk dropdown
+        const uniqueFracoFob = [...new Set(data.map((cat) => cat.fraco_fob).filter(Boolean))];
+        const uniquePembeli = [...new Set(data.map((cat) => cat.pembeli).filter(Boolean))];
+        const uniqueTanggal = [
+          ...new Set(
+            data
+              .flatMap((cat) => [
+                cat.tanggal_kontrak,
+                cat.tanggal_bayar,
+                cat.jatuh_tempo_pembayaran,
+              ])
+              .filter(Boolean)
+          ),
+        ];
+
+        setFracoFobOptions(uniqueFracoFob);
+        setPembeliOptions(uniquePembeli);
+        setTanggalOptions(uniqueTanggal);
+      });
+  }, []);
+  
   useEffect(() => {
     $(document).ready(function () {
       $("#poliTable").DataTable({
@@ -450,46 +464,34 @@ const CatatanList = () => {
         })
       );
     };
-
     const filteredCatatan = catatan.filter((cat) => {
       const { fraco_fob, pembeli, tanggal } = searchQuery;
-    
-      // Jika tidak ada input pencarian, tampilkan semua data
-      if (!fraco_fob && !pembeli && !tanggal) {
-        return true;
-      }
-    
-      // Filter berdasarkan fraco_fob
-      const matchesFracoFOB = fraco_fob
-        ? cat.fraco_fob?.toString().toLowerCase().includes(fraco_fob.toLowerCase())
-        : true;
-    
-      // Filter berdasarkan pembeli
-      const matchesPembeli = pembeli
-        ? cat.pembeli?.toString().toLowerCase().includes(pembeli.toLowerCase())
-        : true;
-    
-      // Filter berdasarkan tanggal (DD/MM/YYYY, MM/YYYY, atau "Month")
+  
+      // Filter untuk fraco_fob
+      const matchesFracoFOB = fraco_fob ? cat.fraco_fob === fraco_fob : true;
+  
+      // Filter untuk pembeli
+      const matchesPembeli = pembeli ? cat.pembeli === pembeli : true;
+  
+      // Filter untuk tanggal
       const matchesTanggal = tanggal
-        ? cat.tanggal_kontrak?.toLowerCase().includes(tanggal.toLowerCase()) ||
-          cat.tanggal_bayar?.toLowerCase().includes(tanggal.toLowerCase()) ||
-          cat.jatuh_tempo_pembayaran?.toLowerCase().includes(tanggal.toLowerCase())
+        ? cat.tanggal_kontrak === tanggal ||
+          cat.tanggal_bayar === tanggal ||
+          cat.jatuh_tempo_pembayaran === tanggal
         : true;
-    
+  
+      // Kembalikan true hanya jika semua filter yang dipilih cocok
       return matchesFracoFOB && matchesPembeli && matchesTanggal;
     });
-    
-    
-
-  // Pisahkan catatan menjadi dua kategori utama: Sudah Bayar dan Belum Bayar
-  const categorizedData = filteredCatatan.reduce((acc, cat) => {
-    const kategori = cat.status_pembayaran;
-    if (!acc[kategori]) acc[kategori] = {};
-    const subKategori = cat.judul;
-    if (!acc[kategori][subKategori]) acc[kategori][subKategori] = [];
-    acc[kategori][subKategori].push(cat);
-    return acc;
-  }, {});
+  
+    const categorizedData = filteredCatatan.reduce((acc, cat) => {
+      const kategori = cat.status_pembayaran;
+      if (!acc[kategori]) acc[kategori] = {};
+      const subKategori = cat.judul;
+      if (!acc[kategori][subKategori]) acc[kategori][subKategori] = [];
+      acc[kategori][subKategori].push(cat);
+      return acc;
+    }, {});
 
   
   
@@ -498,34 +500,49 @@ const CatatanList = () => {
     <div className="container mt-4">
       <div className="row mb-3">
         <div className="col-md-4">
-          <input
-            type="text"
+          <select
             name="fraco_fob"
             className="form-control"
-            placeholder="Cari Fraco FOB"
             value={searchQuery.fraco_fob}
             onChange={handleSearchChange}
-          />
+          >
+            <option value="">Pilih Fraco FOB</option>
+            {fracoFobOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="col-md-4">
-          <input
-            type="text"
+          <select
             name="pembeli"
             className="form-control"
-            placeholder="Cari Pembeli"
             value={searchQuery.pembeli}
             onChange={handleSearchChange}
-          />
+          >
+            <option value="">Pilih Pembeli</option>
+            {pembeliOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="col-md-4">
-          <input
-            type="text"
+          <select
             name="tanggal"
             className="form-control"
-            placeholder="Cari Tanggal (DD/MM/YYYY atau MM/YYYY)"
             value={searchQuery.tanggal}
             onChange={handleSearchChange}
-          />
+          >
+            <option value="">Pilih Tanggal</option>
+            {tanggalOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -552,7 +569,6 @@ const CatatanList = () => {
                     <thead>
                       <tr className="gray-header">
                         {[
-                          "Deskripsi",
                           "Nomor Kontrak",
                           "Tanggal Kontrak",
                           "Pembeli",
@@ -588,7 +604,6 @@ const CatatanList = () => {
                     <tbody>
                       {paginatedData.map((cat) => (
                         <tr key={cat.id}>
-                          <td>{cat.deskripsi}</td>
                           <td>{cat.nomor_kontrak}</td>
                           <td>{cat.tanggal_kontrak}</td>
                           <td>{cat.pembeli}</td>

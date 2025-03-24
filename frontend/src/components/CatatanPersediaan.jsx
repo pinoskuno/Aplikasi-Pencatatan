@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Table, Container, Form, Row, Col } from "react-bootstrap";
+import { Table, Container, Form, Row, Col, Button } from "react-bootstrap";
 
 const CatatanPersediaan = () => {
   const [dataPenyimpanan, setDataPenyimpanan] = useState([]);
@@ -382,6 +382,43 @@ const CatatanPersediaan = () => {
     previousTotals
   );
 
+  const handleDelete = () => {
+    if (!filteredData.length) {
+      alert("Tidak ada data untuk dihapus pada tanggal dan lokasi ini.");
+      return;
+    }
+  
+    if (
+      window.confirm(
+        `Apakah Anda yakin ingin menghapus semua data untuk tanggal ${selectedDate} dan lokasi ${selectedLocation}?`
+      )
+    ) {
+      fetch(
+        `http://localhost:5000/data_penyimpanan/by_date_location?date=${selectedDate}&location=${selectedLocation}`,
+        { method: "DELETE" }
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.message === "Data berhasil dihapus") {
+            setDataPenyimpanan(
+              dataPenyimpanan.filter(
+                (item) =>
+                  !(
+                    item.lokasi === selectedLocation &&
+                    item.tanggal.startsWith(selectedDate)
+                  )
+              )
+            );
+            alert("Data berhasil dihapus.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error deleting data:", error);
+          alert("Terjadi kesalahan saat menghapus data.");
+        });
+    }
+  };
+
   const renderTable = (totals, title, isTotalSeluruh = false) => (
     <Col md={6}>
       <h4 className="text-center">{title}</h4>
@@ -529,38 +566,43 @@ const CatatanPersediaan = () => {
           PERSEDIAAN PRODUKSI
         </span>
       </h2>
-      <Row className="mb-3">
-        <Col md={6}>
-          <Form.Group controlId="tanggalSelect">
-            <Form.Label>Pilih Tanggal:</Form.Label>
-            <Form.Select
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-            >
-              {availableDates.map((date) => (
-                <option key={date} value={date}>
-                  {new Date(date).toLocaleDateString()}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col md={6}>
-          <Form.Group controlId="lokasiSelect">
-            <Form.Label>Pilih Lokasi:</Form.Label>
-            <Form.Select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-            >
-              {availableLocations.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-      </Row>
+      <Row className="mb-3 align-items-end">
+  <Col md={4}>
+    <Form.Group controlId="tanggalSelect">
+      <Form.Label>Pilih Tanggal:</Form.Label>
+      <Form.Select
+        value={selectedDate}
+        onChange={(e) => setSelectedDate(e.target.value)}
+      >
+        {availableDates.map((date) => (
+          <option key={date} value={date}>
+            {new Date(date).toLocaleDateString()}
+          </option>
+        ))}
+      </Form.Select>
+    </Form.Group>
+  </Col>
+  <Col md={4}>
+    <Form.Group controlId="lokasiSelect">
+      <Form.Label>Pilih Lokasi:</Form.Label>
+      <Form.Select
+        value={selectedLocation}
+        onChange={(e) => setSelectedLocation(e.target.value)}
+      >
+        {availableLocations.map((loc) => (
+          <option key={loc} value={loc}>
+            {loc}
+          </option>
+        ))}
+      </Form.Select>
+    </Form.Group>
+  </Col>
+  <Col md={4}>
+    <Button variant="danger" onClick={handleDelete} className="w-100">
+      Hapus Data Hari Ini
+    </Button>
+  </Col>
+</Row>
       <Row className="d-flex flex-warp">
         <Col md={6}>
           <h4 className="text-center">

@@ -377,7 +377,7 @@ app.put("/data_penyimpanan/:id", (req, res) => {
 });
 
 // DELETE penyimpanan berdasarkan ID (cascade delete kernel, kategori, penyimpanan, jumlah_total)
-app.delete("/penyimpanan/:id", (req, res) => {
+app.delete("/data_penyimpanan/:id", (req, res) => {
   const { id } = req.params;
   db.query("DELETE FROM data_penyimpanan WHERE id = ?", [id], (err, result) => {
     if (err) return res.status(500).json(err);
