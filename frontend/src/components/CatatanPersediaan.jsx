@@ -389,7 +389,7 @@ const CatatanPersediaan = () => {
         <Table striped bordered hover>
           <thead>
             <tr>
-              <th rowSpan={2}>Kategori</th>
+              <th rowSpan={2} colSpan={2} className="text-center">Kategori</th>
               <th rowSpan={2}>Stok</th>
               <th colSpan={3} className="text-center">
                 Mutu
@@ -410,7 +410,8 @@ const CatatanPersediaan = () => {
             {isTotalSeluruh ? (
               <>
                 <tr>
-                  <td>CPO Inspec</td>
+                  <td rowSpan={2}>CPO</td>
+                  <td>Inspec</td>
                   <td>{totals.cpoInspec.stok}</td>
                   <td>{totals.cpoInspec.alb}</td>
                   <td>{totals.cpoInspec.kadar_air}</td>
@@ -419,7 +420,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.cpoInspec.hi}</td>
                 </tr>
                 <tr>
-                  <td>CPO Outspec</td>
+                  <td>Outspec</td>
                   <td>{totals.cpoOutspec.stok}</td>
                   <td>{totals.cpoOutspec.alb}</td>
                   <td>{totals.cpoOutspec.kadar_air}</td>
@@ -428,7 +429,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.cpoOutspec.hi}</td>
                 </tr>
                 <tr>
-                  <td>Jumlah (Total)</td>
+                  <td colSpan={2}>Jumlah (Total)</td>
                   <td>{totals.jumlahTotal.stok}</td>
                   <td>{totals.jumlahTotal.alb}</td>
                   <td>{totals.jumlahTotal.kadar_air}</td>
@@ -440,7 +441,8 @@ const CatatanPersediaan = () => {
             ) : (
               <>
                 <tr>
-                  <td>CPO Inspec</td>
+                  <td rowSpan={2}>CPO</td>
+                  <td>Inspec</td>
                   <td>{totals.cpoInspec.stok}</td>
                   <td>{totals.cpoInspec.alb}</td>
                   <td>{totals.cpoInspec.kadar_air}</td>
@@ -449,7 +451,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.cpoInspec.hi}</td>
                 </tr>
                 <tr>
-                  <td>CPO Outspec</td>
+                  <td>Outspec</td>
                   <td>{totals.cpoOutspec.stok}</td>
                   <td>{totals.cpoOutspec.alb}</td>
                   <td>{totals.cpoOutspec.kadar_air}</td>
@@ -458,7 +460,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.cpoOutspec.hi}</td>
                 </tr>
                 <tr>
-                  <td>Total CPO</td>
+                  <td colSpan={2}>Total CPO</td>
                   <td>{totals.totalCPO.stok}</td>
                   <td>{totals.totalCPO.alb}</td>
                   <td>{totals.totalCPO.kadar_air}</td>
@@ -467,7 +469,8 @@ const CatatanPersediaan = () => {
                   <td>{totals.totalCPO.hi}</td>
                 </tr>
                 <tr>
-                  <td>Kernel Inspec</td>
+                  <td rowSpan={2}>Kernel</td>
+                  <td>Inspec</td>
                   <td>{totals.kernelInspec.stok}</td>
                   <td>{totals.kernelInspec.alb}</td>
                   <td>{totals.kernelInspec.kadar_air}</td>
@@ -476,7 +479,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.kernelInspec.hi}</td>
                 </tr>
                 <tr>
-                  <td>Kernel Outspec</td>
+                  <td>Outspec</td>
                   <td>{totals.kernelOutspec.stok}</td>
                   <td>{totals.kernelOutspec.alb}</td>
                   <td>{totals.kernelOutspec.kadar_air}</td>
@@ -485,7 +488,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.kernelOutspec.hi}</td>
                 </tr>
                 <tr>
-                  <td>Total Kernel</td>
+                  <td colSpan={2}>Total Kernel</td>
                   <td>{totals.totalKernel.stok}</td>
                   <td>{totals.totalKernel.alb}</td>
                   <td>{totals.totalKernel.kadar_air}</td>
@@ -494,7 +497,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.totalKernel.hi}</td>
                 </tr>
                 <tr>
-                  <td>PKO</td>
+                  <td colSpan={2}>PKO</td>
                   <td>{totals.pko.stok}</td>
                   <td>{totals.pko.alb}</td>
                   <td>{totals.pko.kadar_air}</td>
@@ -503,7 +506,7 @@ const CatatanPersediaan = () => {
                   <td>{totals.pko.hi}</td>
                 </tr>
                 <tr>
-                  <td>PKM</td>
+                  <td colSpan={2}>PKM</td>
                   <td>{totals.pkm.stok}</td>
                   <td>-</td>
                   <td>-</td>
@@ -521,17 +524,11 @@ const CatatanPersediaan = () => {
 
   return (
     <Container>
-<<<<<<< HEAD
-
-      
-      <h2 class="text-center mb-4 fw-bolder center mt-4"><span class="text-gradient d-inline">PERSEDIAAN PRODUKSI</span></h2>
-=======
       <h2 class="text-center mb-4 fw-bolder center mt-4">
         <span class="text-gradient d-inline">
           PERSEDIAAN PRODUKSI CPO & PKO
         </span>
       </h2>
->>>>>>> 89cfcd44f00d73221d78b48df45ceb0fb0e266ed
       <Row className="mb-3">
         <Col md={6}>
           <Form.Group controlId="tanggalSelect">
@@ -625,10 +622,9 @@ const CatatanPersediaan = () => {
                           key={`jumlah-${index}-${katIndex}`}
                           className="table-secondary"
                         >
-                          <td>
+                          <td colSpan={2}>
                             <strong>Total {kat.nama}</strong>
                           </td>
-                          <td>{}</td>
                           <td>
                             <strong>{kat.jumlah.stok}</strong>
                           </td>
@@ -743,10 +739,9 @@ const CatatanPersediaan = () => {
                           key={`jumlah-${index}-${katIndex}`}
                           className="table-secondary"
                         >
-                          <td>
+                          <td colSpan={2}>
                             <strong>Total {kat.nama}</strong>
                           </td>
-                          <td></td>
                           <td>
                             <strong>{kat.jumlah.stok}</strong>
                           </td>
@@ -801,22 +796,6 @@ const CatatanPersediaan = () => {
         </Col>
       </Row>
       <Row>
-<<<<<<< HEAD
-        <h2 className="mt-4 text-center mb-4">Total Persediaan Seluruh PKS</h2>
-
-            {selectedDate && (
-              <>
-                <Row>
-                  {renderTable(currentTotals, `Data ${new Date(selectedDate).toLocaleDateString()}`)}
-                  {previousDate && renderTable(previousTotals, `Data Sebelumnya ${new Date(previousDate).toLocaleDateString()}`)}
-                </Row>
-                <Row className="mt-4">
-                  {renderTable(currentTotalSeluruh, `Total Seluruh ${new Date(selectedDate).toLocaleDateString()}`, true)}
-                  {previousDate && renderTable(previousTotalSeluruh, `Total Seluruh Sebelumnya ${new Date(previousDate).toLocaleDateString()}`, true)}
-                </Row>
-              </>
-            )}
-=======
         {selectedDate && (
           <>
             <Row>
@@ -840,7 +819,6 @@ const CatatanPersediaan = () => {
             </Row>
           </>
         )}
->>>>>>> 89cfcd44f00d73221d78b48df45ceb0fb0e266ed
       </Row>
     </Container>
   );
