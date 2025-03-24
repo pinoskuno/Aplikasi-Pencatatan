@@ -424,7 +424,7 @@ const renderTable = (totals, title, isTotalSeluruh = false) => (
     <Container>
 
       
-      <h2 class="text-center mb-4 fw-bolder center mt-4"><span class="text-gradient d-inline">PERSEDIAAN PRODUKSI CPO & PKO</span></h2>
+      <h2 class="text-center mb-4 fw-bolder center mt-4"><span class="text-gradient d-inline">PERSEDIAAN PRODUKSI</span></h2>
       <Row className="mb-3">
         <Col md={6}>
           <Form.Group controlId="tanggalSelect">
@@ -743,7 +743,7 @@ const renderTable = (totals, title, isTotalSeluruh = false) => (
         </Col>
       </Row>
       <Row>
-        <h2 className="mt-4 text-center mb-4">Total Persediaan Semua Lokasi</h2>
+        <h2 className="mt-4 text-center mb-4">Total Persediaan Seluruh PKS</h2>
 
             {selectedDate && (
               <>

@@ -167,7 +167,7 @@ const AddPersediaanDummy = () => {
   return (
     <div className="container mt-4">
       <h2 className="text-center mb-4 fw-bolder center">
-        <span className="text-gradient d-inline">INPUT PERSEDIAAN PRODUKSI CPO & PKO</span>
+        <span className="text-gradient d-inline">INPUT PERSEDIAAN PRODUKSI SELURUH PKS</span>
       </h2>
       {notification && (
         <div className={`alert alert-${notification.type === "success" ? "success" : "danger"}`}>
