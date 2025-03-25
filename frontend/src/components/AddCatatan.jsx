@@ -19,11 +19,13 @@ const AddCatatan = () => {
     rencana_pelayanan: null,
     realisasi_pelayanan: null,
   });
-    // Daftar kategori pembayaran untuk dropdown
-    const kategoriPembayaran = [
-      "Sudah Bayar",
-      "Belum Bayar",
-    ];
+
+  // Daftar kategori pembayaran untuk dropdown
+  const kategoriPembayaran = [
+    "Sudah Bayar",
+    "Belum Bayar",
+  ];
+
   // Daftar kategori untuk dropdown
   const kategoriOptions = [
     "Minyak sawit (CPO)",

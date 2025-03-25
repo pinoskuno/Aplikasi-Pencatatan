@@ -12,9 +12,9 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
   const [editedCatatan, setEditedCatatan] = useState(null); // Inisialisasi dengan null
 
   const kategoriOptions = [
-    "Minyak sawit (CPO)",
+    "Minyak Sawit (CPO)",
     "Inti Sawit (PK)",
-    "Minyak Intisawit (PKO)",
+    "Minyak Inti Sawit (PKO)",
     "Bungkil Inti Sawit (PKM)",
     "Cangkang",
   ];
@@ -618,7 +618,7 @@ const CatatanList = () => {
                           <td>{cat.realisasi_pelayanan}</td>
                           <td>
                             <button
-                              className="btn btn-warning btn-sm"
+                              className="btn btn-warning btn-sm  mb-2"
                               onClick={() => handleEdit(cat)}
                             >
                               Edit
