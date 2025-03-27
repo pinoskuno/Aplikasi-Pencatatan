@@ -19,7 +19,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root", // Ganti dengan username MySQL Anda
   password: "", // Ganti dengan password MySQL Anda
-  database: "pencatatan_ptpn_db", // Ganti dengan nama database Anda
+  database: "pencatatan_ptpn_db_v3", // Ganti dengan nama database Anda
 });
 
 db.connect((err) => {
@@ -671,44 +671,44 @@ app.delete("/data_penyimpanan/:id", (req, res) => {
   );
 });
 
-
 app.post("/penyimpanan", (req, res) => {
   const { tanggal, lokasi, pkm, kernel, kategori } = req.body;
 
+  // Langkah 1: Ambil data sebelumnya untuk akumulasi stok
   db.query(
     "SELECT * FROM data_penyimpanan WHERE lokasi = ? AND tanggal < ? ORDER BY tanggal DESC LIMIT 1",
     [lokasi, tanggal],
-    (err, results) => {
+    (err, prevResults) => {
       if (err) return res.status(500).json(err);
 
+      // Inisialisasi total berdasarkan input baru
       let totalPkm = {
         nilai_pkm: pkm.nilai_hi
           ? Number(pkm.nilai_pkm) - Number(pkm.nilai_hi)
           : Number(pkm.nilai_pkm),
-        nilai_do: Number(pkm.nilai_do),
-        nilai_hi: Number(pkm.nilai_hi),
+        nilai_do: Number(pkm.nilai_do), // Tidak ditambah dari data lama
+        nilai_hi: Number(pkm.nilai_hi), // Hanya nilai baru
       };
 
+      // Stok baru dikurangi hi baru terlebih dahulu
       let totalKernel = {
-        stok: kernel.hi
-          ? Number(kernel.stok) - Number(kernel.hi)
-          : Number(kernel.stok),
-        alb: Number(kernel.alb),
-        kadar_air: Number(kernel.kadar_air),
-        kadar_kotoran: Number(kernel.kadar_kotoran),
-        do: Number(kernel.do),
-        hi: Number(kernel.hi),
+        stok: Number(kernel.stok) - (Number(kernel.hi) || 0), // Kurangi hi dari stok baru
+        alb: Number(kernel.alb), // Hanya nilai baru
+        kadar_air: Number(kernel.kadar_air), // Hanya nilai baru
+        kadar_kotoran: Number(kernel.kadar_kotoran), // Hanya nilai baru
+        do: Number(kernel.do), // Hanya nilai baru
+        hi: Number(kernel.hi), // Hanya nilai baru
       };
 
       let totalKategori = kategori.map((kat) => {
         const adjustedPenyimpanan = kat.penyimpanan.map((p) => ({
           jenis_tank: p.jenis_tank,
-          stok: p.hi ? Number(p.stok) - Number(p.hi) : Number(p.stok),
-          alb: Number(p.alb),
-          kadar_air: Number(p.kadar_air),
-          kadar_kotoran: Number(p.kadar_kotoran),
-          do: Number(p.do),
-          hi: Number(p.hi),
+          stok: Number(p.stok) - (Number(p.hi) || 0), // Kurangi hi dari stok baru
+          alb: Number(p.alb), // Hanya nilai baru
+          kadar_air: Number(p.kadar_air), // Hanya nilai baru
+          kadar_kotoran: Number(p.kadar_kotoran), // Hanya nilai baru
+          do: Number(p.do), // Hanya nilai baru
+          hi: Number(p.hi), // Hanya nilai baru
         }));
 
         const penyimpananTotals = adjustedPenyimpanan.reduce(
@@ -730,8 +730,9 @@ app.post("/penyimpanan", (req, res) => {
         };
       });
 
-      if (results.length > 0) {
-        const previousId = results[0].id;
+      // Jika ada data sebelumnya, hanya tambahkan stok lama
+      if (prevResults.length > 0) {
+        const previousId = prevResults[0].id;
 
         db.query(
           "SELECT * FROM data_pkm WHERE id_penyimpanan = ?",
@@ -740,12 +741,8 @@ app.post("/penyimpanan", (req, res) => {
             if (err) return res.status(500).json(err);
             if (pkmResults.length > 0) {
               totalPkm.nilai_pkm += Number(pkmResults[0].nilai_pkm);
-              totalPkm.nilai_do = pkm.nilai_do
-                ? Number(pkm.nilai_do)
-                : totalPkm.nilai_do + Number(pkmResults[0].nilai_do);
-              totalPkm.nilai_hi = pkm.nilai_hi
-                ? Number(pkm.nilai_hi)
-                : totalPkm.nilai_hi + Number(pkmResults[0].nilai_hi);
+              totalPkm.nilai_do = Number(pkm.nilai_do); // Tidak ditambah dari lama
+              totalPkm.nilai_hi = Number(pkm.nilai_hi); // Hanya nilai baru
             }
 
             db.query(
@@ -754,18 +751,12 @@ app.post("/penyimpanan", (req, res) => {
               (err, kernelResults) => {
                 if (err) return res.status(500).json(err);
                 if (kernelResults.length > 0) {
-                  totalKernel.stok += Number(kernelResults[0].stok);
-                  totalKernel.alb += Number(kernelResults[0].alb);
-                  totalKernel.kadar_air += Number(kernelResults[0].kadar_air);
-                  totalKernel.kadar_kotoran += Number(
-                    kernelResults[0].kadar_kotoran
-                  );
-                  totalKernel.do = kernel.do
-                    ? Number(kernel.do)
-                    : totalKernel.do + Number(kernelResults[0].do);
-                  totalKernel.hi = kernel.hi
-                    ? Number(kernel.hi)
-                    : totalKernel.hi + Number(kernelResults[0].hi);
+                  totalKernel.stok += Number(kernelResults[0].stok); // Hanya stok yang ditambah dari lama
+                  totalKernel.alb = Number(kernel.alb); // Tidak ditambah dari lama
+                  totalKernel.kadar_air = Number(kernel.kadar_air); // Tidak ditambah dari lama
+                  totalKernel.kadar_kotoran = Number(kernel.kadar_kotoran); // Tidak ditambah dari lama
+                  totalKernel.do = Number(kernel.do); // Tidak ditambah dari lama
+                  totalKernel.hi = Number(kernel.hi); // Hanya nilai baru
                 }
 
                 db.query(
@@ -789,24 +780,12 @@ app.post("/penyimpanan", (req, res) => {
                           (err, jumlahResults) => {
                             if (err) return res.status(500).json(err);
                             if (jumlahResults.length > 0) {
-                              existingCategory.jumlah.stok += Number(
-                                jumlahResults[0].stok
-                              );
-                              existingCategory.jumlah.alb += Number(
-                                jumlahResults[0].alb
-                              );
-                              existingCategory.jumlah.kadar_air += Number(
-                                jumlahResults[0].kadar_air
-                              );
-                              existingCategory.jumlah.kadar_kotoran += Number(
-                                jumlahResults[0].kadar_kotoran
-                              );
-                              existingCategory.jumlah.do += Number(
-                                jumlahResults[0].do
-                              );
-                              existingCategory.jumlah.hi += Number(
-                                jumlahResults[0].hi
-                              );
+                              existingCategory.jumlah.stok += Number(jumlahResults[0].stok); // Hanya stok yang ditambah
+                              existingCategory.jumlah.alb = existingCategory.jumlah.alb; // Tidak ditambah
+                              existingCategory.jumlah.kadar_air = existingCategory.jumlah.kadar_air; // Tidak ditambah
+                              existingCategory.jumlah.kadar_kotoran = existingCategory.jumlah.kadar_kotoran; // Tidak ditambah
+                              existingCategory.jumlah.do = existingCategory.jumlah.do; // Tidak ditambah
+                              existingCategory.jumlah.hi = existingCategory.jumlah.hi; // Tidak ditambah
                             }
                           }
                         );
@@ -843,9 +822,7 @@ app.post("/penyimpanan", (req, res) => {
                           }
                           penyimpananMap.get(kategoriNama).push({
                             jenis_tank: pPrev.jenis_tank,
-                            stok: pPrev.hi
-                              ? Number(pPrev.stok) - Number(pPrev.hi)
-                              : Number(pPrev.stok),
+                            stok: Number(pPrev.stok),
                             alb: Number(pPrev.alb),
                             kadar_air: Number(pPrev.kadar_air),
                             kadar_kotoran: Number(pPrev.kadar_kotoran),
@@ -861,25 +838,16 @@ app.post("/penyimpanan", (req, res) => {
                               (p) => p.jenis_tank === pPrev.jenis_tank
                             );
                             if (existingPenyimpanan) {
-                              existingPenyimpanan.stok += pPrev.hi
-                                ? Number(pPrev.stok) - Number(pPrev.hi)
-                                : Number(pPrev.stok);
-                              existingPenyimpanan.alb += pPrev.alb;
-                              existingPenyimpanan.kadar_air += pPrev.kadar_air;
-                              existingPenyimpanan.kadar_kotoran +=
-                                pPrev.kadar_kotoran;
-                              existingPenyimpanan.do = existingPenyimpanan.do
-                                ? Number(existingPenyimpanan.do)
-                                : existingPenyimpanan.do + pPrev.do;
-                              existingPenyimpanan.hi = existingPenyimpanan.hi
-                                ? Number(existingPenyimpanan.hi)
-                                : existingPenyimpanan.hi + pPrev.hi;
+                              existingPenyimpanan.stok += Number(pPrev.stok); // Hanya stok yang ditambah
+                              existingPenyimpanan.alb = Number(existingPenyimpanan.alb); // Tidak ditambah
+                              existingPenyimpanan.kadar_air = Number(existingPenyimpanan.kadar_air); // Tidak ditambah
+                              existingPenyimpanan.kadar_kotoran = Number(existingPenyimpanan.kadar_kotoran); // Tidak ditambah
+                              existingPenyimpanan.do = Number(existingPenyimpanan.do); // Tidak ditambah
+                              existingPenyimpanan.hi = Number(existingPenyimpanan.hi); // Hanya nilai baru
                             } else {
                               kat.penyimpanan.push({
                                 jenis_tank: pPrev.jenis_tank,
-                                stok: pPrev.hi
-                                  ? Number(pPrev.stok) - Number(pPrev.hi)
-                                  : Number(pPrev.stok),
+                                stok: Number(pPrev.stok),
                                 alb: Number(pPrev.alb),
                                 kadar_air: Number(pPrev.kadar_air),
                                 kadar_kotoran: Number(pPrev.kadar_kotoran),
@@ -894,8 +862,7 @@ app.post("/penyimpanan", (req, res) => {
                               stok: acc.stok + Number(p.stok),
                               alb: acc.alb + Number(p.alb),
                               kadar_air: acc.kadar_air + Number(p.kadar_air),
-                              kadar_kotoran:
-                                acc.kadar_kotoran + Number(p.kadar_kotoran),
+                              kadar_kotoran: acc.kadar_kotoran + Number(p.kadar_kotoran),
                               do: acc.do + Number(p.do),
                               hi: acc.hi + Number(p.hi),
                             }),
@@ -903,6 +870,7 @@ app.post("/penyimpanan", (req, res) => {
                           );
                         });
 
+                        // Langkah 2: Simpan data baru
                         db.query(
                           "INSERT INTO data_penyimpanan (tanggal, lokasi) VALUES (?, ?)",
                           [tanggal, lokasi],
@@ -912,12 +880,7 @@ app.post("/penyimpanan", (req, res) => {
 
                             db.query(
                               "INSERT INTO data_pkm (id_penyimpanan, nilai_pkm, nilai_do, nilai_hi) VALUES (?, ?, ?, ?)",
-                              [
-                                penyimpananId,
-                                totalPkm.nilai_pkm,
-                                totalPkm.nilai_do,
-                                totalPkm.nilai_hi,
-                              ]
+                              [penyimpananId, totalPkm.nilai_pkm, totalPkm.nilai_do, totalPkm.nilai_hi]
                             );
 
                             db.query(
@@ -973,9 +936,21 @@ app.post("/penyimpanan", (req, res) => {
                               );
                             });
 
-                            res.json({
-                              message: "Data berhasil diperbarui dan ditambahkan.",
-                            });
+                            // Langkah 3: Perbarui data berikutnya jika ada
+                            db.query(
+                              "SELECT * FROM data_penyimpanan WHERE lokasi = ? AND tanggal > ?",
+                              [lokasi, tanggal],
+                              (err, followingResults) => {
+                                if (err) return res.status(500).json(err);
+                                if (followingResults.length > 0) {
+                                  // Ada data setelah tanggal input, perbarui
+                                  updateFollowingData(lokasi, tanggal, db);
+                                }
+                                res.json({
+                                  message: "Data berhasil ditambahkan dan data berikutnya diperbarui jika ada.",
+                                });
+                              }
+                            );
                           }
                         );
                       }
@@ -987,6 +962,7 @@ app.post("/penyimpanan", (req, res) => {
           }
         );
       } else {
+        // Jika tidak ada data sebelumnya, simpan langsung
         db.query(
           "INSERT INTO data_penyimpanan (tanggal, lokasi) VALUES (?, ?)",
           [tanggal, lokasi],
@@ -996,12 +972,7 @@ app.post("/penyimpanan", (req, res) => {
 
             db.query(
               "INSERT INTO data_pkm (id_penyimpanan, nilai_pkm, nilai_do, nilai_hi) VALUES (?, ?, ?, ?)",
-              [
-                penyimpananId,
-                totalPkm.nilai_pkm,
-                totalPkm.nilai_do,
-                totalPkm.nilai_hi,
-              ]
+              [penyimpananId, totalPkm.nilai_pkm, totalPkm.nilai_do, totalPkm.nilai_hi]
             );
 
             db.query(
@@ -1057,17 +1028,26 @@ app.post("/penyimpanan", (req, res) => {
               );
             });
 
-            res.json({
-              message: "Data berhasil ditambahkan.",
-            });
+            // Periksa data berikutnya meskipun tidak ada data sebelumnya
+            db.query(
+              "SELECT * FROM data_penyimpanan WHERE lokasi = ? AND tanggal > ?",
+              [lokasi, tanggal],
+              (err, followingResults) => {
+                if (err) return res.status(500).json(err);
+                if (followingResults.length > 0) {
+                  updateFollowingData(lokasi, tanggal, db);
+                }
+                res.json({
+                  message: "Data berhasil ditambahkan dan data berikutnya diperbarui jika ada.",
+                });
+              }
+            );
           }
         );
       }
     }
   );
 });
-
-
 
 
 
