@@ -96,19 +96,29 @@ const AddPersediaanDummy = () => {
   const lokasiDenganPKM = ["Bekri", "Betung"]; // Lokasi yang memiliki PKM
   const lokasiDenganKernel = ["Bekri", "Betung", "Talang Sawit"];
 
+
+// Inisialisasi kategori berdasarkan lokasi default "Bekri"
+  useState(() => {
+    setFormData((prev) => ({
+      ...prev,
+      kategori: clusters["Bekri"].map((kat) => ({
+        nama_kategori: kat.nama, // Ubah "nama" menjadi "nama_kategori" agar sesuai backend
+        penyimpanan: kat.penyimpanan.map((peny) => ({ ...peny })),
+      })),
+    }));
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "lokasi") {
-      // Ketika lokasi berubah, reset kategori sesuai cluster
       const newFormData = {
         ...formData,
         lokasi: value,
         kategori: clusters[value].map((kat) => ({
-          nama: kat.nama,
+          nama_kategori: kat.nama, // Ubah "nama" menjadi "nama_kategori"
           penyimpanan: kat.penyimpanan.map((peny) => ({ ...peny })),
         })),
       };
-      // Reset PKM dan Kernel jika lokasi tidak mendukung
       if (!lokasiDenganPKM.includes(value)) {
         newFormData.pkm = { nilai_pkm: "", nilai_do: "", nilai_hi: "" };
       }
@@ -146,6 +156,7 @@ const AddPersediaanDummy = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Data yang dikirim:", JSON.stringify(formData)); // Debugging data sebelum dikirim
     try {
       const response = await fetch("http://localhost:5000/penyimpanan", {
         method: "POST",
@@ -163,7 +174,6 @@ const AddPersediaanDummy = () => {
     }
     setTimeout(() => setNotification(null), 5000);
   };
-
   return (
     <div className="container mt-4">
       <h2 className="text-center mb-4 fw-bolder center">
@@ -331,7 +341,7 @@ const AddPersediaanDummy = () => {
         {/* Kategori dan Penyimpanan sesuai Cluster */}
         {formData.kategori.map((kat, katIndex) => (
           <div key={katIndex} className="mt-3 border p-3">
-            <h5>Kategori: {kat.nama}</h5>
+            <h5>Kategori: {kat.nama_kategori}</h5>
             {kat.penyimpanan.map((p, pIndex) => (
               <div key={pIndex} className="mt-2 border p-2">
                 <label className="form-label">Tank: {p.jenis_tank}</label>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Table, Container, Form, Row, Col, Button } from "react-bootstrap";
+import EditCatatanPersediaan from "./EditPersedian";
 
 const CatatanPersediaan = () => {
   const [dataPenyimpanan, setDataPenyimpanan] = useState([]);
@@ -8,6 +9,8 @@ const CatatanPersediaan = () => {
   const [previousDate, setPreviousDate] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(""); // State untuk lokasi
   const [availableLocations, setAvailableLocations] = useState([]);
+  const [showEditModal, setShowEditModal] = useState(false); // State untuk popup edit
+  const [selectedData, setSelectedData] = useState(null); // Data yang akan diedit
 
   useEffect(() => {
     if (!selectedLocation) return;
@@ -394,53 +397,59 @@ const CatatanPersediaan = () => {
       )
     ) {
       try {
-        // Temukan semua ID yang sesuai dengan selectedDate dan selectedLocation
-        const idsToDelete = dataPenyimpanan
-          .filter(
-            (item) =>
-              item.lokasi === selectedLocation &&
-              item.tanggal.startsWith(selectedDate)
-          )
-          .map((item) => item.id);
-  
-        if (idsToDelete.length === 0) {
-          alert("Tidak ada data yang cocok untuk dihapus.");
-          return;
-        }
-  
-        // Hapus setiap entri satu per satu
-        const deletePromises = idsToDelete.map((id) =>
-          fetch(`http://localhost:5000/data_penyimpanan/${id}`, {
+        // Kirim request DELETE ke endpoint baru dengan tanggal dan lokasi
+        const response = await fetch(
+          `http://localhost:5000/penyimpanan/${selectedDate}/${selectedLocation}`,
+          {
             method: "DELETE",
-          }).then((res) => res.json())
+          }
         );
   
-        // Tunggu semua penghapusan selesai
-        const deleteResults = await Promise.all(deletePromises);
+        const result = await response.json();
   
-        // Periksa apakah semua penghapusan berhasil
-        const allDeleted = deleteResults.every(
-          (result) => result.message === "Data berhasil dihapus"
-        );
-  
-        if (allDeleted) {
+        // Periksa apakah penghapusan berhasil
+        if (response.ok && result.message) {
           // Ambil ulang semua data dari backend untuk mencerminkan perubahan
-          const response = await fetch("http://localhost:5000/data_penyimpanan");
-          const updatedData = await response.json();
+          const updatedResponse = await fetch("http://localhost:5000/data_penyimpanan");
+          const updatedData = await updatedResponse.json();
   
           // Perbarui state dengan data terbaru
           setDataPenyimpanan(updatedData);
-          alert("Data berhasil dihapus dan state diperbarui.");
+          alert("Data berhasil dihapus dan stok disesuaikan.");
         } else {
-          throw new Error("Beberapa data gagal dihapus.");
+          throw new Error(result.error || "Gagal menghapus data.");
         }
       } catch (error) {
         console.error("Error deleting data:", error);
-        alert("Terjadi kesalahan saat menghapus data.");
+        alert("Terjadi kesalahan saat menghapus data: " + error.message);
       }
     }
   };
 
+  const handleEditClick = () => {
+    if (!filteredData.length) {
+      alert("Tidak ada data untuk diedit pada tanggal dan lokasi ini.");
+      return;
+    }
+    const dataToEdit = filteredData[0]; // Ambil data pertama yang sesuai tanggal dan lokasi
+    setSelectedData(dataToEdit);
+    setShowEditModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowEditModal(false);
+    setSelectedData(null);
+  };
+
+  const handleUpdateData = (updatedData) => {
+    setDataPenyimpanan((prev) =>
+      prev.map((item) =>
+        item.tanggal.startsWith(updatedData.tanggal) && item.lokasi === updatedData.lokasi
+          ? updatedData
+          : item
+      )
+    );
+  };
   const renderTable = (totals, title, isTotalSeluruh = false) => (
     <Col md={6}>
       <h4 className="text-center">{title}</h4>
@@ -620,9 +629,14 @@ const CatatanPersediaan = () => {
     </Form.Group>
   </Col>
   <Col md={4}>
-    <Button variant="danger" onClick={handleDelete} className="w-100">
-      Hapus Data Hari Ini
-    </Button>
+  <div className="d-flex gap-2">
+            <Button variant="danger" onClick={handleDelete} className="w-50">
+              Hapus Data Hari Ini
+            </Button>
+            <Button variant="warning" onClick={handleEditClick} className="w-50">
+              Edit Data Hari Ini
+            </Button>
+          </div>
   </Col>
 </Row>
       <Row className="d-flex flex-warp">
@@ -884,6 +898,13 @@ const CatatanPersediaan = () => {
           </>
         )}
       </Row>
+      {showEditModal && (
+        <EditCatatanPersediaan
+          dataToEdit={selectedData}
+          onClose={handleCloseModal}
+          onUpdate={handleUpdateData}
+        />
+      )}
     </Container>
   );
 };

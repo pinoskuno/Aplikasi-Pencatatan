@@ -143,3 +143,71 @@ ALTER TABLE `kernel`
 ALTER TABLE `penyimpanan`
   ADD CONSTRAINT `penyimpanan_ibfk_1` FOREIGN KEY (`id_kategori`) REFERENCES `kategori` (`id`) ON DELETE CASCADE;
 COMMIT;
+
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateStockAfterInsert(IN new_id_penyimpanan INT, IN new_lokasi VARCHAR(100))
+BEGIN
+    DECLARE prev_stok INT DEFAULT 0;
+    DECLARE stok_input INT;
+    DECLARE new_stok INT;
+    DECLARE new_hi INT;
+    DECLARE new_tanggal DATE;
+
+    -- Ambil data entri baru
+    SELECT stok, hi, dp.tanggal INTO new_stok, new_hi, new_tanggal
+    FROM kernel k
+    INNER JOIN data_penyimpanan dp ON k.id_penyimpanan = dp.id
+    WHERE k.id_penyimpanan = new_id_penyimpanan;
+
+    -- Ambil stok sebelumnya
+    SELECT COALESCE(k.stok, 0) INTO prev_stok
+    FROM kernel k
+    INNER JOIN data_penyimpanan dp ON k.id_penyimpanan = dp.id
+    WHERE dp.lokasi = new_lokasi
+    AND dp.tanggal < new_tanggal
+    ORDER BY dp.tanggal DESC
+    LIMIT 1;
+
+    -- Hitung stok input murni (stok baru - hi)
+    SET stok_input = new_stok - COALESCE(new_hi, 0);
+
+    -- Update stok entri baru (prev_stok + stok_input)
+    SET new_stok = prev_stok + stok_input;
+    UPDATE kernel
+    SET stok = new_stok
+    WHERE id_penyimpanan = new_id_penyimpanan;
+
+    -- Sesuaikan stok data berikutnya (tambah stok_input murni)
+    UPDATE kernel k
+    INNER JOIN data_penyimpanan dp ON k.id_penyimpanan = dp.id
+    SET k.stok = k.stok + stok_input
+    WHERE dp.lokasi = new_lokasi
+    AND dp.tanggal > new_tanggal;
+
+    -- Sesuaikan stok penyimpanan (kurangi hi dari stok mentah, lalu tambah stok_input untuk data berikutnya)
+    UPDATE penyimpanan p
+    INNER JOIN kategori kat ON p.id_kategori = kat.id
+    INNER JOIN data_penyimpanan dp ON kat.id_penyimpanan = dp.id
+    SET p.stok = CASE 
+        WHEN dp.tanggal = new_tanggal THEN p.stok - COALESCE(p.hi, 0) 
+        ELSE p.stok + stok_input 
+    END
+    WHERE dp.lokasi = new_lokasi
+    AND dp.tanggal >= new_tanggal;
+
+    -- Sesuaikan jumlah_total
+    UPDATE jumlah_total jt
+    INNER JOIN kategori kat ON jt.id_kategori = kat.id
+    INNER JOIN data_penyimpanan dp ON kat.id_penyimpanan = dp.id
+    SET jt.stok = (
+        SELECT SUM(p.stok)
+        FROM penyimpanan p
+        WHERE p.id_kategori = kat.id
+    )
+    WHERE dp.lokasi = new_lokasi
+    AND dp.tanggal >= new_tanggal;
+END //
+
+DELIMITER ;

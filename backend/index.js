@@ -27,6 +27,85 @@ db.connect((err) => {
   console.log("Terhubung ke database MySQL");
 });
 
+const clusters = {
+  "Bekri": [
+    {
+      nama: "CPO",
+      penyimpanan: [
+        { jenis_tank: "Storage Tank VI", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank VII", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank VIII", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank IX", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+      ],
+    },
+    {
+      nama: "PKO",
+      penyimpanan: [
+        { jenis_tank: "Tangki I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Tangki III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Tangki IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Tangki V", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Tangki IX", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+      ],
+    },
+  ],
+  "Betung": [
+    {
+      nama: "CPO",
+      penyimpanan: [
+        { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+      ],
+    },
+    {
+      nama: "PKO",
+      penyimpanan: [
+        { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank V", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+      ],
+    },
+  ],
+  "Talang Sawit": [
+    {
+      nama: "CPO",
+      penyimpanan: [
+        { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+      ],
+    },
+  ],
+  "Sungai Lengi": [
+    {
+      nama: "CPO",
+      penyimpanan: [
+        { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+      ],
+    },
+    {
+      nama: "Kernel Lengi",
+      penyimpanan: [
+        { jenis_tank: "Gudang Repa", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Gudang Pabrik", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+      ],
+    },
+  ],
+  "IPMG Boom Baru": [
+    {
+      nama: "CPO",
+      penyimpanan: [
+        { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        { jenis_tank: "Storage Tank IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+      ],
+    },
+  ],
+};
 
 // // Fungsi untuk memperbarui data berikutnya
 // const updateFollowingData = (lokasi, changedDate, db) => {
@@ -460,24 +539,19 @@ app.delete("/api/catatan/:id", (req, res) => {
 app.get("/data_penyimpanan", (req, res) => {
   const sql = `
     SELECT dp.id,
-           DATE_FORMAT(dp.tanggal, '%Y-%m-%d') AS tanggal,  -- Normalisasi ke YYYY-MM-DD
+           DATE_FORMAT(dp.tanggal, '%Y-%m-%d') AS tanggal,
            dp.lokasi, 
            pk.nilai_pkm, pk.nilai_do AS pkm_do, pk.nilai_hi AS pkm_hi,
            k.stok AS kernel_stok, k.alb AS kernel_alb, k.kadar_air AS kernel_kadar_air, 
            k.kadar_kotoran AS kernel_kadar_kotoran, k.do AS kernel_do, k.hi AS kernel_hi,
-           ka.id AS kategori_id, ka.nama_kategori,
-           p.id AS penyimpanan_id, p.jenis_tank, p.stok AS penyimpanan_stok, 
+           p.id AS penyimpanan_id, p.nama_kategori, p.jenis_tank, p.stok AS penyimpanan_stok, 
            p.alb AS penyimpanan_alb, p.kadar_air AS penyimpanan_kadar_air, 
            p.kadar_kotoran AS penyimpanan_kadar_kotoran, p.do AS penyimpanan_do, 
-           p.hi AS penyimpanan_hi,
-           jt.stok AS jumlah_stok, jt.alb AS jumlah_alb, jt.kadar_air AS jumlah_kadar_air, 
-           jt.kadar_kotoran AS jumlah_kadar_kotoran, jt.do AS jumlah_do, jt.hi AS jumlah_hi
+           p.hi AS penyimpanan_hi
     FROM data_penyimpanan dp
     LEFT JOIN data_pkm pk ON pk.id_penyimpanan = dp.id
     LEFT JOIN kernel k ON k.id_penyimpanan = dp.id
-    LEFT JOIN kategori ka ON ka.id_penyimpanan = dp.id
-    LEFT JOIN penyimpanan p ON p.id_kategori = ka.id
-    LEFT JOIN jumlah_total jt ON jt.id_kategori = ka.id`;
+    LEFT JOIN penyimpanan p ON p.id_penyimpanan = dp.id`;
 
   db.query(sql, (err, results) => {
     if (err) {
@@ -485,14 +559,14 @@ app.get("/data_penyimpanan", (req, res) => {
       return res.status(500).json(err);
     }
 
-    console.log("Raw results from database:", results); // Debugging hasil mentah
+    console.log("Raw results from database:", results);
 
     const dataMap = {};
     results.forEach((row) => {
       if (!dataMap[row.id]) {
         dataMap[row.id] = {
           id: row.id,
-          tanggal: row.tanggal, // Sudah dalam format YYYY-MM-DD dari query
+          tanggal: row.tanggal,
           lokasi: row.lokasi,
           pkm: {
             nilai_pkm: row.nilai_pkm,
@@ -511,23 +585,24 @@ app.get("/data_penyimpanan", (req, res) => {
         };
       }
 
-      if (!dataMap[row.id].kategori[row.kategori_id]) {
-        dataMap[row.id].kategori[row.kategori_id] = {
-          nama: row.nama_kategori,
-          penyimpanan: [],
-          jumlah: {
-            stok: row.jumlah_stok,
-            alb: row.jumlah_alb,
-            kadar_air: row.jumlah_kadar_air,
-            kadar_kotoran: row.jumlah_kadar_kotoran,
-            do: row.jumlah_do,
-            hi: row.jumlah_hi,
-          },
-        };
-      }
-
       if (row.penyimpanan_id) {
-        dataMap[row.id].kategori[row.kategori_id].penyimpanan.push({
+        const namaKategori = row.nama_kategori || "default";
+        if (!dataMap[row.id].kategori[namaKategori]) {
+          dataMap[row.id].kategori[namaKategori] = {
+            nama: namaKategori,
+            penyimpanan: [],
+            jumlah: {
+              stok: 0,
+              alb: 0,
+              kadar_air: 0,
+              kadar_kotoran: 0,
+              do: 0,
+              hi: 0,
+            },
+          };
+        }
+
+        const penyimpananData = {
           jenis_tank: row.jenis_tank,
           stok: row.penyimpanan_stok,
           alb: row.penyimpanan_alb,
@@ -535,12 +610,22 @@ app.get("/data_penyimpanan", (req, res) => {
           kadar_kotoran: row.penyimpanan_kadar_kotoran,
           do: row.penyimpanan_do,
           hi: row.penyimpanan_hi,
-        });
+        };
+
+        dataMap[row.id].kategori[namaKategori].penyimpanan.push(penyimpananData);
+
+        // Hitung total
+        dataMap[row.id].kategori[namaKategori].jumlah.stok += Number(row.penyimpanan_stok) || 0;
+        dataMap[row.id].kategori[namaKategori].jumlah.alb += Number(row.penyimpanan_alb) || 0;
+        dataMap[row.id].kategori[namaKategori].jumlah.kadar_air += Number(row.penyimpanan_kadar_air) || 0;
+        dataMap[row.id].kategori[namaKategori].jumlah.kadar_kotoran += Number(row.penyimpanan_kadar_kotoran) || 0;
+        dataMap[row.id].kategori[namaKategori].jumlah.do += Number(row.penyimpanan_do) || 0;
+        dataMap[row.id].kategori[namaKategori].jumlah.hi += Number(row.penyimpanan_hi) || 0;
       }
     });
 
     const responseData = Object.values(dataMap);
-    console.log("Data yang dikirim ke frontend:", responseData); // Debugging data akhir
+    console.log("Data yang dikirim ke frontend:", responseData);
     res.json(responseData);
   });
 });
@@ -644,14 +729,24 @@ app.put("/data_penyimpanan/:id", (req, res) => {
 });
 
 
-app.delete("/data_penyimpanan/:id", async (req, res) => {
-  const { id } = req.params;
+app.delete("/penyimpanan/:tanggal/:lokasi", async (req, res) => {
+  const { tanggal, lokasi } = req.params;
+
+  console.log(`Delete request - tanggal: ${tanggal}, lokasi: ${lokasi}`);
 
   try {
+    await new Promise((resolve, reject) => {
+      db.query("START TRANSACTION", (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    // Ambil id_penyimpanan yang akan dihapus
     const result = await new Promise((resolve, reject) => {
       db.query(
-        "SELECT dp.tanggal, dp.lokasi, k.stok FROM data_penyimpanan dp LEFT JOIN kernel k ON dp.id = k.id_penyimpanan WHERE dp.id = ?",
-        [id],
+        "SELECT id FROM data_penyimpanan WHERE tanggal = ? AND lokasi = ?",
+        [tanggal, lokasi],
         (err, result) => {
           if (err) reject(err);
           else resolve(result);
@@ -659,37 +754,73 @@ app.delete("/data_penyimpanan/:id", async (req, res) => {
       );
     });
 
-    if (result.length === 0) return res.status(404).json({ message: "Data tidak ditemukan" });
+    if (result.length === 0) {
+      throw new Error(`Data untuk tanggal ${tanggal} dan lokasi ${lokasi} tidak ditemukan`);
+    }
 
-    const { tanggal, lokasi, stok } = result[0];
+    const id_penyimpanan = result[0].id;
 
-    // Hapus data
+    // Panggil Stored Procedure untuk menyesuaikan stok setelah penghapusan
+    await new Promise((resolve, reject) => {
+      db.query(
+        "CALL AdjustStockAfterDelete(?, ?)",
+        [id_penyimpanan, lokasi],
+        (err) => {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+
+    // Hapus data dari semua tabel terkait
+    await new Promise((resolve, reject) => {
+      db.query(
+        "DELETE FROM penyimpanan WHERE id_penyimpanan = ?",
+        [id_penyimpanan],
+        (err) => (err ? reject(err) : resolve())
+      );
+    });
+
+    await new Promise((resolve, reject) => {
+      db.query(
+        "DELETE FROM kernel WHERE id_penyimpanan = ?",
+        [id_penyimpanan],
+        (err) => (err ? reject(err) : resolve())
+      );
+    });
+
+    await new Promise((resolve, reject) => {
+      db.query(
+        "DELETE FROM data_pkm WHERE id_penyimpanan = ?",
+        [id_penyimpanan],
+        (err) => (err ? reject(err) : resolve())
+      );
+    });
+
     await new Promise((resolve, reject) => {
       db.query(
         "DELETE FROM data_penyimpanan WHERE id = ?",
-        [id],
-        (err) => {
-          if (err) reject(err);
-          else resolve();
-        }
+        [id_penyimpanan],
+        (err) => (err ? reject(err) : resolve())
       );
     });
 
-    // Panggil Stored Procedure dengan stok yang dihapus
     await new Promise((resolve, reject) => {
-      db.query(
-        "CALL UpdateStockAfterDelete(?, ?, ?)",
-        [tanggal, lokasi, stok],
-        (err) => {
-          if (err) reject(err);
-          else resolve();
-        }
-      );
+      db.query("COMMIT", (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
     });
 
-    res.json({ message: "Data berhasil dihapus dan stok diolah oleh database." });
+    res.json({ message: `Data untuk tanggal ${tanggal} dan lokasi ${lokasi} berhasil dihapus dan stok disesuaikan.` });
   } catch (error) {
-    console.error("Error in DELETE /data_penyimpanan:", error);
+    console.error("Error in DELETE /penyimpanan:", error);
+    await new Promise((resolve) => {
+      db.query("ROLLBACK", (err) => {
+        if (err) console.error("Rollback failed:", err);
+        resolve();
+      });
+    });
     res.status(500).json({ error: "Terjadi kesalahan saat menghapus data.", details: error.message });
   }
 });
@@ -697,7 +828,6 @@ app.delete("/data_penyimpanan/:id", async (req, res) => {
 app.post("/penyimpanan", async (req, res) => {
   const { tanggal, lokasi, pkm, kernel, kategori } = req.body;
 
-  // Logging input untuk debug
   console.log("Request body:", JSON.stringify(req.body));
 
   try {
@@ -708,9 +838,10 @@ app.post("/penyimpanan", async (req, res) => {
       });
     });
 
-    const result = await new Promise((resolve, reject) => {
+    // Cek apakah tanggal dan lokasi sudah ada
+    const existingResult = await new Promise((resolve, reject) => {
       db.query(
-        "INSERT INTO data_penyimpanan (tanggal, lokasi) VALUES (?, ?)",
+        "SELECT id FROM data_penyimpanan WHERE tanggal = ? AND lokasi = ?",
         [tanggal, lokasi],
         (err, result) => {
           if (err) reject(err);
@@ -718,75 +849,115 @@ app.post("/penyimpanan", async (req, res) => {
         }
       );
     });
-    const penyimpananId = result.insertId;
 
-    await new Promise((resolve, reject) => {
-      db.query(
-        "INSERT INTO data_pkm (id_penyimpanan, nilai_pkm, nilai_do, nilai_hi) VALUES (?, ?, ?, ?)",
-        [penyimpananId, pkm.nilai_pkm, pkm.nilai_do, pkm.nilai_hi],
-        (err) => (err ? reject(err) : resolve())
-      );
-    });
-
-    await new Promise((resolve, reject) => {
-      db.query(
-        "INSERT INTO kernel (id_penyimpanan, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [penyimpananId, kernel.stok, kernel.alb, kernel.kadar_air, kernel.kadar_kotoran, kernel.do, kernel.hi],
-        (err) => {
-          if (err) reject(err);
-          else resolve();
-        }
-      );
-    });
-
-    for (const kat of kategori) {
-      const kategoriResult = await new Promise((resolve, reject) => {
+    let penyimpananId;
+    if (existingResult.length > 0) {
+      // Jika tanggal sudah ada, gunakan id_penyimpanan yang ada
+      penyimpananId = existingResult[0].id;
+      console.log(`Tanggal ${tanggal} sudah ada, menggunakan id_penyimpanan: ${penyimpananId}`);
+    } else {
+      // Jika tanggal baru, insert ke data_penyimpanan
+      const result = await new Promise((resolve, reject) => {
         db.query(
-          "INSERT INTO kategori (id_penyimpanan, nama_kategori) VALUES (?, ?)",
-          [penyimpananId, kat.nama],
+          "INSERT INTO data_penyimpanan (tanggal, lokasi) VALUES (?, ?)",
+          [tanggal, lokasi],
           (err, result) => {
             if (err) reject(err);
             else resolve(result);
           }
         );
       });
-      const kategoriId = kategoriResult.insertId;
+      penyimpananId = result.insertId;
+    }
 
-      for (const p of kat.penyimpanan) {
+    // Update atau insert data_pkm
+    await new Promise((resolve, reject) => {
+      db.query(
+        "INSERT INTO data_pkm (id_penyimpanan, nilai_pkm, nilai_do, nilai_hi) VALUES (?, ?, ?, ?) " +
+        "ON DUPLICATE KEY UPDATE nilai_pkm = VALUES(nilai_pkm), nilai_do = VALUES(nilai_do), nilai_hi = VALUES(nilai_hi)",
+        [penyimpananId, pkm.nilai_pkm || 0, pkm.nilai_do || 0, pkm.nilai_hi || 0],
+        (err) => (err ? reject(err) : resolve())
+      );
+    });
+
+    // Update atau insert kernel
+    await new Promise((resolve, reject) => {
+      db.query(
+        "INSERT INTO kernel (id_penyimpanan, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?) " +
+        "ON DUPLICATE KEY UPDATE stok = VALUES(stok), alb = VALUES(alb), kadar_air = VALUES(kadar_air), " +
+        "kadar_kotoran = VALUES(kadar_kotoran), do = VALUES(do), hi = VALUES(hi)",
+        [penyimpananId, kernel.stok || 0, kernel.alb || 0, kernel.kadar_air || 0, kernel.kadar_kotoran || 0, kernel.do || 0, kernel.hi || 0],
+        (err) => (err ? reject(err) : resolve())
+      );
+    });
+
+    // Ambil preset penyimpanan dari clusters berdasarkan lokasi
+    const clusterPenyimpanan = clusters[lokasi];
+    if (!clusterPenyimpanan) {
+      throw new Error(`Lokasi ${lokasi} tidak ditemukan di clusters`);
+    }
+
+    // Buat map dari input kategori untuk mempermudah pencocokan
+    const inputMap = new Map();
+    for (const kat of kategori || []) {
+      for (const p of kat.penyimpanan || []) {
+        inputMap.set(`${kat.nama_kategori}-${p.jenis_tank}`, {
+          stok: p.stok || 0,
+          alb: p.alb || 0,
+          kadar_air: p.kadar_air || 0,
+          kadar_kotoran: p.kadar_kotoran || 0,
+          do: p.do || 0,
+          hi: p.hi || 0,
+        });
+      }
+    }
+
+    // Insert atau update semua jenis_tank dari clusters
+    for (const clusterKat of clusterPenyimpanan) {
+      const nama_kategori = clusterKat.nama;
+      for (const presetTank of clusterKat.penyimpanan) {
+        const jenis_tank = presetTank.jenis_tank;
+        const inputKey = `${nama_kategori}-${jenis_tank}`;
+        const inputData = inputMap.get(inputKey) || {
+          stok: 0,
+          alb: 0,
+          kadar_air: 0,
+          kadar_kotoran: 0,
+          do: 0,
+          hi: 0,
+        };
+
         await new Promise((resolve, reject) => {
           db.query(
-            "INSERT INTO penyimpanan (id_kategori, jenis_tank, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            [kategoriId, p.jenis_tank, p.stok, p.alb, p.kadar_air, p.kadar_kotoran, p.do, p.hi],
-            (err) => (err ? reject(err) : resolve())
+            "INSERT INTO penyimpanan (id_penyimpanan, nama_kategori, jenis_tank, stok, alb, kadar_air, kadar_kotoran, do, hi) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+            "ON DUPLICATE KEY UPDATE stok = VALUES(stok), alb = VALUES(alb), kadar_air = VALUES(kadar_air), " +
+            "kadar_kotoran = VALUES(kadar_kotoran), do = VALUES(do), hi = VALUES(hi)",
+            [
+              penyimpananId,
+              nama_kategori,
+              jenis_tank,
+              inputData.stok,
+              inputData.alb,
+              inputData.kadar_air,
+              inputData.kadar_kotoran,
+              inputData.do,
+              inputData.hi,
+            ],
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
           );
         });
       }
-
-      const penyimpananTotals = kat.penyimpanan.reduce(
-        (acc, p) => ({
-          stok: acc.stok + Number(p.stok),
-          alb: acc.alb + Number(p.alb),
-          kadar_air: acc.kadar_air + Number(p.kadar_air),
-          kadar_kotoran: acc.kadar_kotoran + Number(p.kadar_kotoran),
-          do: acc.do + Number(p.do),
-          hi: acc.hi + Number(p.hi),
-        }),
-        { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 }
-      );
-
-      await new Promise((resolve, reject) => {
-        db.query(
-          "INSERT INTO jumlah_total (id_kategori, stok, alb, kadar_air, kadar_kotoran, do, hi) VALUES (?, ?, ?, ?, ?, ?, ?)",
-          [kategoriId, penyimpananTotals.stok, penyimpananTotals.alb, penyimpananTotals.kadar_air, penyimpananTotals.kadar_kotoran, penyimpananTotals.do, penyimpananTotals.hi],
-          (err) => (err ? reject(err) : resolve())
-        );
-      });
     }
 
+    // Panggil Stored Procedure dengan parameter tanggal
     await new Promise((resolve, reject) => {
       db.query(
-        "CALL UpdateStockAfterInsert(?, ?)",
-        [penyimpananId, lokasi],
+        "CALL UpdateStockAfterInsert(?, ?, ?)",
+        [penyimpananId, lokasi, tanggal],
         (err) => {
           if (err) reject(err);
           else resolve();
@@ -801,7 +972,7 @@ app.post("/penyimpanan", async (req, res) => {
       });
     });
 
-    res.json({ message: "Data berhasil ditambahkan dan stok diolah oleh database." });
+    res.json({ message: "Data berhasil ditambahkan atau diperbarui dan stok diolah oleh database." });
   } catch (error) {
     console.error("Error in POST /penyimpanan:", error);
     await new Promise((resolve) => {
@@ -812,6 +983,95 @@ app.post("/penyimpanan", async (req, res) => {
     });
     res.status(500).json({ error: "Terjadi kesalahan saat menyimpan data.", details: error.message });
   }
+});
+
+// Endpoint PUT untuk mengedit data penyimpanan
+app.put('/penyimpanan/:tanggal/:lokasi', (req, res) => {
+  const { tanggal, lokasi } = req.params;
+  const { pkm, kernel, kategori } = req.body;
+
+  // Langkah 1: Ambil id_penyimpanan berdasarkan tanggal dan lokasi
+  db.query(
+    'SELECT id FROM data_penyimpanan WHERE tanggal = ? AND lokasi = ? LIMIT 1',
+    [tanggal, lokasi],
+    (err, rows) => {
+      if (err) {
+        console.error('Error fetching id_penyimpanan:', err);
+        return res.status(500).json({ error: err.message });
+      }
+      if (!rows.length) {
+        return res.status(404).json({ error: 'Data tidak ditemukan' });
+      }
+      const id_penyimpanan = rows[0].id;
+
+      // Langkah 2: Update penyimpanan (kategori) terlebih dahulu
+      let queriesCompleted = 0;
+      const totalPenyimpanan = kategori.reduce((sum, kat) => sum + kat.penyimpanan.length, 0);
+
+      kategori.forEach((kat) => {
+        kat.penyimpanan.forEach((peny) => {
+          // Pastikan nilai kosong tetap kosong, bukan null, kecuali kolom nullable
+          const stok = peny.stok === "" ? null : (peny.stok || 0);
+          const alb = peny.alb === "" ? null : (peny.alb || 0);
+          const kadar_air = peny.kadar_air === "" ? null : (peny.kadar_air || 0);
+          const kadar_kotoran = peny.kadar_kotoran === "" ? null : (peny.kadar_kotoran || 0);
+          const do_value = peny.do === "" ? null : (peny.do || 0);
+          const hi = peny.hi === "" ? null : (peny.hi || 0);
+
+          db.query(
+            `UPDATE penyimpanan 
+             SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ?
+             WHERE id_penyimpanan = ? AND nama_kategori = ? AND jenis_tank = ?`,
+            [
+              stok,
+              alb,
+              kadar_air,
+              kadar_kotoran,
+              do_value,
+              hi,
+              id_penyimpanan,
+              kat.nama_kategori,
+              peny.jenis_tank,
+            ],
+            (err) => {
+              if (err) {
+                console.error('Error updating penyimpanan:', err);
+                return res.status(500).json({ error: err.message });
+              }
+              queriesCompleted++;
+              if (queriesCompleted === totalPenyimpanan) {
+                // Langkah 3: Panggil stored procedure untuk menyesuaikan stok
+                db.query(
+                  'CALL UpdateStockAfterEdit(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                  [
+                    id_penyimpanan,
+                    lokasi,
+                    tanggal,
+                    pkm.nilai_pkm === "" ? null : (pkm.nilai_pkm || 0),
+                    pkm.nilai_do === "" ? null : (pkm.nilai_do || 0),
+                    pkm.nilai_hi === "" ? null : (pkm.nilai_hi || 0),
+                    kernel.stok === "" ? null : (kernel.stok || 0),
+                    kernel.alb === "" ? null : (kernel.alb || 0),
+                    kernel.kadar_air === "" ? null : (kernel.kadar_air || 0),
+                    kernel.kadar_kotoran === "" ? null : (kernel.kadar_kotoran || 0),
+                    kernel.do === "" ? null : (kernel.do || 0),
+                    kernel.hi === "" ? null : (kernel.hi || 0),
+                  ],
+                  (err) => {
+                    if (err) {
+                      console.error('Error calling UpdateStockAfterEdit:', err);
+                      return res.status(500).json({ error: err.message });
+                    }
+                    res.json({ message: 'Data berhasil diperbarui' });
+                  }
+                );
+              }
+            }
+          );
+        });
+      });
+    }
+  );
 });
 // Jalankan server
 app.listen(port, () => {

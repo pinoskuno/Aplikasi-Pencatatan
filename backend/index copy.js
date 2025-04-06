@@ -28,196 +28,196 @@ db.connect((err) => {
 });
 
 
-const updateFollowingData = async (lokasi, changedDate, db) => {
-  return new Promise((resolve, reject) => {
-    db.query(
-      "SELECT * FROM data_penyimpanan WHERE lokasi = ? AND tanggal > ? ORDER BY tanggal ASC",
-      [lokasi, changedDate],
-      async (err, results) => {
-        if (err) {
-          console.error("Error fetching following data:", err);
-          return reject(err);
-        }
-        if (results.length === 0) return resolve();
+// const updateFollowingData = async (lokasi, changedDate, db) => {
+//   return new Promise((resolve, reject) => {
+//     db.query(
+//       "SELECT * FROM data_penyimpanan WHERE lokasi = ? AND tanggal > ? ORDER BY tanggal ASC",
+//       [lokasi, changedDate],
+//       async (err, results) => {
+//         if (err) {
+//           console.error("Error fetching following data:", err);
+//           return reject(err);
+//         }
+//         if (results.length === 0) return resolve();
 
-        for (const entry of results) {
-          const currentDate = entry.tanggal;
-          const prevResult = await new Promise((resolve, reject) => {
-            db.query(
-              "SELECT * FROM data_penyimpanan WHERE lokasi = ? AND tanggal < ? ORDER BY tanggal DESC LIMIT 1",
-              [lokasi, currentDate],
-              (err, prevResults) => {
-                if (err) return reject(err);
-                resolve(prevResults);
-              }
-            );
-          });
+//         for (const entry of results) {
+//           const currentDate = entry.tanggal;
+//           const prevResult = await new Promise((resolve, reject) => {
+//             db.query(
+//               "SELECT * FROM data_penyimpanan WHERE lokasi = ? AND tanggal < ? ORDER BY tanggal DESC LIMIT 1",
+//               [lokasi, currentDate],
+//               (err, prevResults) => {
+//                 if (err) return reject(err);
+//                 resolve(prevResults);
+//               }
+//             );
+//           });
 
-          const prevId = prevResult.length > 0 ? prevResult[0].id : null;
-          let baseKernel = { stok: 0 };
+//           const prevId = prevResult.length > 0 ? prevResult[0].id : null;
+//           let baseKernel = { stok: 0 };
 
-          if (prevId) {
-            const kernelResult = await new Promise((resolve, reject) => {
-              db.query(
-                "SELECT * FROM kernel WHERE id_penyimpanan = ?",
-                [prevId],
-                (err, kernelResults) => {
-                  if (err) return reject(err);
-                  resolve(kernelResults);
-                }
-              );
-            });
-            if (kernelResult.length > 0) {
-              baseKernel = kernelResult[0];
-            }
-          }
+//           if (prevId) {
+//             const kernelResult = await new Promise((resolve, reject) => {
+//               db.query(
+//                 "SELECT * FROM kernel WHERE id_penyimpanan = ?",
+//                 [prevId],
+//                 (err, kernelResults) => {
+//                   if (err) return reject(err);
+//                   resolve(kernelResults);
+//                 }
+//               );
+//             });
+//             if (kernelResult.length > 0) {
+//               baseKernel = kernelResult[0];
+//             }
+//           }
 
-          const currentKernelResult = await new Promise((resolve, reject) => {
-            db.query(
-              "SELECT * FROM kernel WHERE id_penyimpanan = ?",
-              [entry.id],
-              (err, currentKernel) => {
-                if (err) return reject(err);
-                resolve(currentKernel);
-              }
-            );
-          });
+//           const currentKernelResult = await new Promise((resolve, reject) => {
+//             db.query(
+//               "SELECT * FROM kernel WHERE id_penyimpanan = ?",
+//               [entry.id],
+//               (err, currentKernel) => {
+//                 if (err) return reject(err);
+//                 resolve(currentKernel);
+//               }
+//             );
+//           });
 
-          if (currentKernelResult.length > 0) {
-            const currentKernel = currentKernelResult[0];
-            const updatedKernel = {
-              stok: baseKernel.stok + Number(currentKernel.stok), // Tidak dikurangi hi lagi
-              alb: Number(currentKernel.alb), // Hanya nilai baru
-              kadar_air: Number(currentKernel.kadar_air), // Hanya nilai baru
-              kadar_kotoran: Number(currentKernel.kadar_kotoran), // Hanya nilai baru
-              do: Number(currentKernel.do), // Hanya nilai baru
-              hi: Number(currentKernel.hi), // Hanya nilai baru
-            };
-            await new Promise((resolve, reject) => {
-              db.query(
-                "UPDATE kernel SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_penyimpanan = ?",
-                [
-                  updatedKernel.stok,
-                  updatedKernel.alb,
-                  updatedKernel.kadar_air,
-                  updatedKernel.kadar_kotoran,
-                  updatedKernel.do,
-                  updatedKernel.hi,
-                  entry.id,
-                ],
-                (err) => {
-                  if (err) return reject(err);
-                  resolve();
-                }
-              );
-            });
-          }
+//           if (currentKernelResult.length > 0) {
+//             const currentKernel = currentKernelResult[0];
+//             const updatedKernel = {
+//               stok: baseKernel.stok + Number(currentKernel.stok), // Tidak dikurangi hi lagi
+//               alb: Number(currentKernel.alb), // Hanya nilai baru
+//               kadar_air: Number(currentKernel.kadar_air), // Hanya nilai baru
+//               kadar_kotoran: Number(currentKernel.kadar_kotoran), // Hanya nilai baru
+//               do: Number(currentKernel.do), // Hanya nilai baru
+//               hi: Number(currentKernel.hi), // Hanya nilai baru
+//             };
+//             await new Promise((resolve, reject) => {
+//               db.query(
+//                 "UPDATE kernel SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_penyimpanan = ?",
+//                 [
+//                   updatedKernel.stok,
+//                   updatedKernel.alb,
+//                   updatedKernel.kadar_air,
+//                   updatedKernel.kadar_kotoran,
+//                   updatedKernel.do,
+//                   updatedKernel.hi,
+//                   entry.id,
+//                 ],
+//                 (err) => {
+//                   if (err) return reject(err);
+//                   resolve();
+//                 }
+//               );
+//             });
+//           }
 
-          const currentKategoriResult = await new Promise((resolve, reject) => {
-            db.query(
-              "SELECT * FROM kategori WHERE id_penyimpanan = ?",
-              [entry.id],
-              (err, currentKategori) => {
-                if (err) return reject(err);
-                resolve(currentKategori);
-              }
-            );
-          });
+//           const currentKategoriResult = await new Promise((resolve, reject) => {
+//             db.query(
+//               "SELECT * FROM kategori WHERE id_penyimpanan = ?",
+//               [entry.id],
+//               (err, currentKategori) => {
+//                 if (err) return reject(err);
+//                 resolve(currentKategori);
+//               }
+//             );
+//           });
 
-          for (const kat of currentKategoriResult) {
-            const prevPenyimpananResult = prevId
-              ? await new Promise((resolve, reject) => {
-                  db.query(
-                    "SELECT * FROM penyimpanan WHERE id_kategori IN (SELECT id FROM kategori WHERE id_penyimpanan = ? AND nama_kategori = ?)",
-                    [prevId, kat.nama_kategori],
-                    (err, penyimpananResults) => {
-                      if (err) return reject(err);
-                      resolve(penyimpananResults);
-                    }
-                  );
-                })
-              : [];
+//           for (const kat of currentKategoriResult) {
+//             const prevPenyimpananResult = prevId
+//               ? await new Promise((resolve, reject) => {
+//                   db.query(
+//                     "SELECT * FROM penyimpanan WHERE id_kategori IN (SELECT id FROM kategori WHERE id_penyimpanan = ? AND nama_kategori = ?)",
+//                     [prevId, kat.nama_kategori],
+//                     (err, penyimpananResults) => {
+//                       if (err) return reject(err);
+//                       resolve(penyimpananResults);
+//                     }
+//                   );
+//                 })
+//               : [];
 
-            const currentPenyimpananResult = await new Promise((resolve, reject) => {
-              db.query(
-                "SELECT * FROM penyimpanan WHERE id_kategori = ?",
-                [kat.id],
-                (err, currentPenyimpanan) => {
-                  if (err) return reject(err);
-                  resolve(currentPenyimpanan);
-                }
-              );
-            });
+//             const currentPenyimpananResult = await new Promise((resolve, reject) => {
+//               db.query(
+//                 "SELECT * FROM penyimpanan WHERE id_kategori = ?",
+//                 [kat.id],
+//                 (err, currentPenyimpanan) => {
+//                   if (err) return reject(err);
+//                   resolve(currentPenyimpanan);
+//                 }
+//               );
+//             });
 
-            for (const p of currentPenyimpananResult) {
-              const prevP = prevPenyimpananResult.find(
-                (prev) => prev.jenis_tank === p.jenis_tank
-              ) || { stok: 0 };
-              const updatedPenyimpanan = {
-                stok: prevP.stok + Number(p.stok), // Tidak dikurangi hi lagi
-                alb: Number(p.alb), // Hanya nilai baru
-                kadar_air: Number(p.kadar_air), // Hanya nilai baru
-                kadar_kotoran: Number(p.kadar_kotoran), // Hanya nilai baru
-                do: Number(p.do), // Hanya nilai baru
-                hi: Number(p.hi), // Hanya nilai baru
-              };
-              await new Promise((resolve, reject) => {
-                db.query(
-                  "UPDATE penyimpanan SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id = ?",
-                  [
-                    updatedPenyimpanan.stok,
-                    updatedPenyimpanan.alb,
-                    updatedPenyimpanan.kadar_air,
-                    updatedPenyimpanan.kadar_kotoran,
-                    updatedPenyimpanan.do,
-                    updatedPenyimpanan.hi,
-                    p.id,
-                  ],
-                  (err) => {
-                    if (err) return reject(err);
-                    resolve();
-                  }
-                );
-              });
-            }
+//             for (const p of currentPenyimpananResult) {
+//               const prevP = prevPenyimpananResult.find(
+//                 (prev) => prev.jenis_tank === p.jenis_tank
+//               ) || { stok: 0 };
+//               const updatedPenyimpanan = {
+//                 stok: prevP.stok + Number(p.stok), // Tidak dikurangi hi lagi
+//                 alb: Number(p.alb), // Hanya nilai baru
+//                 kadar_air: Number(p.kadar_air), // Hanya nilai baru
+//                 kadar_kotoran: Number(p.kadar_kotoran), // Hanya nilai baru
+//                 do: Number(p.do), // Hanya nilai baru
+//                 hi: Number(p.hi), // Hanya nilai baru
+//               };
+//               await new Promise((resolve, reject) => {
+//                 db.query(
+//                   "UPDATE penyimpanan SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id = ?",
+//                   [
+//                     updatedPenyimpanan.stok,
+//                     updatedPenyimpanan.alb,
+//                     updatedPenyimpanan.kadar_air,
+//                     updatedPenyimpanan.kadar_kotoran,
+//                     updatedPenyimpanan.do,
+//                     updatedPenyimpanan.hi,
+//                     p.id,
+//                   ],
+//                   (err) => {
+//                     if (err) return reject(err);
+//                     resolve();
+//                   }
+//                 );
+//               });
+//             }
 
-            const totalPenyimpanan = currentPenyimpananResult.reduce(
-              (acc, p) => ({
-                stok: acc.stok + Number(p.stok), // Tidak dikurangi hi lagi
-                alb: acc.alb + Number(p.alb),
-                kadar_air: acc.kadar_air + Number(p.kadar_air),
-                kadar_kotoran: acc.kadar_kotoran + Number(p.kadar_kotoran),
-                do: acc.do + Number(p.do),
-                hi: acc.hi + Number(p.hi),
-              }),
-              { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 }
-            );
-            await new Promise((resolve, reject) => {
-              db.query(
-                "UPDATE jumlah_total SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_kategori = ?",
-                [
-                  totalPenyimpanan.stok,
-                  totalPenyimpanan.alb,
-                  totalPenyimpanan.kadar_air,
-                  totalPenyimpanan.kadar_kotoran,
-                  totalPenyimpanan.do,
-                  totalPenyimpanan.hi,
-                  kat.id,
-                ],
-                (err) => {
-                  if (err) return reject(err);
-                  resolve();
-                }
-              );
-            });
-          }
-        }
+//             const totalPenyimpanan = currentPenyimpananResult.reduce(
+//               (acc, p) => ({
+//                 stok: acc.stok + Number(p.stok), // Tidak dikurangi hi lagi
+//                 alb: acc.alb + Number(p.alb),
+//                 kadar_air: acc.kadar_air + Number(p.kadar_air),
+//                 kadar_kotoran: acc.kadar_kotoran + Number(p.kadar_kotoran),
+//                 do: acc.do + Number(p.do),
+//                 hi: acc.hi + Number(p.hi),
+//               }),
+//               { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 }
+//             );
+//             await new Promise((resolve, reject) => {
+//               db.query(
+//                 "UPDATE jumlah_total SET stok = ?, alb = ?, kadar_air = ?, kadar_kotoran = ?, do = ?, hi = ? WHERE id_kategori = ?",
+//                 [
+//                   totalPenyimpanan.stok,
+//                   totalPenyimpanan.alb,
+//                   totalPenyimpanan.kadar_air,
+//                   totalPenyimpanan.kadar_kotoran,
+//                   totalPenyimpanan.do,
+//                   totalPenyimpanan.hi,
+//                   kat.id,
+//                 ],
+//                 (err) => {
+//                   if (err) return reject(err);
+//                   resolve();
+//                 }
+//               );
+//             });
+//           }
+//         }
 
-        resolve();
-      }
-    );
-  });
-};
+//         resolve();
+//       }
+//     );
+//   });
+// };
 
 
 // API untuk mendapatkan semua catatan
