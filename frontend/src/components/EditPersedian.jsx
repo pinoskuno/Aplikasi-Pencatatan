@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2"; // Impor SweetAlert2
 
 const EditCatatanPersediaan = ({ dataToEdit, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({
@@ -8,7 +9,6 @@ const EditCatatanPersediaan = ({ dataToEdit, onClose, onUpdate }) => {
     kernel: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
     kategori: [],
   });
-  const [notification, setNotification] = useState(null);
 
   const clusters = {
     "Bekri": [
@@ -72,7 +72,6 @@ const EditCatatanPersediaan = ({ dataToEdit, onClose, onUpdate }) => {
 
   useEffect(() => {
     if (dataToEdit) {
-      // Konversi dataToEdit.kategori dari objek ke array
       const kategoriObj = dataToEdit.kategori || {};
       const initialKategori = clusters[dataToEdit.lokasi].map((kat) => {
         const existingKat = kategoriObj[kat.nama] || { penyimpanan: [] };
@@ -171,18 +170,28 @@ const EditCatatanPersediaan = ({ dataToEdit, onClose, onUpdate }) => {
       });
       const data = await response.json();
       if (response.ok) {
-        setNotification({ type: "success", message: "Data berhasil diperbarui!" });
-        onUpdate(formData);
-        setTimeout(() => {
-          setNotification(null);
-          onClose();
-        }, 2000);
+        // Tampilkan popup sukses
+        await Swal.fire({
+          icon: "success",
+          title: "Berhasil!",
+          text: "Data berhasil diperbarui!",
+          timer: 1500, // Popup hilang setelah 1.5 detik
+          showConfirmButton: false,
+        });
+        onUpdate(formData); // Update data di parent component
+        window.location.reload(); // Reload halaman setelah sukses
       } else {
         throw new Error(data.error || "Gagal memperbarui data.");
       }
     } catch (error) {
       console.error("Error updating data:", error);
-      setNotification({ type: "error", message: "Terjadi kesalahan saat memperbarui data: " + error.message });
+      // Tampilkan popup error
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal!",
+        text: "Terjadi kesalahan saat memperbarui data: " + error.message,
+        confirmButtonText: "OK",
+      });
     }
   };
 
@@ -195,11 +204,6 @@ const EditCatatanPersediaan = ({ dataToEdit, onClose, onUpdate }) => {
             <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
           <div className="modal-body">
-            {notification && (
-              <div className={`alert alert-${notification.type === "success" ? "success" : "danger"}`}>
-                {notification.message}
-              </div>
-            )}
             <form onSubmit={handleSubmit}>
               <div className="form-row">
                 <div className="col-md-6">

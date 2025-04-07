@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Table, Container, Form, Row, Col, Button } from "react-bootstrap";
 import EditCatatanPersediaan from "./EditPersedian";
+import Swal from "sweetalert2";
 
 const CatatanPersediaan = () => {
   const [dataPenyimpanan, setDataPenyimpanan] = useState([]);
@@ -374,6 +375,148 @@ const CatatanPersediaan = () => {
     return totals;
   };
 
+  const calculateInputData = () => {
+    if (!filteredData.length || !filteredDataPrevious.length) return null;
+
+    const current = filteredData[0];
+    const previous = filteredDataPrevious[0];
+    const inputData = {
+      tanggal: current.tanggal,
+      lokasi: current.lokasi,
+      pkm: {
+        nilai_pkm: (Number(current.pkm.nilai_pkm) || 0) - (Number(previous.pkm.nilai_pkm) || 0) + (Number(current.pkm.nilai_hi) || 0),
+        nilai_do: current.pkm.nilai_do,
+        nilai_hi: current.pkm.nilai_hi,
+      },
+      kernel: {
+        stok: (Number(current.kernel.stok) || 0) - (Number(previous.kernel.stok) || 0) + (Number(current.kernel.hi) || 0),
+        alb: current.kernel.alb,
+        kadar_air: current.kernel.kadar_air,
+        kadar_kotoran: current.kernel.kadar_kotoran,
+        do: current.kernel.do,
+        hi: current.kernel.hi,
+      },
+      kategori: Object.keys(current.kategori).reduce((acc, katName) => {
+        const currentKat = current.kategori[katName];
+        const prevKat = previous.kategori[katName] || { penyimpanan: [], jumlah: {} };
+        acc[katName] = {
+          nama: currentKat.nama,
+          penyimpanan: currentKat.penyimpanan.map((penyimpanan) => {
+            const prevPenyimpanan = prevKat.penyimpanan.find(p => p.jenis_tank === penyimpanan.jenis_tank) || {};
+            return {
+              jenis_tank: penyimpanan.jenis_tank,
+              stok: (Number(penyimpanan.stok) || 0) - (Number(prevPenyimpanan.stok) || 0) + (Number(penyimpanan.hi) || 0),
+              alb: penyimpanan.alb,
+              kadar_air: penyimpanan.kadar_air,
+              kadar_kotoran: penyimpanan.kadar_kotoran,
+              do: penyimpanan.do,
+              hi: penyimpanan.hi,
+            };
+          }),
+          jumlah: {
+            stok: currentKat.jumlah.stok - (prevKat.jumlah.stok || 0) + currentKat.jumlah.hi,
+            alb: currentKat.jumlah.alb,
+            kadar_air: currentKat.jumlah.kadar_air,
+            kadar_kotoran: currentKat.jumlah.kadar_kotoran,
+            do: currentKat.jumlah.do,
+            hi: currentKat.jumlah.hi,
+          },
+        };
+        return acc;
+      }, {}),
+    };
+    return inputData;
+  };
+
+  const handleViewInputClick = () => {
+    const inputData = calculateInputData();
+    if (!inputData) {
+      Swal.fire({
+        icon: "warning",
+        title: "Data Tidak Lengkap",
+        text: "Data hari ini atau hari sebelumnya tidak tersedia untuk lokasi dan tanggal yang dipilih.",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    const tableHtml = `
+      <div style="overflow-x: auto;">
+        <table class="table table-striped table-bordered">
+          <thead>
+            <tr>
+              <th rowspan="2">Kategori</th>
+              <th rowspan="2">Penyimpanan</th>
+              <th rowspan="2">Stok Input</th>
+              <th colspan="3" class="text-center">Mutu</th>
+              <th colspan="2" class="text-center">DO</th>
+            </tr>
+            <tr>
+              <th>ALB</th>
+              <th>Kadar Air</th>
+              <th>Kadar Kotoran</th>
+              <th>Hi</th>
+              <th>Sd Hi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${Object.values(inputData.kategori).map(kat => `
+              <tr class="table-primary">
+                <td rowspan="${kat.penyimpanan.length + 1}"><strong>${kat.nama}</strong></td>
+              </tr>
+              ${kat.penyimpanan.map(penyimpanan => `
+                <tr>
+                  <td>${penyimpanan.jenis_tank}</td>
+                  <td>${penyimpanan.stok}</td>
+                  <td>${penyimpanan.alb}</td>
+                  <td>${penyimpanan.kadar_air}</td>
+                  <td>${penyimpanan.kadar_kotoran}</td>
+                  <td>${penyimpanan.do}</td>
+                  <td>${penyimpanan.hi}</td>
+                </tr>
+              `).join('')}
+              <tr class="table-secondary">
+                <td colspan="2"><strong>Total ${kat.nama}</strong></td>
+                <td><strong>${kat.jumlah.stok}</strong></td>
+                <td><strong>${kat.jumlah.alb}</strong></td>
+                <td><strong>${kat.jumlah.kadar_air}</strong></td>
+                <td><strong>${kat.jumlah.kadar_kotoran}</strong></td>
+                <td><strong>${kat.jumlah.do}</strong></td>
+                <td><strong>${kat.jumlah.hi}</strong></td>
+              </tr>
+            `).join('')}
+            <tr class="table-warning">
+              <td colspan="2"><strong>PKM</strong></td>
+              <td>${inputData.pkm.nilai_pkm}</td>
+              <td>-</td>
+              <td>-</td>
+              <td>-</td>
+              <td>${inputData.pkm.nilai_do}</td>
+              <td>${inputData.pkm.nilai_hi}</td>
+            </tr>
+            <tr class="table-warning">
+              <td colspan="2"><strong>Kernel</strong></td>
+              <td>${inputData.kernel.stok}</td>
+              <td>${inputData.kernel.alb}</td>
+              <td>${inputData.kernel.kadar_air}</td>
+              <td>${inputData.kernel.kadar_kotoran}</td>
+              <td>${inputData.kernel.do}</td>
+              <td>${inputData.kernel.hi}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    Swal.fire({
+      title: `Input Data Hari Ini (${new Date(selectedDate).toLocaleDateString()}) - ${selectedLocation}`,
+      html: tableHtml,
+      width: "80%",
+      showConfirmButton: true,
+      confirmButtonText: "Tutup",
+    });
+  };
+
   const currentTotals = calculateTotals(filteredDataNewTabel);
   const previousTotals = calculateTotals(filteredDataPreviousNewTabel);
   const currentTotalSeluruh = calculateTotalSeluruh(
@@ -635,6 +778,9 @@ const CatatanPersediaan = () => {
             </Button>
             <Button variant="warning" onClick={handleEditClick} className="w-50">
               Edit Data Hari Ini
+            </Button>
+            <Button variant="info" onClick={handleViewInputClick} className="w-33">
+              Lihat Input Hari Ini
             </Button>
           </div>
   </Col>
