@@ -5,9 +5,8 @@ import $ from "jquery";
 import "datatables.net";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { getCatatan, updateCatatan, deleteCatatan } from "../api/api"; // Impor fungsi API
 
-// Component untuk modal edit
-// Component untuk modal edit
 const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
   const [editedCatatan, setEditedCatatan] = useState(null); // Inisialisasi dengan null
 
@@ -343,6 +342,7 @@ const CatatanList = () => {
   const [fracoFobOptions, setFracoFobOptions] = useState([]);
   const [pembeliOptions, setPembeliOptions] = useState([]);
   const [tanggalOptions, setTanggalOptions] = useState([]);
+  const [error, setError] = useState(null); // State untuk error
 
   const handleSearchChange = (e) => {
     setSearchQuery({
@@ -353,12 +353,10 @@ const CatatanList = () => {
   
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/catatan")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchCatatan = async () => {
+      try {
+        const data = await getCatatan();
         setCatatan(data);
-
-        // Mengambil opsi unik untuk dropdown
         const uniqueFracoFob = [...new Set(data.map((cat) => cat.fraco_fob).filter(Boolean))];
         const uniquePembeli = [...new Set(data.map((cat) => cat.pembeli).filter(Boolean))];
         const uniqueTanggal = [
@@ -372,11 +370,16 @@ const CatatanList = () => {
               .filter(Boolean)
           ),
         ];
-
         setFracoFobOptions(uniqueFracoFob);
         setPembeliOptions(uniquePembeli);
         setTanggalOptions(uniqueTanggal);
-      });
+        setError(null);
+      } catch (err) {
+        setError('Gagal memuat data catatan. Silakan coba lagi.');
+        console.error(err);
+      }
+    };
+    fetchCatatan();
   }, []);
   
   useEffect(() => {
@@ -409,33 +412,35 @@ const CatatanList = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveEdit = (updatedCatatan) => {
-    fetch(`http://localhost:5000/api/catatan/${updatedCatatan.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedCatatan),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.message === "Catatan berhasil diperbarui") {
-          setCatatan(
-            catatan.map((cat) =>
-              cat.id === updatedCatatan.id ? updatedCatatan : cat
-            )
-          );
-        }
-      });
+  const handleSaveEdit = async (updatedCatatan) => {
+    try {
+      const data = await updateCatatan(updatedCatatan.id, updatedCatatan);
+      if (data.message === "Catatan berhasil diperbarui") {
+        setCatatan(
+          catatan.map((cat) =>
+            cat.id === updatedCatatan.id ? updatedCatatan : cat
+          )
+        );
+        setError(null);
+      }
+    } catch (err) {
+      setError('Gagal memperbarui catatan. Silakan coba lagi.');
+      console.error(err);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus catatan ini?")) {
-      fetch(`http://localhost:5000/api/catatan/${id}`, { method: "DELETE" })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.message === "Catatan berhasil dihapus") {
-            setCatatan(catatan.filter((cat) => cat.id !== id));
-          }
-        });
+      try {
+        const data = await deleteCatatan(id);
+        if (data.message === "Catatan berhasil dihapus") {
+          setCatatan(catatan.filter((cat) => cat.id !== id));
+          setError(null);
+        }
+      } catch (err) {
+        setError('Gagal menghapus catatan. Silakan coba lagi.');
+        console.error(err);
+      }
     }
   };
 

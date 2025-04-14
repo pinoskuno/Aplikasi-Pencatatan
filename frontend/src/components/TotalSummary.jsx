@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getCatatan } from "../api/api"; // Impor fungsi API
 
 const TotalSummary = () => {
   const [catatan, setCatatan] = useState([]);
@@ -6,9 +7,9 @@ const TotalSummary = () => {
   const [totalPenjualan, setTotalPenjualan] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/catatan")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchCatatan = async () => {
+      try {
+        const data = await getCatatan();
         setCatatan(data);
 
         // Hitung total keuntungan dan total penjualan
@@ -17,7 +18,13 @@ const TotalSummary = () => {
 
         setTotalKeuntungan(totalNilai);
         setTotalPenjualan(totalVol);
-      });
+        setError(null);
+      } catch (err) {
+        setError("Gagal memuat data catatan. Silakan coba lagi.");
+        console.error("Error fetching catatan:", err);
+      }
+    };
+    fetchCatatan();
   }, []);
 
   return (

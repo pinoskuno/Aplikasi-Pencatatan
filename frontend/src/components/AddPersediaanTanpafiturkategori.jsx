@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPenyimpanan } from "../api/api"; // Impor fungsi API
 
 const AddPersediaanDummy = () => {
   const [formData, setFormData] = useState({
@@ -156,21 +157,18 @@ const AddPersediaanDummy = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Data yang dikirim:", JSON.stringify(formData)); // Debugging data sebelum dikirim
+    setNotification(null); // Reset notifikasi sebelum submit
     try {
-      const response = await fetch("http://localhost:5000/penyimpanan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (response.ok) {
+      console.log("Data yang dikirim:", JSON.stringify(formData)); // Debugging
+      const response = await createPenyimpanan(formData);
+      if (response.message === "Data penyimpanan berhasil ditambahkan") {
         setNotification({ type: "success", message: "Data berhasil diunggah!" });
       } else {
-        setNotification({ type: "error", message: `Gagal: ${data.message}` });
+        setNotification({ type: "error", message: "Gagal menyimpan data." });
       }
     } catch (error) {
-      setNotification({ type: "error", message: "Terjadi kesalahan!" });
+      setNotification({ type: "error", message: "Terjadi kesalahan saat menyimpan data!" });
+      console.error("Error submitting penyimpanan:", error);
     }
     setTimeout(() => setNotification(null), 5000);
   };

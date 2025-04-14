@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Table, Container, Form, Row, Col, Button } from "react-bootstrap";
 import EditCatatanPersediaan from "./EditPersedian";
 import Swal from "sweetalert2";
+import { getDataPenyimpanan, deletePenyimpanan } from "../api/api"; // Impor fungsi API
 
 const CatatanPersediaan = () => {
   const [dataPenyimpanan, setDataPenyimpanan] = useState([]);
@@ -12,6 +13,9 @@ const CatatanPersediaan = () => {
   const [availableLocations, setAvailableLocations] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false); // State untuk popup edit
   const [selectedData, setSelectedData] = useState(null); // Data yang akan diedit
+  const [error, setError] = useState(null); // State untuk error
+
+
 
   useEffect(() => {
     if (!selectedLocation) return;
@@ -38,31 +42,23 @@ const CatatanPersediaan = () => {
   }, [selectedLocation, dataPenyimpanan]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/data_penyimpanan")
-      .then((response) => response.json())
-      .then((data) => {
+    const fetchData = async () => {
+      try {
+        const data = await getDataPenyimpanan();
         setDataPenyimpanan(data);
-        const dates = [
-          ...new Set(data.map((item) => item.tanggal.substring(0, 10))),
-        ]
-          .sort()
-          .reverse();
-        setAvailableDates(dates);
-        if (dates.length > 0) {
-          setSelectedDate(dates[0]);
-          setPreviousDate(dates[1] || "");
-        }
-
-        // Ambil daftar lokasi unik
         const locations = [...new Set(data.map((item) => item.lokasi))].sort();
         setAvailableLocations(locations);
         if (locations.length > 0) {
-          setSelectedLocation(locations[0]); // Set default lokasi pertama
+          setSelectedLocation(locations[0]);
         }
-      })
-      .catch((error) => console.error("Error fetching data:", error));
+        setError(null);
+      } catch (err) {
+        setError("Gagal memuat data penyimpanan. Silakan coba lagi.");
+        console.error("Error fetching data penyimpanan:", err);
+      }
+    };
+    fetchData();
   }, []);
-
   useEffect(() => {
     const index = availableDates.indexOf(selectedDate);
     setPreviousDate(index > 0 ? availableDates[index + 1] || "" : "");
@@ -530,45 +526,49 @@ const CatatanPersediaan = () => {
 
   const handleDelete = async () => {
     if (!filteredData.length) {
-      alert("Tidak ada data untuk dihapus pada tanggal dan lokasi ini.");
+      Swal.fire({
+        icon: "warning",
+        title: "Tidak Ada Data",
+        text: "Tidak ada data untuk dihapus pada tanggal dan lokasi ini.",
+        confirmButtonText: "OK",
+      });
       return;
     }
-  
-    if (
-      window.confirm(
-        `Apakah Anda yakin ingin menghapus semua data untuk tanggal ${selectedDate} dan lokasi ${selectedLocation}?`
-      )
-    ) {
+
+    const result = await Swal.fire({
+      title: "Konfirmasi Hapus",
+      text: `Apakah Anda yakin ingin menghapus semua data untuk tanggal ${selectedDate} dan lokasi ${selectedLocation}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Hapus",
+      cancelButtonText: "Batal",
+    });
+
+    if (result.isConfirmed) {
       try {
-        // Kirim request DELETE ke endpoint baru dengan tanggal dan lokasi
-        const response = await fetch(
-          `http://localhost:5000/penyimpanan/${selectedDate}/${selectedLocation}`,
-          {
-            method: "DELETE",
-          }
-        );
-  
-        const result = await response.json();
-  
-        // Periksa apakah penghapusan berhasil
-        if (response.ok && result.message) {
-          // Ambil ulang semua data dari backend untuk mencerminkan perubahan
-          const updatedResponse = await fetch("http://localhost:5000/data_penyimpanan");
-          const updatedData = await updatedResponse.json();
-  
-          // Perbarui state dengan data terbaru
-          setDataPenyimpanan(updatedData);
-          alert("Data berhasil dihapus dan stok disesuaikan.");
-        } else {
-          throw new Error(result.error || "Gagal menghapus data.");
-        }
+        await deletePenyimpanan(selectedDate, selectedLocation);
+        const updatedData = await getDataPenyimpanan();
+        setDataPenyimpanan(updatedData);
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Data berhasil dihapus dan stok disesuaikan.",
+          confirmButtonText: "OK",
+        });
+        setError(null);
       } catch (error) {
+        setError("Gagal menghapus data. Silakan coba lagi.");
         console.error("Error deleting data:", error);
-        alert("Terjadi kesalahan saat menghapus data: " + error.message);
+        Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: "Terjadi kesalahan saat menghapus data.",
+          confirmButtonText: "OK",
+        });
       }
     }
   };
-
+  
   const handleEditClick = () => {
     if (!filteredData.length) {
       alert("Tidak ada data untuk diedit pada tanggal dan lokasi ini.");

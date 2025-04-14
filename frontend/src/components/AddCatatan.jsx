@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { createCatatan } from "../api/api"; // Impor fungsi API
 
 const AddCatatan = () => {
   const [formData, setFormData] = useState({
@@ -34,22 +35,20 @@ const AddCatatan = () => {
   ];
 
   // Fungsi untuk handle submit form
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    fetch("http://localhost:5000/api/catatan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    setError(null); // Reset error sebelum submit
+    try {
+      const formattedData = {
         ...formData,
-        tanggal_kontrak: formData.tanggal_kontrak?.toISOString().split("T")[0],
-        jatuh_tempo_pembayaran: formData.jatuh_tempo_pembayaran?.toISOString().split("T")[0],
-        tanggal_bayar: formData.tanggal_bayar?.toISOString().split("T")[0],
-        rencana_pelayanan: formData.rencana_pelayanan?.toISOString().split("T")[0],
-        realisasi_pelayanan: formData.realisasi_pelayanan?.toISOString().split("T")[0],
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
+        tanggal_kontrak: formData.tanggal_kontrak?.toISOString().split("T")[0] || null,
+        jatuh_tempo_pembayaran: formData.jatuh_tempo_pembayaran?.toISOString().split("T")[0] || null,
+        tanggal_bayar: formData.tanggal_bayar?.toISOString().split("T")[0] || null,
+        rencana_pelayanan: formData.rencana_pelayanan?.toISOString().split("T")[0] || null,
+        realisasi_pelayanan: formData.realisasi_pelayanan?.toISOString().split("T")[0] || null,
+      };
+      const response = await createCatatan(formattedData);
+      if (response.message === "Catatan berhasil ditambahkan") {
         alert("Catatan berhasil ditambahkan!");
         // Reset form setelah submit
         setFormData({
@@ -68,10 +67,11 @@ const AddCatatan = () => {
           rencana_pelayanan: null,
           realisasi_pelayanan: null,
         });
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+      }
+    } catch (err) {
+      setError("Gagal menambahkan catatan. Silakan coba lagi.");
+      console.error("Error submitting catatan:", err);
+    }
   };
 
   // Fungsi untuk reset formulir
@@ -92,6 +92,7 @@ const AddCatatan = () => {
       rencana_pelayanan: null,
       realisasi_pelayanan: null,
     }); // Reset state
+    setError(null);
   };
 
   // Fungsi untuk handle perubahan input
