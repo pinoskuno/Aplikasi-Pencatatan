@@ -6,6 +6,7 @@ import "datatables.net";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { getCatatan, updateCatatan, deleteCatatan } from "../api/api"; // Impor fungsi API
+import Swal from "sweetalert2"; // Impor SweetAlert2
 
 const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
   const [editedCatatan, setEditedCatatan] = useState(null); // Inisialisasi dengan null
@@ -54,12 +55,13 @@ const EditModal = ({ isOpen, onClose, catatan, onSave }) => {
     setEditedCatatan((prev) => ({ ...prev, [field]: date }));
   };
 
-const handleSave = () => {
+  const handleSave = () => {
     if (editedCatatan) {
       onSave(editedCatatan);
       onClose(); // Tutup modal setelah disimpan
     }
   };
+
   // Fungsi untuk menghitung tanggal minimal (20 hari setelah tanggal kontrak)
   const getMinDateForPayment = () => {
     if (!editedCatatan.tanggal_kontrak) return null;
@@ -85,23 +87,23 @@ const handleSave = () => {
               {/* Edit Form */}
               <div className="form-row gap-1">
                 <div className="col-md-6">
-                    <div className="form-group">
-                      <label className="form-label">Kategori Pembayaran</label>
-                      <select
-                        type="text"
-                        className="form-control bg-light"
-                        name="status_pembayaran"
-                        value={editedCatatan?.status_pembayaran || ""}
-                        onChange={handleChange}
-                      >
-                        <option value="">Pilih Kategori</option>
-                        {kategoriPembayaran.map((kategori) => (
-                          <option key={kategori} value={kategori}>
-                            {kategori}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="form-group">
+                    <label className="form-label">Kategori Pembayaran</label>
+                    <select
+                      type="text"
+                      className="form-control bg-light"
+                      name="status_pembayaran"
+                      value={editedCatatan?.status_pembayaran || ""}
+                      onChange={handleChange}
+                    >
+                      <option value="">Pilih Kategori</option>
+                      {kategoriPembayaran.map((kategori) => (
+                        <option key={kategori} value={kategori}>
+                          {kategori}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div className="col-md-6">
@@ -126,7 +128,6 @@ const handleSave = () => {
               </div>
 
               <div className="form-row gap-1">
-              
                 <div className="col-md-6">
                   <div className="form-group">
                     <label className="form-label">Nomor Kontrak</label>
@@ -375,7 +376,12 @@ const CatatanList = () => {
         setTanggalOptions(uniqueTanggal);
         setError(null);
       } catch (err) {
-        setError('Gagal memuat data catatan. Silakan coba lagi.');
+        Swal.fire({
+          icon: "error",
+          title: "Gagal!",
+          text: "Gagal memuat data catatan. Silakan coba lagi.",
+          confirmButtonText: "OK",
+        });
         console.error(err);
       }
     };
@@ -421,85 +427,120 @@ const CatatanList = () => {
             cat.id === updatedCatatan.id ? updatedCatatan : cat
           )
         );
-        setError(null);
+        await Swal.fire({
+          icon: "success",
+          title: "Berhasil!",
+          text: "Catatan berhasil diperbarui!",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        throw new Error("Gagal memperbarui catatan: Respons tidak valid");
       }
     } catch (err) {
-      setError('Gagal memperbarui catatan. Silakan coba lagi.');
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal!",
+        text: "Gagal memperbarui catatan: " + err.message,
+        confirmButtonText: "OK",
+      });
       console.error(err);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus catatan ini?")) {
+    const result = await Swal.fire({
+      title: "Apakah Anda yakin?",
+      text: "Catatan ini akan dihapus secara permanen!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, hapus!",
+      cancelButtonText: "Batal",
+    });
+
+    if (result.isConfirmed) {
       try {
         const data = await deleteCatatan(id);
         if (data.message === "Catatan berhasil dihapus") {
           setCatatan(catatan.filter((cat) => cat.id !== id));
-          setError(null);
+          await Swal.fire({
+            icon: "success",
+            title: "Berhasil!",
+            text: "Catatan berhasil dihapus!",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+        } else {
+          throw new Error("Gagal menghapus catatan: Respons tidak valid");
         }
       } catch (err) {
-        setError('Gagal menghapus catatan. Silakan coba lagi.');
+        await Swal.fire({
+          icon: "error",
+          title: "Gagal!",
+          text: "Gagal menghapus catatan: " + err.message,
+          confirmButtonText: "OK",
+        });
         console.error(err);
       }
     }
   };
 
-    // Fungsi untuk sorting
-    const handleSort = (key) => {
-      let direction = "asc";
-      if (sortConfig.key === key && sortConfig.direction === "asc") {
-        direction = "desc";
-      }
-      setSortConfig({ key, direction });
+  // Fungsi untuk sorting
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
   
-      setCatatan((prevCatatan) =>
-        [...prevCatatan].sort((a, b) => {
-          let valA = a[key];
-          let valB = b[key];
+    setCatatan((prevCatatan) =>
+      [...prevCatatan].sort((a, b) => {
+        let valA = a[key];
+        let valB = b[key];
   
-          // Jika angka, bandingkan sebagai angka
-          if (!isNaN(valA) && !isNaN(valB)) {
-            return direction === "asc" ? valA - valB : valB - valA;
-          }
+        // Jika angka, bandingkan sebagai angka
+        if (!isNaN(valA) && !isNaN(valB)) {
+          return direction === "asc" ? valA - valB : valB - valA;
+        }
   
-          // Jika teks, bandingkan sebagai string
-          return direction === "asc"
-            ? String(valA).localeCompare(String(valB))
-            : String(valB).localeCompare(String(valA));
-        })
-      );
-    };
-    const filteredCatatan = catatan.filter((cat) => {
-      const { fraco_fob, pembeli, tanggal } = searchQuery;
-  
-      // Filter untuk fraco_fob
-      const matchesFracoFOB = fraco_fob ? cat.fraco_fob === fraco_fob : true;
-  
-      // Filter untuk pembeli
-      const matchesPembeli = pembeli ? cat.pembeli === pembeli : true;
-  
-      // Filter untuk tanggal
-      const matchesTanggal = tanggal
-        ? cat.tanggal_kontrak === tanggal ||
-          cat.tanggal_bayar === tanggal ||
-          cat.jatuh_tempo_pembayaran === tanggal
-        : true;
-  
-      // Kembalikan true hanya jika semua filter yang dipilih cocok
-      return matchesFracoFOB && matchesPembeli && matchesTanggal;
-    });
-  
-    const categorizedData = filteredCatatan.reduce((acc, cat) => {
-      const kategori = cat.status_pembayaran;
-      if (!acc[kategori]) acc[kategori] = {};
-      const subKategori = cat.judul;
-      if (!acc[kategori][subKategori]) acc[kategori][subKategori] = [];
-      acc[kategori][subKategori].push(cat);
-      return acc;
-    }, {});
+        // Jika teks, bandingkan sebagai string
+        return direction === "asc"
+          ? String(valA).localeCompare(String(valB))
+          : String(valB).localeCompare(String(valA));
+      })
+    );
+  };
 
+  const filteredCatatan = catatan.filter((cat) => {
+    const { fraco_fob, pembeli, tanggal } = searchQuery;
   
+    // Filter untuk fraco_fob
+    const matchesFracoFOB = fraco_fob ? cat.fraco_fob === fraco_fob : true;
   
+    // Filter untuk pembeli
+    const matchesPembeli = pembeli ? cat.pembeli === pembeli : true;
+  
+    // Filter untuk tanggal
+    const matchesTanggal = tanggal
+      ? cat.tanggal_kontrak === tanggal ||
+        cat.tanggal_bayar === tanggal ||
+        cat.jatuh_tempo_pembayaran === tanggal
+      : true;
+  
+    // Kembalikan true hanya jika semua filter yang dipilih cocok
+    return matchesFracoFOB && matchesPembeli && matchesTanggal;
+  });
+  
+  const categorizedData = filteredCatatan.reduce((acc, cat) => {
+    const kategori = cat.status_pembayaran;
+    if (!acc[kategori]) acc[kategori] = {};
+    const subKategori = cat.judul;
+    if (!acc[kategori][subKategori]) acc[kategori][subKategori] = [];
+    acc[kategori][subKategori].push(cat);
+    return acc;
+  }, {});
 
   return (
     <div className="container mt-4">

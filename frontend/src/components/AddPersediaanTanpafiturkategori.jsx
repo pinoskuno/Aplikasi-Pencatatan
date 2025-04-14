@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { createPenyimpanan } from "../api/api"; // Impor fungsi API
+import Swal from "sweetalert2"; // Impor SweetAlert2
 
-const AddPersediaanDummy = () => {
+const AddPersediaanCluster = () => {
   const [formData, setFormData] = useState({
     tanggal: "",
     lokasi: "Bekri", // Default lokasi
@@ -9,7 +10,7 @@ const AddPersediaanDummy = () => {
     kernel: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
     kategori: [],
   });
-  const [notification, setNotification] = useState(null);
+
 
   // Definisi cluster berdasarkan lokasi
   const clusters = {
@@ -157,31 +158,77 @@ const AddPersediaanDummy = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setNotification(null); // Reset notifikasi sebelum submit
     try {
-      console.log("Data yang dikirim:", JSON.stringify(formData)); // Debugging
-      const response = await createPenyimpanan(formData);
-      if (response.message === "Data penyimpanan berhasil ditambahkan") {
-        setNotification({ type: "success", message: "Data berhasil diunggah!" });
-      } else {
-        setNotification({ type: "error", message: "Gagal menyimpan data." });
-      }
+      console.log("Data yang dikirim:", JSON.stringify(formData, null, 2)); // Debugging
+
+      // Transformasi data untuk sesuai dengan backend
+      const transformedData = {
+        ...formData,
+        pkm: {
+          nilai_pkm: formData.pkm.nilai_pkm === "" ? "" : Number(formData.pkm.nilai_pkm) || 0,
+          nilai_do: formData.pkm.nilai_do === "" ? "" : Number(formData.pkm.nilai_do) || 0,
+          nilai_hi: formData.pkm.nilai_hi === "" ? "" : Number(formData.pkm.nilai_hi) || 0,
+        },
+        kernel: {
+          stok: formData.kernel.stok === "" ? "" : Number(formData.kernel.stok) || 0,
+          alb: formData.kernel.alb === "" ? "" : Number(formData.kernel.alb) || 0,
+          kadar_air: formData.kernel.kadar_air === "" ? "" : Number(formData.kernel.kadar_air) || 0,
+          kadar_kotoran: formData.kernel.kadar_kotoran === "" ? "" : Number(formData.kernel.kadar_kotoran) || 0,
+          do: formData.kernel.do === "" ? "" : Number(formData.kernel.do) || 0,
+          hi: formData.kernel.hi === "" ? "" : Number(formData.kernel.hi) || 0,
+        },
+        kategori: formData.kategori.map((kat) => ({
+          nama_kategori: kat.nama_kategori,
+          penyimpanan: kat.penyimpanan.map((peny) => ({
+            jenis_tank: peny.jenis_tank,
+            stok: peny.stok === "" ? "" : Number(peny.stok) || 0,
+            alb: peny.alb === "" ? "" : Number(peny.alb) || 0,
+            kadar_air: peny.kadar_air === "" ? "" : Number(peny.kadar_air) || 0,
+            kadar_kotoran: peny.kadar_kotoran === "" ? "" : Number(peny.kadar_kotoran) || 0,
+            do: peny.do === "" ? "" : Number(peny.do) || 0,
+            hi: peny.hi === "" ? "" : Number(peny.hi) || 0,
+          })),
+        })),
+      };
+
+      const response = await createPenyimpanan(transformedData);
+      console.log("Response dari backend:", response); // Debugging
+
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil!",
+        text: "Data berhasil diunggah!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      // Reset form setelah sukses
+      setFormData({
+        tanggal: "",
+        lokasi: "Bekri",
+        pkm: { nilai_pkm: "", nilai_do: "", nilai_hi: "" },
+        kernel: { stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        kategori: clusters["Bekri"].map((kat) => ({
+          nama_kategori: kat.nama,
+          penyimpanan: kat.penyimpanan.map((peny) => ({ ...peny })),
+        })),
+      });
     } catch (error) {
-      setNotification({ type: "error", message: "Terjadi kesalahan saat menyimpan data!" });
       console.error("Error submitting penyimpanan:", error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal!",
+        text: "Terjadi kesalahan saat menyimpan data: " + error.message,
+        confirmButtonText: "OK",
+      });
     }
-    setTimeout(() => setNotification(null), 5000);
   };
   return (
     <div className="container mt-4">
       <h2 className="text-center mb-4 fw-bolder center">
         <span className="text-gradient d-inline">INPUT PERSEDIAAN PRODUKSI SELURUH PKS</span>
       </h2>
-      {notification && (
-        <div className={`alert alert-${notification.type === "success" ? "success" : "danger"}`}>
-          {notification.message}
-        </div>
-      )}
+
       <form onSubmit={handleSubmit}>
         <div className="form-row">
           <div className="col-md-6">
@@ -372,4 +419,4 @@ const AddPersediaanDummy = () => {
   );
 };
 
-export default AddPersediaanDummy;
+export default AddPersediaanCluster;

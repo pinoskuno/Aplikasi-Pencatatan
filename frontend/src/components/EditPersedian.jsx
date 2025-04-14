@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Swal from "sweetalert2"; // Impor SweetAlert2
+import { updatePenyimpanan } from "../api/api"; // Impor fungsi API
+import Swal from "sweetalert2";
 
 const EditCatatanPersediaan = ({ dataToEdit, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({
@@ -11,58 +12,82 @@ const EditCatatanPersediaan = ({ dataToEdit, onClose, onUpdate }) => {
   });
 
   const clusters = {
-    "Bekri": [
-      { nama: "CPO", penyimpanan: [
-        { jenis_tank: "Storage Tank VI", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank VII", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank VIII", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank IX", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-      ]},
-      { nama: "PKO", penyimpanan: [
-        { jenis_tank: "Tangki I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Tangki III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Tangki IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Tangki V", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Tangki IX", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-      ]},
+    Bekri: [
+      {
+        nama: "CPO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank VI", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank VII", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank VIII", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank IX", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+      {
+        nama: "PKO",
+        penyimpanan: [
+          { jenis_tank: "Tangki I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki V", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Tangki IX", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
     ],
-    "Betung": [
-      { nama: "CPO", penyimpanan: [
-        { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-      ]},
-      { nama: "PKO", penyimpanan: [
-        { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank V", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-      ]},
+    Betung: [
+      {
+        nama: "CPO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+      {
+        nama: "PKO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank V", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
     ],
     "Talang Sawit": [
-      { nama: "CPO", penyimpanan: [
-        { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-      ]},
+      {
+        nama: "CPO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
     ],
     "Sungai Lengi": [
-      { nama: "CPO", penyimpanan: [
-        { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-      ]},
-      { nama: "Kernel Lengi", penyimpanan: [
-        { jenis_tank: "Gudang Repa", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Gudang Pabrik", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-      ]},
+      {
+        nama: "CPO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
+      {
+        nama: "Kernel Lengi",
+        penyimpanan: [
+          { jenis_tank: "Gudang Repa", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Gudang Pabrik", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
     ],
     "IPMG Boom Baru": [
-      { nama: "CPO", penyimpanan: [
-        { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-        { jenis_tank: "Storage Tank IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
-      ]},
+      {
+        nama: "CPO",
+        penyimpanan: [
+          { jenis_tank: "Storage Tank I", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank II", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank III", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+          { jenis_tank: "Storage Tank IV", stok: "", alb: "", kadar_air: "", kadar_kotoran: "", do: "", hi: "" },
+        ],
+      },
     ],
   };
 
@@ -78,15 +103,15 @@ const EditCatatanPersediaan = ({ dataToEdit, onClose, onUpdate }) => {
         return {
           nama_kategori: kat.nama,
           penyimpanan: kat.penyimpanan.map((peny) => {
-            const existingPeny = existingKat.penyimpanan.find(p => p.jenis_tank === peny.jenis_tank) || {};
+            const existingPeny = existingKat.penyimpanan.find((p) => p.jenis_tank === peny.jenis_tank) || {};
             return {
               jenis_tank: peny.jenis_tank,
-              stok: existingPeny.stok || "",
-              alb: existingPeny.alb || "",
-              kadar_air: existingPeny.kadar_air || "",
-              kadar_kotoran: existingPeny.kadar_kotoran || "",
-              do: existingPeny.do || "",
-              hi: existingPeny.hi || "",
+              stok: existingPeny.stok !== undefined ? String(existingPeny.stok) : "",
+              alb: existingPeny.alb !== undefined ? String(existingPeny.alb) : "",
+              kadar_air: existingPeny.kadar_air !== undefined ? String(existingPeny.kadar_air) : "",
+              kadar_kotoran: existingPeny.kadar_kotoran !== undefined ? String(existingPeny.kadar_kotoran) : "",
+              do: existingPeny.do !== undefined ? String(existingPeny.do) : "",
+              hi: existingPeny.hi !== undefined ? String(existingPeny.hi) : "",
             };
           }),
         };
@@ -96,17 +121,17 @@ const EditCatatanPersediaan = ({ dataToEdit, onClose, onUpdate }) => {
         tanggal: dataToEdit.tanggal || "",
         lokasi: dataToEdit.lokasi || "",
         pkm: {
-          nilai_pkm: dataToEdit.pkm?.nilai_pkm || "",
-          nilai_do: dataToEdit.pkm?.nilai_do || "",
-          nilai_hi: dataToEdit.pkm?.nilai_hi || "",
+          nilai_pkm: dataToEdit.pkm?.nilai_pkm !== undefined ? String(dataToEdit.pkm.nilai_pkm) : "",
+          nilai_do: dataToEdit.pkm?.nilai_do !== undefined ? String(dataToEdit.pkm.nilai_do) : "",
+          nilai_hi: dataToEdit.pkm?.nilai_hi !== undefined ? String(dataToEdit.pkm.nilai_hi) : "",
         },
         kernel: {
-          stok: dataToEdit.kernel?.stok || "",
-          alb: dataToEdit.kernel?.alb || "",
-          kadar_air: dataToEdit.kernel?.kadar_air || "",
-          kadar_kotoran: dataToEdit.kernel?.kadar_kotoran || "",
-          do: dataToEdit.kernel?.do || "",
-          hi: dataToEdit.kernel?.hi || "",
+          stok: dataToEdit.kernel?.stok !== undefined ? String(dataToEdit.kernel.stok) : "",
+          alb: dataToEdit.kernel?.alb !== undefined ? String(dataToEdit.kernel.alb) : "",
+          kadar_air: dataToEdit.kernel?.kadar_air !== undefined ? String(dataToEdit.kernel.kadar_air) : "",
+          kadar_kotoran: dataToEdit.kernel?.kadar_kotoran !== undefined ? String(dataToEdit.kernel.kadar_kotoran) : "",
+          do: dataToEdit.kernel?.do !== undefined ? String(dataToEdit.kernel.do) : "",
+          hi: dataToEdit.kernel?.hi !== undefined ? String(dataToEdit.kernel.hi) : "",
         },
         kategori: initialKategori,
       });
@@ -154,38 +179,45 @@ const EditCatatanPersediaan = ({ dataToEdit, onClose, onUpdate }) => {
 
   const handlePenyimpananChange = (kategoriIndex, penyimpananIndex, e) => {
     const { name, value } = e.target;
-    let kategori = [...formData.kategori];
+    const kategori = [...formData.kategori];
     kategori[kategoriIndex].penyimpanan[penyimpananIndex][name] = value;
     setFormData({ ...formData, kategori });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Data yang diedit:", JSON.stringify(formData));
     try {
-      const response = await fetch(`http://localhost:5000/penyimpanan/${formData.tanggal}/${formData.lokasi}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      console.log("Data yang diedit:", JSON.stringify(formData, null, 2)); // Debugging
+
+      // Kirim kategori sebagai array, sesuai harapan backend
+      const transformedData = {
+        ...formData,
+        kategori: formData.kategori.map((kat) => ({
+          nama_kategori: kat.nama_kategori,
+          penyimpanan: kat.penyimpanan.map((peny) => ({
+            jenis_tank: peny.jenis_tank,
+            stok: peny.stok === "" ? "" : Number(peny.stok) || 0,
+            alb: peny.alb === "" ? "" : Number(peny.alb) || 0,
+            kadar_air: peny.kadar_air === "" ? "" : Number(peny.kadar_air) || 0,
+            kadar_kotoran: peny.kadar_kotoran === "" ? "" : Number(peny.kadar_kotoran) || 0,
+            do: peny.do === "" ? "" : Number(peny.do) || 0,
+            hi: peny.hi === "" ? "" : Number(peny.hi) || 0,
+          })),
+        })),
+      };
+
+      await updatePenyimpanan(formData.tanggal, formData.lokasi, transformedData);
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil!",
+        text: "Data berhasil diperbarui!",
+        timer: 1500,
+        showConfirmButton: false,
       });
-      const data = await response.json();
-      if (response.ok) {
-        // Tampilkan popup sukses
-        await Swal.fire({
-          icon: "success",
-          title: "Berhasil!",
-          text: "Data berhasil diperbarui!",
-          timer: 1500, // Popup hilang setelah 1.5 detik
-          showConfirmButton: false,
-        });
-        onUpdate(formData); // Update data di parent component
-        window.location.reload(); // Reload halaman setelah sukses
-      } else {
-        throw new Error(data.error || "Gagal memperbarui data.");
-      }
+      onUpdate(transformedData); // Update data di parent component
+      onClose(); // Tutup modal setelah sukses
     } catch (error) {
       console.error("Error updating data:", error);
-      // Tampilkan popup error
       await Swal.fire({
         icon: "error",
         title: "Gagal!",

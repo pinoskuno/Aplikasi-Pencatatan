@@ -37,7 +37,7 @@ const AddCatatan = () => {
   // Fungsi untuk handle submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null); // Reset error sebelum submit
+   // Reset error sebelum submit
     try {
       const formattedData = {
         ...formData,
