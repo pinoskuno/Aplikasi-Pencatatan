@@ -585,7 +585,8 @@ const CatatanList = () => {
             <option value="">Pilih Tanggal</option>
             {tanggalOptions.map((option) => (
               <option key={option} value={option}>
-                {option}
+               {new Date(option).toLocaleDateString()}
+                
               </option>
             ))}
           </select>
@@ -651,17 +652,17 @@ const CatatanList = () => {
                       {paginatedData.map((cat) => (
                         <tr key={cat.id}>
                           <td>{cat.nomor_kontrak}</td>
-                          <td>{cat.tanggal_kontrak}</td>
+                          <td>{new Date(cat.tanggal_kontrak).toLocaleDateString()}</td>
                           <td>{cat.pembeli}</td>
-                          <td>{cat.jatuh_tempo_pembayaran}</td>
-                          <td>{cat.tanggal_bayar}</td>
+                          <td>{new Date(cat.jatuh_tempo_pembayaran).toLocaleDateString()}</td>
+                          <td>{new Date(cat.tanggal_bayar).toLocaleDateString()}</td>
                           <td>{cat.mutu_alb}%</td>
                           <td>{cat.vol_belum_serah} kg</td>
                           <td>Rp {cat.harga_excl?.toLocaleString()}</td>
                           <td>Rp {cat.nilai?.toLocaleString()}</td>
                           <td>{cat.fraco_fob}</td>
-                          <td>{cat.rencana_pelayanan}</td>
-                          <td>{cat.realisasi_pelayanan}</td>
+                          <td>{new Date(cat.rencana_pelayanan).toLocaleDateString()}</td>
+                          <td>{new Date(cat.realisasi_pelayanan).toLocaleDateString()}</td>
                           <td>
                             <button
                               className="btn btn-warning btn-sm"
