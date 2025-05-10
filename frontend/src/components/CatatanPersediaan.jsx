@@ -1,110 +1,1058 @@
 import { useEffect, useState } from "react";
-import { Table, Container } from "react-bootstrap";
-
+import { Table, Container, Form, Row, Col, Button } from "react-bootstrap";
+import EditCatatanPersediaan from "./EditPersedian";
+import Swal from "sweetalert2";
+import { getDataPenyimpanan, deletePenyimpanan } from "../api/api"; // Impor fungsi API
 
 const CatatanPersediaan = () => {
   const [dataPenyimpanan, setDataPenyimpanan] = useState([]);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [availableDates, setAvailableDates] = useState([]);
+  const [previousDate, setPreviousDate] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState(""); // State untuk lokasi
+  const [availableLocations, setAvailableLocations] = useState([]);
+  const [showEditModal, setShowEditModal] = useState(false); // State untuk popup edit
+  const [selectedData, setSelectedData] = useState(null); // Data yang akan diedit
+  const [error, setError] = useState(null); // State untuk error
+
+
 
   useEffect(() => {
-    fetch("http://localhost:5000/data_penyimpanan")
-      .then((response) => response.json())
-      .then((data) => setDataPenyimpanan(data))
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
+    if (!selectedLocation) return;
 
+    // Ambil daftar tanggal berdasarkan lokasi yang dipilih
+    const dates = [
+      ...new Set(
+        dataPenyimpanan
+          .filter((item) => item.lokasi === selectedLocation)
+          .map((item) => item.tanggal.substring(0, 10))
+      ),
+    ]
+      .sort()
+      .reverse();
+
+    setAvailableDates(dates);
+    if (dates.length > 0) {
+      setSelectedDate(dates[0]);
+      setPreviousDate(dates[1] || "");
+    } else {
+      setSelectedDate("");
+      setPreviousDate("");
+    }
+  }, [selectedLocation, dataPenyimpanan]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getDataPenyimpanan();
+        setDataPenyimpanan(data);
+        const locations = [...new Set(data.map((item) => item.lokasi))].sort();
+        setAvailableLocations(locations);
+        if (locations.length > 0) {
+          setSelectedLocation(locations[0]);
+        }
+        setError(null);
+      } catch (err) {
+        setError("Gagal memuat data penyimpanan. Silakan coba lagi.");
+        console.error("Error fetching data penyimpanan:", err);
+      }
+    };
+    fetchData();
+  }, []);
+  useEffect(() => {
+    const index = availableDates.indexOf(selectedDate);
+    setPreviousDate(index > 0 ? availableDates[index + 1] || "" : "");
+  }, [selectedDate, availableDates]);
+
+  // Filter data berdasarkan tanggal & lokasi
+  const filteredData = dataPenyimpanan.filter(
+    (item) =>
+      item.lokasi === selectedLocation && item.tanggal.startsWith(selectedDate)
+  );
+
+  const filteredDataPrevious = dataPenyimpanan.filter(
+    (item) =>
+      item.lokasi === selectedLocation && item.tanggal.startsWith(previousDate)
+  );
+
+  const cpoInspecTanks = [
+    "Bekri CPO Storage Tank VII",
+    "Bekri CPO Storage Tank VIII",
+    "Betung CPO Storage Tank II",
+    "Total CPO Talang Sawit",
+    "Sungai Lengi CPO Storage Tank I",
+  ];
+  const cpoOutspecTanks = [
+    "Bekri CPO Storage Tank VI",
+    "Betung CPO Storage Tank I",
+    "Sungai Lengi CPO Storage Tank II",
+  ];
+
+  // Tank tambahan untuk tabel "Total Seluruh"
+  const cpoInspecTotalSeluruhTanks = [
+    "IPMG Boom Baru CPO Storage Tank II",
+    "IPMG Boom Baru CPO Storage Tank III",
+  ];
+  const cpoOutspecTotalSeluruhTanks = ["IPMG Boom Baru CPO Storage Tank IV"];
+  const kernelInspecLocations = ["Bekri", "Betung", "Talang Sawit"]; // Sungai Lengi dipisah
+
+  useEffect(() => {
+    const index = availableDates.indexOf(selectedDate);
+    setPreviousDate(
+      index >= 0 && index + 1 < availableDates.length
+        ? availableDates[index + 1]
+        : ""
+    );
+  }, [selectedDate, availableDates]);
+
+  const filteredDataNewTabel = dataPenyimpanan.filter((item) =>
+    item.tanggal.startsWith(selectedDate)
+  );
+  const filteredDataPreviousNewTabel = dataPenyimpanan.filter((item) =>
+    item.tanggal.startsWith(previousDate)
+  );
+
+  const calculateTotals = (data) => {
+    const totals = {
+      cpoInspec: {
+        stok: 0,
+        alb: 0,
+        kadar_air: 0,
+        kadar_kotoran: 0,
+        do: 0,
+        hi: 0,
+      },
+      cpoOutspec: {
+        stok: 0,
+        alb: 0,
+        kadar_air: 0,
+        kadar_kotoran: 0,
+        do: 0,
+        hi: 0,
+      },
+      kernelInspec: {
+        stok: 0,
+        alb: 0,
+        kadar_air: 0,
+        kadar_kotoran: 0,
+        do: 0,
+        hi: 0,
+      },
+      kernelOutspec: {
+        stok: 0,
+        alb: 0,
+        kadar_air: 0,
+        kadar_kotoran: 0,
+        do: 0,
+        hi: 0,
+      },
+      pko: { stok: 0, alb: 0, kadar_air: 0, kadar_kotoran: 0, do: 0, hi: 0 },
+      pkm: { stok: 0, do: 0, hi: 0 },
+      totalCPO: {
+        stok: 0,
+        alb: 0,
+        kadar_air: 0,
+        kadar_kotoran: 0,
+        do: 0,
+        hi: 0,
+      },
+      totalKernel: {
+        stok: 0,
+        alb: 0,
+        kadar_air: 0,
+        kadar_kotoran: 0,
+        do: 0,
+        hi: 0,
+      },
+    };
+
+    data.forEach((item) => {
+      // Total PKM
+      totals.pkm.stok += Number(item.pkm.nilai_pkm) || 0;
+      totals.pkm.do += Number(item.pkm.nilai_do) || 0;
+      totals.pkm.hi += Number(item.pkm.nilai_hi) || 0;
+
+      // Total Kernel Inspec (Bekri, Betung, Talang Sawit)
+      if (kernelInspecLocations.includes(item.lokasi)) {
+        totals.kernelInspec.stok += Number(item.kernel.stok) || 0;
+        totals.kernelInspec.alb += Number(item.kernel.alb) || 0;
+        totals.kernelInspec.kadar_air += Number(item.kernel.kadar_air) || 0;
+        totals.kernelInspec.kadar_kotoran +=
+          Number(item.kernel.kadar_kotoran) || 0;
+        totals.kernelInspec.do += Number(item.kernel.do) || 0;
+        totals.kernelInspec.hi += Number(item.kernel.hi) || 0;
+
+        // Tambahkan ke totalKernel untuk Bekri, Betung, Talang Sawit
+        totals.totalKernel.stok += Number(item.kernel.stok) || 0;
+        totals.totalKernel.alb += Number(item.kernel.alb) || 0;
+        totals.totalKernel.kadar_air += Number(item.kernel.kadar_air) || 0;
+        totals.totalKernel.kadar_kotoran +=
+          Number(item.kernel.kadar_kotoran) || 0;
+        totals.totalKernel.do += Number(item.kernel.do) || 0;
+        totals.totalKernel.hi += Number(item.kernel.hi) || 0;
+      }
+
+      // Total CPO, PKO, dan Kernel Lengi dari kategori
+      Object.values(item.kategori).forEach((kat) => {
+        if (kat.nama === "PKO") {
+          kat.penyimpanan.forEach((penyimpanan) => {
+            totals.pko.stok += Number(penyimpanan.stok) || 0;
+            totals.pko.alb += Number(penyimpanan.alb) || 0;
+            totals.pko.kadar_air += Number(penyimpanan.kadar_air) || 0;
+            totals.pko.kadar_kotoran += Number(penyimpanan.kadar_kotoran) || 0;
+            totals.pko.do += Number(penyimpanan.do) || 0;
+            totals.pko.hi += Number(penyimpanan.hi) || 0;
+          });
+        } else if (kat.nama === "CPO") {
+          kat.penyimpanan.forEach((penyimpanan) => {
+            const fullTankName = `${item.lokasi} CPO ${penyimpanan.jenis_tank}`;
+            if (cpoInspecTanks.includes(fullTankName)) {
+              totals.cpoInspec.stok += Number(penyimpanan.stok) || 0;
+              totals.cpoInspec.alb += Number(penyimpanan.alb) || 0;
+              totals.cpoInspec.kadar_air += Number(penyimpanan.kadar_air) || 0;
+              totals.cpoInspec.kadar_kotoran +=
+                Number(penyimpanan.kadar_kotoran) || 0;
+              totals.cpoInspec.do += Number(penyimpanan.do) || 0;
+              totals.cpoInspec.hi += Number(penyimpanan.hi) || 0;
+
+              // Tambahkan ke totalCPO
+              totals.totalCPO.stok += Number(penyimpanan.stok) || 0;
+              totals.totalCPO.alb += Number(penyimpanan.alb) || 0;
+              totals.totalCPO.kadar_air += Number(penyimpanan.kadar_air) || 0;
+              totals.totalCPO.kadar_kotoran +=
+                Number(penyimpanan.kadar_kotoran) || 0;
+              totals.totalCPO.do += Number(penyimpanan.do) || 0;
+              totals.totalCPO.hi += Number(penyimpanan.hi) || 0;
+            } else if (cpoOutspecTanks.includes(fullTankName)) {
+              totals.cpoOutspec.stok += Number(penyimpanan.stok) || 0;
+              totals.cpoOutspec.alb += Number(penyimpanan.alb) || 0;
+              totals.cpoOutspec.kadar_air += Number(penyimpanan.kadar_air) || 0;
+              totals.cpoOutspec.kadar_kotoran +=
+                Number(penyimpanan.kadar_kotoran) || 0;
+              totals.cpoOutspec.do += Number(penyimpanan.do) || 0;
+              totals.cpoOutspec.hi += Number(penyimpanan.hi) || 0;
+            }
+          });
+        } else if (
+          kat.nama === "Kernel Lengi" &&
+          item.lokasi === "Sungai Lengi"
+        ) {
+          kat.penyimpanan.forEach((penyimpanan) => {
+            const fullTankName = `${item.lokasi} Kernel Lengi ${penyimpanan.jenis_tank}`;
+            // Kernel Inspec: Gudang Pabrik
+            if (fullTankName === "Sungai Lengi Kernel Lengi Gudang Pabrik") {
+              totals.kernelInspec.stok += Number(penyimpanan.stok) || 0;
+              totals.kernelInspec.alb += Number(penyimpanan.alb) || 0;
+              totals.kernelInspec.kadar_air +=
+                Number(penyimpanan.kadar_air) || 0;
+              totals.kernelInspec.kadar_kotoran +=
+                Number(penyimpanan.kadar_kotoran) || 0;
+              totals.kernelInspec.do += Number(penyimpanan.do) || 0;
+              totals.kernelInspec.hi += Number(penyimpanan.hi) || 0;
+            }
+            // Kernel Outspec: Gudang Repa
+            if (fullTankName === "Sungai Lengi Kernel Lengi Gudang Repa") {
+              totals.kernelOutspec.stok += Number(penyimpanan.stok) || 0;
+              totals.kernelOutspec.alb += Number(penyimpanan.alb) || 0;
+              totals.kernelOutspec.kadar_air +=
+                Number(penyimpanan.kadar_air) || 0;
+              totals.kernelOutspec.kadar_kotoran +=
+                Number(penyimpanan.kadar_kotoran) || 0;
+              totals.kernelOutspec.do += Number(penyimpanan.do) || 0;
+              totals.kernelOutspec.hi += Number(penyimpanan.hi) || 0;
+            }
+            // Total Kernel: Gudang Pabrik + Gudang Repa
+            if (
+              fullTankName === "Sungai Lengi Kernel Lengi Gudang Pabrik" ||
+              fullTankName === "Sungai Lengi Kernel Lengi Gudang Repa"
+            ) {
+              totals.totalKernel.stok += Number(penyimpanan.stok) || 0;
+              totals.totalKernel.alb += Number(penyimpanan.alb) || 0;
+              totals.totalKernel.kadar_air +=
+                Number(penyimpanan.kadar_air) || 0;
+              totals.totalKernel.kadar_kotoran +=
+                Number(penyimpanan.kadar_kotoran) || 0;
+              totals.totalKernel.do += Number(penyimpanan.do) || 0;
+              totals.totalKernel.hi += Number(penyimpanan.hi) || 0;
+            }
+          });
+        }
+      });
+    });
+
+    console.log("Calculated Totals:", totals);
+    return totals;
+  };
+
+  // Fungsi untuk menghitung tabel "Total Seluruh"
+  const calculateTotalSeluruh = (data, totalsAtas) => {
+    const totals = {
+      cpoInspec: {
+        stok: 0,
+        alb: 0,
+        kadar_air: 0,
+        kadar_kotoran: 0,
+        do: 0,
+        hi: 0,
+      },
+      cpoOutspec: {
+        stok: 0,
+        alb: 0,
+        kadar_air: 0,
+        kadar_kotoran: 0,
+        do: 0,
+        hi: 0,
+      },
+      jumlahInspec: {
+        stok: 0,
+        alb: 0,
+        kadar_air: 0,
+        kadar_kotoran: 0,
+        do: 0,
+        hi: 0,
+      },
+      jumlahTotal: {
+        stok: 0,
+        alb: 0,
+        kadar_air: 0,
+        kadar_kotoran: 0,
+        do: 0,
+        hi: 0,
+      },
+    };
+
+    // Ambil totalCPO dari tabel atas sebagai dasar CPO Inspec
+    totals.cpoInspec.stok = totalsAtas.totalCPO.stok;
+    totals.cpoInspec.alb = totalsAtas.totalCPO.alb;
+    totals.cpoInspec.kadar_air = totalsAtas.totalCPO.kadar_air;
+    totals.cpoInspec.kadar_kotoran = totalsAtas.totalCPO.kadar_kotoran;
+    totals.cpoInspec.do = totalsAtas.totalCPO.do;
+    totals.cpoInspec.hi = totalsAtas.totalCPO.hi;
+
+    // Tambahkan data dari tank tambahan untuk CPO Inspec dan Outspec
+    data.forEach((item) => {
+      Object.values(item.kategori).forEach((kat) => {
+        if (kat.nama === "CPO") {
+          kat.penyimpanan.forEach((penyimpanan) => {
+            const fullTankName = `${item.lokasi} CPO ${penyimpanan.jenis_tank}`;
+            if (cpoInspecTotalSeluruhTanks.includes(fullTankName)) {
+              totals.cpoInspec.stok += Number(penyimpanan.stok) || 0;
+              totals.cpoInspec.alb += Number(penyimpanan.alb) || 0;
+              totals.cpoInspec.kadar_air += Number(penyimpanan.kadar_air) || 0;
+              totals.cpoInspec.kadar_kotoran +=
+                Number(penyimpanan.kadar_kotoran) || 0;
+              totals.cpoInspec.do += Number(penyimpanan.do) || 0;
+              totals.cpoInspec.hi += Number(penyimpanan.hi) || 0;
+            } else if (cpoOutspecTotalSeluruhTanks.includes(fullTankName)) {
+              totals.cpoOutspec.stok += Number(penyimpanan.stok) || 0;
+              totals.cpoOutspec.alb += Number(penyimpanan.alb) || 0;
+              totals.cpoOutspec.kadar_air += Number(penyimpanan.kadar_air) || 0;
+              totals.cpoOutspec.kadar_kotoran +=
+                Number(penyimpanan.kadar_kotoran) || 0;
+              totals.cpoOutspec.do += Number(penyimpanan.do) || 0;
+              totals.cpoOutspec.hi += Number(penyimpanan.hi) || 0;
+            }
+          });
+        }
+      });
+    });
+
+    // Hitung jumlahTotal (CPO Inspec + CPO Outspec)
+    totals.jumlahTotal.stok = totals.cpoInspec.stok + totals.cpoOutspec.stok;
+    totals.jumlahTotal.alb = totals.cpoInspec.alb + totals.cpoOutspec.alb;
+    totals.jumlahTotal.kadar_air =
+      totals.cpoInspec.kadar_air + totals.cpoOutspec.kadar_air;
+    totals.jumlahTotal.kadar_kotoran =
+      totals.cpoInspec.kadar_kotoran + totals.cpoOutspec.kadar_kotoran;
+    totals.jumlahTotal.do = totals.cpoInspec.do + totals.cpoOutspec.do;
+    totals.jumlahTotal.hi = totals.cpoInspec.hi + totals.cpoOutspec.hi;
+
+    console.log("Total Seluruh:", totals);
+    return totals;
+  };
+
+  const calculateInputData = () => {
+    if (!filteredData.length || !filteredDataPrevious.length) return null;
+
+    const current = filteredData[0];
+    const previous = filteredDataPrevious[0];
+    const inputData = {
+      tanggal: current.tanggal,
+      lokasi: current.lokasi,
+      pkm: {
+        nilai_pkm: (Number(current.pkm.nilai_pkm) || 0) - (Number(previous.pkm.nilai_pkm) || 0) + (Number(current.pkm.nilai_hi) || 0),
+        nilai_do: current.pkm.nilai_do,
+        nilai_hi: current.pkm.nilai_hi,
+      },
+      kernel: {
+        stok: (Number(current.kernel.stok) || 0) - (Number(previous.kernel.stok) || 0) + (Number(current.kernel.hi) || 0),
+        alb: current.kernel.alb,
+        kadar_air: current.kernel.kadar_air,
+        kadar_kotoran: current.kernel.kadar_kotoran,
+        do: current.kernel.do,
+        hi: current.kernel.hi,
+      },
+      kategori: Object.keys(current.kategori).reduce((acc, katName) => {
+        const currentKat = current.kategori[katName];
+        const prevKat = previous.kategori[katName] || { penyimpanan: [], jumlah: {} };
+        acc[katName] = {
+          nama: currentKat.nama,
+          penyimpanan: currentKat.penyimpanan.map((penyimpanan) => {
+            const prevPenyimpanan = prevKat.penyimpanan.find(p => p.jenis_tank === penyimpanan.jenis_tank) || {};
+            return {
+              jenis_tank: penyimpanan.jenis_tank,
+              stok: (Number(penyimpanan.stok) || 0) - (Number(prevPenyimpanan.stok) || 0) + (Number(penyimpanan.hi) || 0),
+              alb: penyimpanan.alb,
+              kadar_air: penyimpanan.kadar_air,
+              kadar_kotoran: penyimpanan.kadar_kotoran,
+              do: penyimpanan.do,
+              hi: penyimpanan.hi,
+            };
+          }),
+          jumlah: {
+            stok: currentKat.jumlah.stok - (prevKat.jumlah.stok || 0) + currentKat.jumlah.hi,
+            alb: currentKat.jumlah.alb,
+            kadar_air: currentKat.jumlah.kadar_air,
+            kadar_kotoran: currentKat.jumlah.kadar_kotoran,
+            do: currentKat.jumlah.do,
+            hi: currentKat.jumlah.hi,
+          },
+        };
+        return acc;
+      }, {}),
+    };
+    return inputData;
+  };
+
+  const handleViewInputClick = () => {
+    const inputData = calculateInputData();
+    if (!inputData) {
+      Swal.fire({
+        icon: "warning",
+        title: "Data Tidak Lengkap",
+        text: "Data hari ini atau hari sebelumnya tidak tersedia untuk lokasi dan tanggal yang dipilih.",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    const tableHtml = `
+      <div style="overflow-x: auto;">
+        <table class="table table-striped table-bordered">
+          <thead>
+            <tr>
+              <th rowspan="2">Kategori</th>
+              <th rowspan="2">Penyimpanan</th>
+              <th rowspan="2">Stok Input</th>
+              <th colspan="3" class="text-center">Mutu</th>
+              <th colspan="2" class="text-center">DO</th>
+            </tr>
+            <tr>
+              <th>ALB</th>
+              <th>Kadar Air</th>
+              <th>Kadar Kotoran</th>
+              <th>Hi</th>
+              <th>Sd Hi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${Object.values(inputData.kategori).map(kat => `
+              <tr class="table-primary">
+                <td rowspan="${kat.penyimpanan.length + 1}"><strong>${kat.nama}</strong></td>
+              </tr>
+              ${kat.penyimpanan.map(penyimpanan => `
+                <tr>
+                  <td>${penyimpanan.jenis_tank}</td>
+                  <td>${penyimpanan.stok}</td>
+                  <td>${penyimpanan.alb}</td>
+                  <td>${penyimpanan.kadar_air}</td>
+                  <td>${penyimpanan.kadar_kotoran}</td>
+                  <td>${penyimpanan.do}</td>
+                  <td>${penyimpanan.hi}</td>
+                </tr>
+              `).join('')}
+              <tr class="table-secondary">
+                <td colspan="2"><strong>Total ${kat.nama}</strong></td>
+                <td><strong>${kat.jumlah.stok}</strong></td>
+                <td><strong>${kat.jumlah.alb}</strong></td>
+                <td><strong>${kat.jumlah.kadar_air}</strong></td>
+                <td><strong>${kat.jumlah.kadar_kotoran}</strong></td>
+                <td><strong>${kat.jumlah.do}</strong></td>
+                <td><strong>${kat.jumlah.hi}</strong></td>
+              </tr>
+            `).join('')}
+            <tr class="table-warning">
+              <td colspan="2"><strong>PKM</strong></td>
+              <td>${inputData.pkm.nilai_pkm}</td>
+              <td>-</td>
+              <td>-</td>
+              <td>-</td>
+              <td>${inputData.pkm.nilai_do}</td>
+              <td>${inputData.pkm.nilai_hi}</td>
+            </tr>
+            <tr class="table-warning">
+              <td colspan="2"><strong>Kernel</strong></td>
+              <td>${inputData.kernel.stok}</td>
+              <td>${inputData.kernel.alb}</td>
+              <td>${inputData.kernel.kadar_air}</td>
+              <td>${inputData.kernel.kadar_kotoran}</td>
+              <td>${inputData.kernel.do}</td>
+              <td>${inputData.kernel.hi}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    Swal.fire({
+      title: `Input Data Hari Ini (${new Date(selectedDate).toLocaleDateString()}) - ${selectedLocation}`,
+      html: tableHtml,
+      width: "80%",
+      showConfirmButton: true,
+      confirmButtonText: "Tutup",
+    });
+  };
+
+  const currentTotals = calculateTotals(filteredDataNewTabel);
+  const previousTotals = calculateTotals(filteredDataPreviousNewTabel);
+  const currentTotalSeluruh = calculateTotalSeluruh(
+    filteredDataNewTabel,
+    currentTotals
+  );
+  const previousTotalSeluruh = calculateTotalSeluruh(
+    filteredDataPreviousNewTabel,
+    previousTotals
+  );
+
+  const handleDelete = async () => {
+    if (!filteredData.length) {
+      Swal.fire({
+        icon: "warning",
+        title: "Tidak Ada Data",
+        text: "Tidak ada data untuk dihapus pada tanggal dan lokasi ini.",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "Konfirmasi Hapus",
+      text: `Apakah Anda yakin ingin menghapus semua data untuk tanggal ${selectedDate} dan lokasi ${selectedLocation}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Hapus",
+      cancelButtonText: "Batal",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deletePenyimpanan(selectedDate, selectedLocation);
+        const updatedData = await getDataPenyimpanan();
+        setDataPenyimpanan(updatedData);
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Data berhasil dihapus dan stok disesuaikan.",
+          confirmButtonText: "OK",
+        });
+        setError(null);
+      } catch (error) {
+        setError("Gagal menghapus data. Silakan coba lagi.");
+        console.error("Error deleting data:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: "Terjadi kesalahan saat menghapus data.",
+          confirmButtonText: "OK",
+        });
+      }
+    }
+  };
+  
+  const handleEditClick = () => {
+    if (!filteredData.length) {
+      alert("Tidak ada data untuk diedit pada tanggal dan lokasi ini.");
+      return;
+    }
+    const dataToEdit = filteredData[0]; // Ambil data pertama yang sesuai tanggal dan lokasi
+    setSelectedData(dataToEdit);
+    setShowEditModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowEditModal(false);
+    setSelectedData(null);
+  };
+
+  const handleUpdateData = (updatedData) => {
+    setDataPenyimpanan((prev) =>
+      prev.map((item) =>
+        item.tanggal.startsWith(updatedData.tanggal) && item.lokasi === updatedData.lokasi
+          ? updatedData
+          : item
+      )
+    );
+  };
+  const renderTable = (totals, title, isTotalSeluruh = false) => (
+    <Col md={6}>
+      <h4 className="text-center">{title}</h4>
+      <div className="table-responsive">
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th rowSpan={2} colSpan={2} className="text-center text-black">Kategori</th>
+              <th rowSpan={2}>Stok</th>
+              <th colSpan={3} className="text-center text-black">
+                Mutu
+              </th>
+              <th colSpan={2} className="text-center text-black">
+                DO
+              </th>
+            </tr>
+            <tr>
+              <th>ALB</th>
+              <th>Kadar Air</th>
+              <th>Kadar Kotoran</th>
+              <th>Hi</th>
+              <th>Sd Hi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isTotalSeluruh ? (
+              <>
+                <tr>
+                  <td rowSpan={2}><strong>CPO</strong></td>
+                  <td><strong>Inspec</strong></td>
+                  <td>{totals.cpoInspec.stok}</td>
+                  <td>{totals.cpoInspec.alb}</td>
+                  <td>{totals.cpoInspec.kadar_air}</td>
+                  <td>{totals.cpoInspec.kadar_kotoran}</td>
+                  <td>{totals.cpoInspec.do}</td>
+                  <td>{totals.cpoInspec.hi}</td>
+                </tr>
+                <tr>
+                  <td><strong>Outspec</strong></td>
+                  <td>{totals.cpoOutspec.stok}</td>
+                  <td>{totals.cpoOutspec.alb}</td>
+                  <td>{totals.cpoOutspec.kadar_air}</td>
+                  <td>{totals.cpoOutspec.kadar_kotoran}</td>
+                  <td>{totals.cpoOutspec.do}</td>
+                  <td>{totals.cpoOutspec.hi}</td>
+                </tr>
+                <tr>
+                  <td colSpan={2}><strong>Jumlah (Total)</strong></td>
+                  <td>{totals.jumlahTotal.stok}</td>
+                  <td>{totals.jumlahTotal.alb}</td>
+                  <td>{totals.jumlahTotal.kadar_air}</td>
+                  <td>{totals.jumlahTotal.kadar_kotoran}</td>
+                  <td>{totals.jumlahTotal.do}</td>
+                  <td>{totals.jumlahTotal.hi}</td>
+                </tr>
+              </>
+            ) : (
+              <>
+                <tr>
+                  <td rowSpan={2}><strong>CPO</strong></td>
+                  <td><strong>Inspec</strong></td>
+                  <td>{totals.cpoInspec.stok}</td>
+                  <td>{totals.cpoInspec.alb}</td>
+                  <td>{totals.cpoInspec.kadar_air}</td>
+                  <td>{totals.cpoInspec.kadar_kotoran}</td>
+                  <td>{totals.cpoInspec.do}</td>
+                  <td>{totals.cpoInspec.hi}</td>
+                </tr>
+                <tr>
+                  <td><strong>Outspec</strong></td>
+                  <td>{totals.cpoOutspec.stok}</td>
+                  <td>{totals.cpoOutspec.alb}</td>
+                  <td>{totals.cpoOutspec.kadar_air}</td>
+                  <td>{totals.cpoOutspec.kadar_kotoran}</td>
+                  <td>{totals.cpoOutspec.do}</td>
+                  <td>{totals.cpoOutspec.hi}</td>
+                </tr>
+                <tr>
+                  <td colSpan={2}><strong>Total CPO</strong></td>
+                  <td>{totals.totalCPO.stok}</td>
+                  <td>{totals.totalCPO.alb}</td>
+                  <td>{totals.totalCPO.kadar_air}</td>
+                  <td>{totals.totalCPO.kadar_kotoran}</td>
+                  <td>{totals.totalCPO.do}</td>
+                  <td>{totals.totalCPO.hi}</td>
+                </tr>
+                <tr>
+                  <td rowSpan={2}><strong>Kernel</strong></td>
+                  <td><strong>Inspec</strong></td>
+                  <td>{totals.kernelInspec.stok}</td>
+                  <td>{totals.kernelInspec.alb}</td>
+                  <td>{totals.kernelInspec.kadar_air}</td>
+                  <td>{totals.kernelInspec.kadar_kotoran}</td>
+                  <td>{totals.kernelInspec.do}</td>
+                  <td>{totals.kernelInspec.hi}</td>
+                </tr>
+                <tr>
+                  <td><strong>Outspec</strong></td>
+                  <td>{totals.kernelOutspec.stok}</td>
+                  <td>{totals.kernelOutspec.alb}</td>
+                  <td>{totals.kernelOutspec.kadar_air}</td>
+                  <td>{totals.kernelOutspec.kadar_kotoran}</td>
+                  <td>{totals.kernelOutspec.do}</td>
+                  <td>{totals.kernelOutspec.hi}</td>
+                </tr>
+                <tr>
+                  <td colSpan={2}><strong>Total Kernel</strong></td>
+                  <td>{totals.totalKernel.stok}</td>
+                  <td>{totals.totalKernel.alb}</td>
+                  <td>{totals.totalKernel.kadar_air}</td>
+                  <td>{totals.totalKernel.kadar_kotoran}</td>
+                  <td>{totals.totalKernel.do}</td>
+                  <td>{totals.totalKernel.hi}</td>
+                </tr>
+                <tr>
+                  <td colSpan={2}><strong>PKO</strong></td>
+                  <td>{totals.pko.stok}</td>
+                  <td>{totals.pko.alb}</td>
+                  <td>{totals.pko.kadar_air}</td>
+                  <td>{totals.pko.kadar_kotoran}</td>
+                  <td>{totals.pko.do}</td>
+                  <td>{totals.pko.hi}</td>
+                </tr>
+                <tr>
+                  <td colSpan={2}><strong>PKM</strong></td>
+                  <td>{totals.pkm.stok}</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>{totals.pkm.do}</td>
+                  <td>{totals.pkm.hi}</td>
+                </tr>
+              </>
+            )}
+          </tbody>
+        </Table>
+      </div>
+    </Col>
+  );
 
   return (
     <Container>
-      <h2 className="my-3">Data Penyimpanan</h2>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th rowSpan={2}>Tanggal</th>
-            <th rowSpan={2}>Lokasi</th>
-            <th rowSpan={2}>PKM</th>
-            <th colSpan={4} className="text-center">Kernel</th>
-            <th rowSpan={2}>Kategori</th>
-            <th rowSpan={2}>Penyimpanan</th>
-            <th colSpan={4} className="text-center">Jumlah</th>
-          </tr>
-          <tr>
-            <th>Stok</th>
-            <th>ALB</th>
-            <th>Kadar Air</th>
-            <th>Kadar Kotoran</th>
-            <th>Stok</th>
-            <th>ALB</th>
-            <th>Kadar Air</th>
-            <th>Kadar Kotoran</th>
-          </tr>
-        </thead>
-        <tbody>
-          {dataPenyimpanan.map((item, index) => (
-            <>
-              {/* Baris utama untuk PKM dan Kernel */}
-              <tr key={`main-${index}`}>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {new Date(item.tanggal).toLocaleDateString()}
-                </td>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.lokasi}
-                </td>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.pkm}
-                </td>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.kernel.stok}
-                </td>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.kernel.alb}
-                </td>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.kernel.kadar_air}
-                </td>
-                <td rowSpan={Object.keys(item.kategori).reduce((acc, key) => acc + item.kategori[key].penyimpanan.length + 1, 1)}>
-                  {item.kernel.kadar_kotoran}
-                </td>
-              </tr>
+      <h2 class="text-center mb-4 fw-bolder center mt-4">
+        <span class="text-gradient d-inline">
+          PERSEDIAAN PRODUKSI
+        </span>
+      </h2>
+      <Row className="mb-3 align-items-end">
+  <Col md={4}>
+    <Form.Group controlId="tanggalSelect">
+      <Form.Label>Pilih Tanggal:</Form.Label>
+      <Form.Select
+        value={selectedDate}
+        onChange={(e) => setSelectedDate(e.target.value)}
+      >
+        {availableDates.map((date) => (
+          <option key={date} value={date}>
+            {new Date(date).toLocaleDateString()}
+          </option>
+        ))}
+      </Form.Select>
+    </Form.Group>
+  </Col>
+  <Col md={4}>
+    <Form.Group controlId="lokasiSelect">
+      <Form.Label>Pilih Lokasi:</Form.Label>
+      <Form.Select
+        value={selectedLocation}
+        onChange={(e) => setSelectedLocation(e.target.value)}
+      >
+        {availableLocations.map((loc) => (
+          <option key={loc} value={loc}>
+            {loc}
+          </option>
+        ))}
+      </Form.Select>
+    </Form.Group>
+  </Col>
+  <Col md={4}>
+  <div className="d-flex gap-2">
+            <Button variant="danger" onClick={handleDelete} className="w-50">
+              Hapus Data Hari Ini
+            </Button>
+            <Button variant="warning" onClick={handleEditClick} className="w-50">
+              Edit Data Hari Ini
+            </Button>
+            <Button variant="info" onClick={handleViewInputClick} className="w-33">
+              Lihat Input Hari Ini
+            </Button>
+          </div>
+  </Col>
+</Row>
+      <Row className="d-flex flex-warp">
+        <Col md={6}>
+          <h4 className="text-center">
+            Data Sebelumnya
+          </h4>
+          <div className="table-responsive">
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th rowSpan={2}>Kategori</th>
+                  <th rowSpan={2}>Penyimpanan</th>
+                  <th rowSpan={2}>Stok</th>
+                  <th colSpan={3} className="text-center text-black">
+                    Mutu
+                  </th>
+                  <th colSpan={2} className="text-center text-black">
+                    DO
+                  </th>
+                </tr>
+                <tr>
+                  <th>ALB</th>
+                  <th>Kadar Air</th>
+                  <th>Kadar Kotoran</th>
+                  <th>Hi</th>
+                  <th>Sd Hi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredDataPrevious.map((item, index) => (
+                  <>
+                    {/* Loop kategori dan penyimpanan */}
+                    {Object.values(item.kategori).map((kat, katIndex) => (
+                      <>
+                        {/* Baris kategori */}
+                        <tr
+                          key={`kat-${index}-${katIndex}`}
+                          className="table-primary"
+                        >
+                          <td rowSpan={kat.penyimpanan.length + 1}>
+                            <strong>{kat.nama}</strong>
+                          </td>
+                        </tr>
 
-              {/* Loop kategori dan penyimpanan */}
-              {Object.values(item.kategori).map((kat, katIndex) => (
-                <>
-                  {/* Baris kategori */}
-                  <tr key={`kat-${index}-${katIndex}`} className="table-primary">
-                    <td rowSpan={kat.penyimpanan.length + 1}>
-                      <strong>{kat.nama}</strong>
-                    </td>
-                  </tr>
+                        {/* Loop setiap penyimpanan nilai dalam kategori */}
+                        {kat.penyimpanan.map((penyimpanan, penyIndex) => (
+                          <tr key={`peny-${index}-${katIndex}-${penyIndex}`}>
+                            <td>{penyimpanan.jenis_tank}</td>
+                            <td>{penyimpanan.stok}</td>
+                            <td>{penyimpanan.alb}</td>
+                            <td>{penyimpanan.kadar_air}</td>
+                            <td>{penyimpanan.kadar_kotoran}</td>
+                            <td>{penyimpanan.do}</td>
+                            <td>{penyimpanan.hi}</td>
+                          </tr>
+                        ))}
 
-                  {/* Loop setiap penyimpanan dalam kategori */}
-                  {kat.penyimpanan.map((penyimpanan, penyIndex) => (
-                    <tr key={`peny-${index}-${katIndex}-${penyIndex}`}>
-                      <td>{penyimpanan.jenis_tank}</td>
-                      <td>{penyimpanan.stok}</td>
-                      <td>{penyimpanan.alb}</td>
-                      <td>{penyimpanan.kadar_air}</td>
-                      <td>{penyimpanan.kadar_kotoran}</td>
+                        {/* Baris jumlah untuk kategori */}
+                        <tr
+                          key={`jumlah-${index}-${katIndex}`}
+                          className="table-secondary"
+                        >
+                          <td colSpan={2}>
+                            <strong>Total {kat.nama}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.stok}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.alb}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.kadar_air}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.kadar_kotoran}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.do}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.hi}</strong>
+                          </td>
+                        </tr>
+                      </>
+                    ))}
+
+                    {/* Pindahkan bagian PKM dan Kernel ke bawah setelah kategori */}
+                    <tr key={`pkm-${index}`} className="table-warning">
+                      <td colSpan={2}>
+                        <strong>PKM</strong>
+                      </td>
+                      <td>{item.pkm.nilai_pkm}</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>{item.pkm.nilai_do}</td>
+                      <td>{item.pkm.nilai_hi}</td>
                     </tr>
-                  ))}
 
-                  {/* Baris jumlah untuk kategori */}
-                  <tr key={`jumlah-${index}-${katIndex}`} className="table-secondary">
-                    <td><strong>Total {kat.nama}</strong></td>
-                    <td><strong>{kat.jumlah.stok}</strong></td>
-                    <td><strong>{kat.jumlah.alb}</strong></td>
-                    <td><strong>{kat.jumlah.kadar_air}</strong></td>
-                    <td><strong>{kat.jumlah.kadar_kotoran}</strong></td>
-                  </tr>
-                </>
-              ))}
-            </>
-          ))}
-        </tbody>
-      </Table>
+                    <tr key={`kernel-${index}`} className="table-warning">
+                      <td colSpan={2}>
+                        <strong>Kernel</strong>
+                      </td>
+                      <td>{item.kernel.stok}</td>
+                      <td>{item.kernel.alb}</td>
+                      <td>{item.kernel.kadar_air}</td>
+                      <td>{item.kernel.kadar_kotoran}</td>
+                      <td>{item.kernel.do}</td>
+                      <td>{item.kernel.hi}</td>
+                    </tr>
+                  </>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        </Col>
+        <Col md={6}>
+          <h4 className="text-center">
+            Data Hari Ini
+          </h4>
+          <div className="table-responsive">
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+               
+                  <th rowSpan={2}>Kategori</th>
+                  <th rowSpan={2}>Penyimpanan</th>
+                  <th rowSpan={2}>Stok</th>
+                  <th colSpan={3} className="text-center text-black">
+                    Mutu
+                  </th>
+                  <th colSpan={2} className="text-center text-black">
+                    DO
+                  </th>
+                </tr>
+                <tr>
+                  <th>ALB</th>
+                  <th>Kadar Air</th>
+                  <th>Kadar Kotoran</th>
+                  <th>Hi</th>
+                  <th>Sd Hi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredData.map((item, index) => (
+                  <>
+
+                    {/* Loop kategori dan penyimpanan */}
+                    {Object.values(item.kategori).map((kat, katIndex) => (
+                      <>
+                        {/* Baris kategori */}
+                        <tr
+                          key={`kat-${index}-${katIndex}`}
+                          className="table-primary"
+                        >
+                          <td rowSpan={kat.penyimpanan.length + 1}>
+                            <strong>{kat.nama}</strong>
+                          </td>
+                        </tr>
+
+                        {/* Loop setiap penyimpanan nilai dalam kategori */}
+                        {kat.penyimpanan.map((penyimpanan, penyIndex) => (
+                          <tr key={`peny-${index}-${katIndex}-${penyIndex}`}>
+                            <td>{penyimpanan.jenis_tank}</td>
+                            <td>{penyimpanan.stok}</td>
+                            <td>{penyimpanan.alb}</td>
+                            <td>{penyimpanan.kadar_air}</td>
+                            <td>{penyimpanan.kadar_kotoran}</td>
+                            <td>{penyimpanan.do}</td>
+                            <td>{penyimpanan.hi}</td>
+                          </tr>
+                        ))}
+
+                        {/* Baris jumlah untuk kategori */}
+                        <tr
+                          key={`jumlah-${index}-${katIndex}`}
+                          className="table-secondary"
+                        >
+                          <td colSpan={2}>
+                            <strong>Total {kat.nama}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.stok}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.alb}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.kadar_air}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.kadar_kotoran}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.do}</strong>
+                          </td>
+                          <td>
+                            <strong>{kat.jumlah.hi}</strong>
+                          </td>
+                        </tr>
+                      </>
+                    ))}
+
+                    {/* PKM dan Kernel diletakkan di bawah setelah kategori */}
+                    <tr key={`pkm-${index}`} className="table-warning">
+                      <td colSpan={2}>
+                        <strong>PKM</strong>
+                      </td>
+                      <td>{item.pkm.nilai_pkm}</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>{item.pkm.nilai_do}</td>
+                      <td>{item.pkm.nilai_hi}</td>
+                    </tr>
+
+                    <tr key={`kernel-${index}`} className="table-warning">
+                      <td colSpan={2}>
+                        <strong>Kernel</strong>
+                      </td>
+                      <td>{item.kernel.stok}</td>
+                      <td>{item.kernel.alb}</td>
+                      <td>{item.kernel.kadar_air}</td>
+                      <td>{item.kernel.kadar_kotoran}</td>
+                      <td>{item.kernel.do}</td>
+                      <td>{item.kernel.hi}</td>
+                    </tr>
+                  </>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        </Col>
+      </Row>
+      <Row>
+        {selectedDate && (
+          <>
+            <Row>
+              <h2 className="mt-4 text-center text-gradient mb-4">
+                Total Persediaan Seluruh PKS
+              </h2>
+              {renderTable(previousTotals , `Data Sebelumnya`)}
+              {previousDate && renderTable(currentTotals, `Data Hari Ini`)}
+            </Row>
+            <Row className="mt-4">
+              <h2 className="mt-4 text-center text-gradient mb-4">
+                Total Seluruh Persediaan Regional VII
+              </h2>
+              {renderTable(previousTotalSeluruh, `Total Seluruh Sebelumnya `, true)}
+              {previousDate &&
+                renderTable(
+                   currentTotalSeluruh,
+                  `Total Seluruh Hari Ini`,
+                  true
+                )}
+            </Row>
+          </>
+        )}
+      </Row>
+      {showEditModal && (
+        <EditCatatanPersediaan
+          dataToEdit={selectedData}
+          onClose={handleCloseModal}
+          onUpdate={handleUpdateData}
+        />
+      )}
     </Container>
   );
 };
 
 export default CatatanPersediaan;
-
-

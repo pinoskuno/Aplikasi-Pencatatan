@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getCatatan } from "../api/api"; // Impor fungsi API
 
 const TotalSummary = () => {
   const [catatan, setCatatan] = useState([]);
@@ -6,9 +7,9 @@ const TotalSummary = () => {
   const [totalPenjualan, setTotalPenjualan] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/catatan")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchCatatan = async () => {
+      try {
+        const data = await getCatatan();
         setCatatan(data);
 
         // Hitung total keuntungan dan total penjualan
@@ -17,11 +18,19 @@ const TotalSummary = () => {
 
         setTotalKeuntungan(totalNilai);
         setTotalPenjualan(totalVol);
-      });
+        setError(null);
+      } catch (err) {
+        setError("Gagal memuat data catatan. Silakan coba lagi.");
+        console.error("Error fetching catatan:", err);
+      }
+    };
+    fetchCatatan();
   }, []);
 
   return (
-    <div className="row my-4">
+    <div className="row my-5">
+       <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">OUTSTANDING KONTRAK PENJUALAN REGIONAL VII KSO</span></h2>
+       <h2 class="text-center mb-4 fw-bolder center"><span class="text-gradient d-inline">PTPN IV REGIONAL 7 KSO</span></h2>
       <div className="col-md-6">
         <div className="card text-white bg-primary mb-3">
           <div className="card-body">

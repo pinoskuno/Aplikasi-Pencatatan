@@ -4,10 +4,181 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <link href="../frontend/src/index.css" rel="stylesheet">
+    <title>Aplikasi Pencatatan</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <!-- Custom Google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet" />
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   </head>
   <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+        <div class="container">
+            <a class="navbar-brand">
+                <h2 class="fw-bolder text-primary"><span class="text-gradient d-inline"> INVENTORY AND SALES APPLICATION </span></h2>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 small fw-bolder">
+                    <li class="nav-item"><a class="nav-link" href="/">Kontrak Penjualan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/persediaan">Persediaan Produksi</a></li>
+                    <!-- <li class="nav-item"><a class="nav-link" href="/persediaanDummy">Persediaan Produksi dummy</a></li> -->
+                    <!-- Dropdown untuk Formulir -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="formulirDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Formulir
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="formulirDropdown">
+                            <li><a class="dropdown-item" href="/input">Formulir Kontrak Penjualan</a></li>
+                            <!-- <li><a class="dropdown-item" href="/inputPersediaan">Formulir Persediaan Produksi</a></li> -->
+                            <li><a class="dropdown-item" href="/AddPersediaanCluster">Formulir Persediaan Produksi</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+      <!-- Navigation-->
+      <!-- <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><span class="fw-bolder text-primary">Inventory and Sales Application</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 small fw-bolder">
+                    <li class="nav-item"><a class="nav-link" href="/">Kontrak Penjualan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/persediaan">Persediaan Produksi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/input">Formulir Kontrak Penjualan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/inputPersediaan">Formulir Persediaan Produksi</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav> -->
+    <!-- Header-->
+    <div class="main-banner wow fadeIn" id="top" data-wow-duration="1s" data-wow-delay="0.5s">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="row">
+                <div class="col-lg-6 align-self-center">
+                  <div class="left-content show-up header-text wow fadeInLeft" data-wow-duration="1s" data-wow-delay="1s">
+                    <div class="row">
+                      <div class="col-lg-12">
+                        <h2 class="text-gradient d-inline">GET ONLINE AND GROW FAST</h2>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="right-image wow fadeInRight" data-wow-duration="1s" data-wow-delay="0.5s">
+                    <img src="./public/slider-dec.png" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Footer -->
+    <footer class="py-5 bg-gradient-primary-to-secondary text-white" style="background-color: #ECEFF1">
+        <!-- Section: Links  -->
+        <section class="">
+            <div class="container text-center text-md-start mt-5">
+                <!-- Grid row -->
+                <div class="row mt-3">
+                    <!-- Grid column -->
+                    <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-4">
+                        <!-- Content -->
+                        <h6 class="text-uppercase fw-bold">PT Perkebunan Nusantara IV Regional VII</h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: 60px; background-color: #7c4dff; height: 2px" />
+                        <p>
+                            Here you can use rows and columns to organize your footer
+                            content. Lorem ipsum dolor sit amet, consectetur adipisicing
+                            elit.
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold">Products</h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: 60px; background-color: #7c4dff; height: 2px" />
+                        <p>
+                            <a href="#!" class="text-dark">Example Product 1</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-dark">Example Product 1</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-dark">Example Product 1</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-dark">Example Product 1</a>
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold">Useful links</h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: 60px; background-color: #7c4dff; height: 2px" />
+                        <p>
+                            <a href="#!" class="text-dark">Example Link 1</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-dark">Example Link 1</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-dark">Example Link 1</a>
+                        </p>
+                        <p>
+                            <a href="#!" class="text-dark">Example Link 1</a>
+                        </p>
+                    </div>
+                    <!-- Grid column -->
+
+                    <!-- Grid column -->
+                    <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-md-0 mb-4">
+                        <!-- Links -->
+                        <h6 class="text-uppercase fw-bold">Contact</h6>
+                        <hr class="mb-4 mt-0 d-inline-block mx-auto"
+                            style="width: 60px; background-color: #7c4dff; height: 2px" />
+                        <p><i class="fas fa-home mr-3"></i> Jalan Teuku Umar No.300 Bandar Lampung - 35141 Provinsi Lampung - Indonesia </p>
+                        <p><i class="fas fa-envelope mr-3"></i> ptpn7@gmail.com</p>
+                        <p><i class="fas fa-phone mr-3"></i> +62 000 000</p>
+                    </div>
+                    <!-- Grid column -->
+                </div>
+                <!-- Grid row -->
+            </div>
+        </section>
+
+        <!-- Copyright -->
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2)">
+            © 2025 Copyright
+        </div>
+        <!-- Copyright -->
+    </footer>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
